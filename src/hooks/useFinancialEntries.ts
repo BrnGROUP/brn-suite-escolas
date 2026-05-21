@@ -110,6 +110,21 @@ export function useFinancialEntries(user: User, filters: any = {}) {
             if (filters.quick === 'repasses') q = q.eq('category', 'Repasse / Crédito');
             if (filters.quick === 'tarifas') q = q.eq('category', 'Tarifa Bancária');
             if (filters.quick === 'rendimentos') q = q.eq('category', 'Rendimento de Aplicação');
+            if (filters.quick === 'entradas') q = q.eq('type', 'Entrada');
+            if (filters.quick === 'saidas') q = q.eq('type', 'Saída');
+            if (filters.quick === 'pending_today') {
+                const today = new Date().toISOString().split('T')[0];
+                q = q.eq('date', today).eq('status', TransactionStatus.PENDENTE);
+            }
+            if (filters.quick === 'this_month') {
+                const now = new Date();
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+                q = q.gte('date', firstDay).lte('date', lastDay);
+            }
+            if (filters.quick === 'high_value') {
+                q = q.or('value.gte.1000,value.lte.-1000');
+            }
 
             const { data, error } = await q;
             if (error) throw error;

@@ -91,6 +91,18 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     Todos Lançamentos
                 </button>
                 <button
+                    onClick={() => setQuickFilter('entradas')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'entradas' ? 'bg-teal-500 text-white border-teal-500' : 'bg-teal-500/5 text-teal-400 border-teal-500/20 hover:bg-teal-500/10'}`}
+                >
+                    Entradas
+                </button>
+                <button
+                    onClick={() => setQuickFilter('saidas')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'saidas' ? 'bg-rose-500 text-white border-rose-500' : 'bg-rose-500/5 text-rose-400 border-rose-500/20 hover:bg-rose-500/10'}`}
+                >
+                    Saídas
+                </button>
+                <button
                     onClick={() => setQuickFilter('pending_today')}
                     className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'pending_today' ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-yellow-500/5 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/10'}`}
                 >
