@@ -1,6 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { PlatformBilling, School, User } from '../../types';
 import { formatCurrency } from '../../lib/printUtils';
+import { useToast } from '../../context/ToastContext';
+
+// Import decomposed subcomponents
+import { BillingStatsCards } from './BillingStatsCards';
+import { BillingFilters } from './BillingFilters';
+import { PaymentModal } from './PaymentModal';
+import { EditBillingModal } from './EditBillingModal';
+import { CreateBillingModal } from './CreateBillingModal';
 
 interface BillingSectionProps {
     billingRecords: PlatformBilling[];
@@ -12,12 +20,12 @@ interface BillingSectionProps {
     currentUser: User;
 }
 
-const MONTH_INPUT_TYPE = 'month';
-
 const BillingSection: React.FC<BillingSectionProps> = ({
     billingRecords, schools, loading, onUpdateStatus, onGenerate, onCreate, currentUser
 }) => {
     const isAdmin = currentUser.role === 'Administrador' || currentUser.role === 'Operador';
+    const { addToast } = useToast();
+
     // Basic Filters State
     const [showFilters, setShowFilters] = useState(false);
     const [periodStart, setPeriodStart] = useState(() => {
@@ -37,7 +45,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({
     // Modals
     const [paymentModal, setPaymentModal] = useState<{ open: boolean, record: PlatformBilling | null }>({ open: false, record: null });
     const [amountToPay, setAmountToPay] = useState('');
-    const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+    const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0] || '');
     const [paymentMethod, setPaymentMethod] = useState('Pix');
 
     const [editModal, setEditModal] = useState<{ open: boolean, record: PlatformBilling | null }>({ open: false, record: null });
@@ -53,22 +61,14 @@ const BillingSection: React.FC<BillingSectionProps> = ({
         reference_month: ''
     });
 
-    // ----------------------------------------------------------------------
     // FILTER LOGIC
-    // ----------------------------------------------------------------------
     const filteredRecords = useMemo(() => {
         return billingRecords.filter(r => {
-            // 1. Period Filter (YYYY-MM string comparison works)
-            const month = r.reference_month.slice(0, 7); // ensure format
+            const month = r.reference_month.slice(0, 7);
             if (month < periodStart || month > periodEnd) return false;
-
-            // 2. School Filter
             if (filterSchoolId && r.school_id !== filterSchoolId) return false;
-
-            // 3. Status Filter
             if (filterStatus && r.status !== filterStatus) return false;
 
-            // 4. Search Filter (School Name or Description)
             if (filterSearch) {
                 const searchLower = filterSearch.toLowerCase();
                 const schoolName = r.schools?.name?.toLowerCase() || '';
@@ -80,9 +80,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({
         });
     }, [billingRecords, periodStart, periodEnd, filterSchoolId, filterStatus, filterSearch]);
 
-    // ----------------------------------------------------------------------
     // STATS CALCULATION
-    // ----------------------------------------------------------------------
     const stats = useMemo(() => {
         return filteredRecords.reduce((acc, curr) => {
             const total = Number(curr.amount) || 0;
@@ -96,58 +94,24 @@ const BillingSection: React.FC<BillingSectionProps> = ({
         }, { total: 0, received: 0, pending: 0 });
     }, [filteredRecords]);
 
-    // Late calculation (ignores period filter to show accumulated debt, but respects school/search filters)
+    // Late calculation (ignores period filter to show accumulated debt)
     const totalLateAmount = useMemo(() => {
         const currentYearMonth = new Date().toISOString().slice(0, 7);
         return billingRecords
             .filter(r => {
-                // 1. School Filter
                 if (filterSchoolId && r.school_id !== filterSchoolId) return false;
-
-                // 2. Search Filter
                 if (filterSearch) {
                     const searchLower = filterSearch.toLowerCase();
                     const schoolName = r.schools?.name?.toLowerCase() || '';
                     const desc = r.description?.toLowerCase() || '';
                     if (!schoolName.includes(searchLower) && !desc.includes(searchLower)) return false;
                 }
-
-                // 3. Must be pending and past due month
                 return r.status === 'Pendente' && r.reference_month < `${currentYearMonth}-01`;
             })
             .reduce((acc, curr) => acc + (Number(curr.amount) - (Number(curr.paid_amount) || 0)), 0);
     }, [billingRecords, filterSchoolId, filterSearch]);
 
-    // ----------------------------------------------------------------------
     // HANDLERS
-    // ----------------------------------------------------------------------
-
-    const handleQuickPeriod = (value: string) => {
-        const year = new Date().getFullYear();
-        if (value === 'curr_year') {
-            setPeriodStart(`${year}-01`);
-            setPeriodEnd(`${year}-12`);
-        } else if (value === 'curr_sem1') {
-            setPeriodStart(`${year}-01`);
-            setPeriodEnd(`${year}-06`);
-        } else if (value === 'curr_sem2') {
-            setPeriodStart(`${year}-07`);
-            setPeriodEnd(`${year}-12`);
-        } else if (value === 'prev_year') {
-            setPeriodStart(`${year - 1}-01`);
-            setPeriodEnd(`${year - 1}-12`);
-        } else if (value === 'next_year') {
-            setPeriodStart(`${year + 1}-01`);
-            setPeriodEnd(`${year + 1}-12`);
-        } else if (value === 'prev_sem1') {
-            setPeriodStart(`${year - 1}-01`);
-            setPeriodEnd(`${year - 1}-06`);
-        } else if (value === 'prev_sem2') {
-            setPeriodStart(`${year - 1}-07`);
-            setPeriodEnd(`${year - 1}-12`);
-        }
-    };
-
     const openPaymentModal = (record: PlatformBilling) => {
         const remaining = Number(record.amount) - (Number(record.paid_amount) || 0);
         setPaymentModal({ open: true, record });
@@ -164,7 +128,10 @@ const BillingSection: React.FC<BillingSectionProps> = ({
     const handleConfirmPayment = () => {
         if (!paymentModal.record) return;
         const payVal = parseFloat(amountToPay);
-        if (isNaN(payVal) || payVal <= 0) return alert('Valor inválido');
+        if (isNaN(payVal) || payVal <= 0) {
+            addToast('Valor de pagamento inválido', 'warning');
+            return;
+        }
 
         const currentPaid = Number(paymentModal.record.paid_amount) || 0;
         const total = Number(paymentModal.record.amount);
@@ -179,12 +146,16 @@ const BillingSection: React.FC<BillingSectionProps> = ({
             paid_amount: newPaidTotal
         });
         setPaymentModal({ open: false, record: null });
+        addToast('Pagamento registrado com sucesso!', 'success');
     };
 
     const handleConfirmEdit = () => {
         if (!editModal.record) return;
         const val = parseFloat(editAmount);
-        if (isNaN(val) || val < 0) return alert('Valor inválido');
+        if (isNaN(val) || val < 0) {
+            addToast('Valor de cobrança inválido', 'warning');
+            return;
+        }
 
         onUpdateStatus({
             id: editModal.record.id,
@@ -194,11 +165,13 @@ const BillingSection: React.FC<BillingSectionProps> = ({
             reference_month: `${editReferenceMonth}-01`
         });
         setEditModal({ open: false, record: null });
+        addToast('Cobrança atualizada com sucesso!', 'success');
     };
 
     const handleCreateService = () => {
         if (!newItem.school_id || !newItem.amount || !newItem.description || !newItem.reference_month) {
-            return alert('Preencha todos os campos');
+            addToast('Preencha todos os campos obrigatórios', 'warning');
+            return;
         }
         onCreate({
             school_id: newItem.school_id,
@@ -209,7 +182,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({
         });
         setCreateModalOpen(false);
         setNewItem({ school_id: '', amount: '', description: '', reference_month: '' });
+        addToast('Nova cobrança de serviço extra criada!', 'success');
     };
+
     const handlePrintReceipt = (record: PlatformBilling) => {
         const school = record.schools;
         const paid = Number(record.paid_amount) || Number(record.amount);
@@ -338,9 +313,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                         </thead>
                         <tbody>
                             ${filteredRecords.map(r => {
-            const paid = Number(r.paid_amount) || (r.status === 'Pago' ? Number(r.amount) : 0);
-            const remaining = Math.max(0, Number(r.amount) - paid);
-            return `
+                                const paid = Number(r.paid_amount) || (r.status === 'Pago' ? Number(r.amount) : 0);
+                                const remaining = Math.max(0, Number(r.amount) - paid);
+                                return `
                                     <tr>
                                         <td>${r.reference_month.slice(0, 7)}</td>
                                         <td>${r.schools?.name || '-'}</td>
@@ -351,7 +326,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                                         <td>${formatCurrency(remaining)}</td>
                                     </tr>
                                 `;
-        }).join('')}
+                            }).join('')}
                         </tbody>
                         <tfoot>
                             <tr class="total-row">
@@ -377,146 +352,64 @@ const BillingSection: React.FC<BillingSectionProps> = ({
 
     return (
         <div className="flex flex-col gap-8 animate-in fade-in duration-500">
-            {/* Header / Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-[#111a22] p-6 rounded-2xl border border-white/5 flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total no Período</span>
-                    <span className="text-2xl font-black text-white">{formatCurrency(stats.total)}</span>
-                </div>
-                <div className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/10 flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Recebido</span>
-                    <span className="text-2xl font-black text-emerald-500">{formatCurrency(stats.received)}</span>
-                </div>
-                <div className="bg-amber-500/5 p-6 rounded-2xl border border-amber-500/10 flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Pendente</span>
-                    <span className="text-2xl font-black text-amber-500">{formatCurrency(stats.pending)}</span>
-                </div>
-                <div className="bg-red-500/5 p-6 rounded-2xl border border-red-500/10 flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Em Atraso (Geral)</span>
-                    <span className="text-2xl font-black text-red-500">{formatCurrency(totalLateAmount)}</span>
-                </div>
-            </div>
+            {/* Decomposed Stats Cards */}
+            <BillingStatsCards
+                total={stats.total}
+                received={stats.received}
+                pending={stats.pending}
+                totalLateAmount={totalLateAmount}
+            />
 
-            {/* Toolbar: Actions & Filter Toggle */}
-            <div className="flex flex-col md:flex-row justify-between gap-4">
-                <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center gap-2 transition-all border ${showFilters ? 'bg-primary text-white border-primary' : 'bg-[#111a22] text-slate-400 border-white/5 hover:text-white hover:bg-white/5'}`}
-                >
-                    <span className="material-symbols-outlined text-[18px]">filter_list</span>
-                    {showFilters ? 'Ocultar Filtros' : 'Filtros Avançados'}
-                </button>
+            {/* Toolbar: Actions & Filter Component */}
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <BillingFilters
+                        showFilters={showFilters}
+                        setShowFilters={setShowFilters}
+                        periodStart={periodStart}
+                        setPeriodStart={setPeriodStart}
+                        periodEnd={periodEnd}
+                        setPeriodEnd={setPeriodEnd}
+                        filterSchoolId={filterSchoolId}
+                        setFilterSchoolId={setFilterSchoolId}
+                        filterSearch={filterSearch}
+                        setFilterSearch={setFilterSearch}
+                        filterStatus={filterStatus}
+                        setFilterStatus={setFilterStatus}
+                        schools={schools}
+                        isAdmin={isAdmin}
+                    />
 
-                <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                    {isAdmin && (
-                        <>
-                            <button
-                                onClick={() => setCreateModalOpen(true)}
-                                className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all border border-white/5"
-                            >
-                                <span className="material-symbols-outlined text-[16px]">add_circle</span>
-                                Novo Extra
-                            </button>
-                            <button
-                                onClick={() => onGenerate(periodEnd + '-01')}
-                                className="flex-1 md:flex-none px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/20 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
-                                title="Gera cobranças para o mês final selecionado"
-                            >
-                                <span className="material-symbols-outlined text-[16px]">sync</span>
-                                Gerar (Fim)
-                            </button>
-                        </>
-                    )}
-                    <button
-                        onClick={handlePrintReport}
-                        className="flex-1 md:flex-none px-6 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
-                    >
-                        <span className="material-symbols-outlined text-[18px]">print</span>
-                        Imprimir
-                    </button>
-                </div>
-            </div>
-
-            {/* Expansible Filters Bar */}
-            {showFilters && (
-                <div className="bg-[#111a22] p-4 md:p-6 rounded-2xl border border-white/5 flex flex-col gap-4 animate-in slide-in-from-top-4 duration-300">
-
-                    {/* QUICK PERIOD SELECTOR */}
-                    <div className="w-full">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Período Rápido</label>
-                        <div className="flex gap-2 flex-wrap">
-                            <button onClick={() => handleQuickPeriod('prev_sem1')} className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-slate-400 hover:text-white uppercase tracking-wide border border-white/10 transition-all active:scale-95">1º Sem {new Date().getFullYear() - 1}</button>
-                            <button onClick={() => handleQuickPeriod('prev_sem2')} className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-slate-400 hover:text-white uppercase tracking-wide border border-white/10 transition-all active:scale-95">2º Sem {new Date().getFullYear() - 1}</button>
-                            <button onClick={() => handleQuickPeriod('prev_year')} className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-slate-400 hover:text-white uppercase tracking-wide border border-white/10 transition-all active:scale-95">Ano {new Date().getFullYear() - 1}</button>
-
-                            <div className="w-[1px] h-8 bg-white/10 mx-2 hidden md:block"></div>
-
-                            <button onClick={() => handleQuickPeriod('curr_sem1')} className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-slate-300 hover:text-white uppercase tracking-wide border border-white/10 transition-all active:scale-95">1º Sem {new Date().getFullYear()}</button>
-                            <button onClick={() => handleQuickPeriod('curr_sem2')} className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-slate-300 hover:text-white uppercase tracking-wide border border-white/10 transition-all active:scale-95">2º Sem {new Date().getFullYear()}</button>
-                            <button onClick={() => handleQuickPeriod('curr_year')} className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-slate-300 hover:text-white uppercase tracking-wide border border-white/10 transition-all active:scale-95">Ano {new Date().getFullYear()}</button>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-end border-t border-white/5 pt-4">
-                        {/* Start Date */}
-                        <div>
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Início</label>
-                            <input
-                                title="Data Inicial"
-                                type={MONTH_INPUT_TYPE}
-                                placeholder="AAAA-MM"
-                                value={periodStart}
-                                onChange={e => setPeriodStart(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-primary"
-                            />
-                        </div>
-
-                        {/* End Date */}
-                        <div>
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Fim</label>
-                            <input
-                                title="Data Final"
-                                type={MONTH_INPUT_TYPE}
-                                placeholder="AAAA-MM"
-                                value={periodEnd}
-                                onChange={e => setPeriodEnd(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-primary"
-                            />
-                        </div>
-
-                        {/* School Filter */}
-                        {/* School Filter - Only for Admin */}
+                    <div className="flex flex-wrap gap-2 w-full md:w-auto h-fit items-center mt-2 md:mt-0">
                         {isAdmin && (
-                            <div className="col-span-2 md:col-span-1">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Escola</label>
-                                <select
-                                    title="Filtrar por Escola"
-                                    value={filterSchoolId}
-                                    onChange={e => setFilterSchoolId(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-primary appearance-none"
+                            <>
+                                <button
+                                    onClick={() => setCreateModalOpen(true)}
+                                    className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all border border-white/5 active:scale-95"
                                 >
-                                    <option value="">Todas as Escolas</option>
-                                    {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                            </div>
+                                    <span className="material-symbols-outlined text-[16px]">add_circle</span>
+                                    Novo Extra
+                                </button>
+                                <button
+                                    onClick={() => onGenerate(periodEnd + '-01')}
+                                    className="flex-1 md:flex-none px-4 py-2 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 border border-cyan-500/20 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"
+                                    title="Gera cobranças para o mês final selecionado"
+                                >
+                                    <span className="material-symbols-outlined text-[16px]">sync</span>
+                                    Gerar (Fim)
+                                </button>
+                            </>
                         )}
-
-                        {/* Search Text */}
-                        <div className="col-span-2 md:col-span-1">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">Pesquisar</label>
-                            <input
-                                title="Pesquisar por escola ou descrição"
-                                type="text"
-                                placeholder="Nome ou descrição..."
-                                value={filterSearch}
-                                onChange={e => setFilterSearch(e.target.value)}
-                                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-primary"
-                            />
-                        </div>
+                        <button
+                            onClick={handlePrintReport}
+                            className="flex-1 md:flex-none px-6 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-lg font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">print</span>
+                            Imprimir
+                        </button>
                     </div>
-
                 </div>
-            )}
+            </div>
 
             {/* List */}
             <div className="grid grid-cols-1 gap-3">
@@ -534,7 +427,6 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                         const progress = Math.min(100, (paid / total) * 100);
                         const remaining = Math.max(0, total - paid);
 
-                        // Extract style to variable to appease linter
                         const progressBarStyle = { '--prog-width': `${progress}%` } as React.CSSProperties;
 
                         return (
@@ -552,14 +444,15 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                                     <div className="flex-1 min-w-0 flex flex-col gap-2">
                                         <div className="flex items-center gap-2">
                                             <h4 className="font-black text-white text-base md:text-lg uppercase tracking-tight break-words leading-tight">{record.schools?.name || 'Escola Desconhecida'}</h4>
-                                            {/* Botão de editar discreto */}
-                                            <button
-                                                onClick={() => openEditModal(record)}
-                                                title="Editar Detalhes"
-                                                className={`w-6 h-6 flex items-center justify-center rounded-full text-slate-600 hover:bg-white/10 hover:text-white transition-all opacity-50 group-hover:opacity-100 ${!isAdmin ? 'hidden' : ''}`}
-                                            >
-                                                <span className="material-symbols-outlined text-[14px]">edit</span>
-                                            </button>
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => openEditModal(record)}
+                                                    title="Editar Detalhes"
+                                                    className="w-6 h-6 flex items-center justify-center rounded-full text-slate-600 hover:bg-white/10 hover:text-white transition-all opacity-50 group-hover:opacity-100"
+                                                >
+                                                    <span className="material-symbols-outlined text-[14px]">edit</span>
+                                                </button>
+                                            )}
                                         </div>
 
                                         <p className="text-xs md:text-sm font-medium text-slate-400 leading-normal break-words max-w-full md:max-w-2xl">
@@ -608,31 +501,32 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                                     )}
 
                                     {record.status === 'Pago' && (
-                                            <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
-                                                <div className="text-right">
-                                                    <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest block italic">Pago em</span>
-                                                    <span className="text-[10px] font-bold text-emerald-500 italic">
-                                                        {record.payment_date ? new Date(record.payment_date).toLocaleDateString('pt-BR') : '-'}
-                                                    </span>
-                                                </div>
-                                                <div className="flex gap-1">
-                                                    <button
-                                                        onClick={() => handlePrintReceipt(record)}
-                                                        title="Gerar Recibo"
-                                                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all transition-colors flex-shrink-0"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[16px]">receipt_long</span>
-                                                    </button>
+                                        <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
+                                            <div className="text-right">
+                                                <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest block italic">Pago em</span>
+                                                <span className="text-[10px] font-bold text-emerald-500 italic">
+                                                    {record.payment_date ? new Date(record.payment_date).toLocaleDateString('pt-BR') : '-'}
+                                                </span>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <button
+                                                    onClick={() => handlePrintReceipt(record)}
+                                                    title="Gerar Recibo"
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all flex-shrink-0"
+                                                >
+                                                    <span className="material-symbols-outlined text-[16px]">receipt_long</span>
+                                                </button>
+                                                {isAdmin && (
                                                     <button
                                                         onClick={() => openPaymentModal(record)}
-                                                        disabled={!isAdmin}
                                                         title="Editar Pagamento"
-                                                        className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 ${isAdmin ? 'bg-white/5 hover:bg-white/10 text-white/50 hover:text-white' : 'hidden'}`}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all flex-shrink-0"
                                                     >
                                                         <span className="material-symbols-outlined text-xs">edit</span>
                                                     </button>
-                                                </div>
+                                                )}
                                             </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -641,240 +535,47 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                 )}
             </div>
 
-            {/* Create Service Modal */}
-            {createModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200 overflow-y-auto">
-                    <div className="bg-[#111a22] border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-                        <button
-                            onClick={() => setCreateModalOpen(false)}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-                        >
-                            <span className="material-symbols-outlined">close</span>
-                        </button>
+            {/* Decomposed Modals */}
+            <CreateBillingModal
+                isOpen={createModalOpen}
+                onClose={() => setCreateModalOpen(false)}
+                schools={schools}
+                newItem={newItem}
+                setNewItem={setNewItem}
+                onCreate={handleCreateService}
+            />
 
-                        <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6">Novo Serviço Extra</h3>
+            <EditBillingModal
+                isOpen={editModal.open}
+                onClose={() => setEditModal({ open: false, record: null })}
+                record={editModal.record}
+                description={editDescription}
+                setDescription={setEditDescription}
+                amount={editAmount}
+                setAmount={setEditAmount}
+                referenceMonth={editReferenceMonth}
+                setReferenceMonth={setEditReferenceMonth}
+                onConfirm={handleConfirmEdit}
+            />
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Escola</label>
-                                <select
-                                    title="Selecione a Escola"
-                                    value={newItem.school_id}
-                                    onChange={e => setNewItem({ ...newItem, school_id: e.target.value })}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all appearance-none"
-                                >
-                                    <option value="">Selecione...</option>
-                                    {schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                            </div>
+            <PaymentModal
+                isOpen={paymentModal.open}
+                onClose={() => setPaymentModal({ open: false, record: null })}
+                record={paymentModal.record}
+                amountToPay={amountToPay}
+                setAmountToPay={setAmountToPay}
+                paymentDate={paymentDate}
+                setPaymentDate={setPaymentDate}
+                paymentMethod={paymentMethod}
+                setPaymentMethod={setPaymentMethod}
+                onConfirm={handleConfirmPayment}
+            />
 
-                            <div>
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Descrição</label>
-                                <input
-                                    type="text"
-                                    title="Descrição"
-                                    placeholder="Ex: Criação de Horário, Visita Técnica..."
-                                    value={newItem.description}
-                                    onChange={e => setNewItem({ ...newItem, description: e.target.value })}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-primary transition-all"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Mês de Cobrança</label>
-                                    <input
-                                        title="Mês de Cobrança"
-                                        type={MONTH_INPUT_TYPE}
-                                        placeholder="AAAA-MM"
-                                        value={newItem.reference_month}
-                                        onChange={e => setNewItem({ ...newItem, reference_month: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Valor (R$)</label>
-                                    <input
-                                        title="Valor do Serviço"
-                                        type="number"
-                                        placeholder="0.00"
-                                        value={newItem.amount}
-                                        onChange={e => setNewItem({ ...newItem, amount: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-emerald-500 transition-all"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 flex gap-3">
-                            <button
-                                onClick={() => setCreateModalOpen(false)}
-                                className="flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/5 transition-all"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleCreateService}
-                                className="flex-1 h-12 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all"
-                            >
-                                Criar Cobrança
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Edit Description/Amount Modal */}
-            {editModal.open && editModal.record && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200 overflow-y-auto">
-                    <div className="bg-[#111a22] border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-                        <button
-                            onClick={() => setEditModal({ open: false, record: null })}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-                        >
-                            <span className="material-symbols-outlined">close</span>
-                        </button>
-
-                        <h3 className="text-lg font-black text-white uppercase tracking-tight mb-6">Editar Detalhes</h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Descrição</label>
-                                <textarea
-                                    title="Descrição"
-                                    rows={3}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-medium outline-none focus:border-primary transition-all resize-none"
-                                    value={editDescription}
-                                    onChange={e => setEditDescription(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Mês de Cobrança</label>
-                                    <input
-                                        title="Mês de Cobrança"
-                                        type={MONTH_INPUT_TYPE}
-                                        placeholder="AAAA-MM"
-                                        value={editReferenceMonth}
-                                        onChange={e => setEditReferenceMonth(e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Valor Total (R$)</label>
-                                    <input
-                                        title="Valor Total"
-                                        type="number"
-                                        value={editAmount}
-                                        onChange={e => setEditAmount(e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-emerald-500 transition-all"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 flex gap-3">
-                            <button
-                                onClick={() => setEditModal({ open: false, record: null })}
-                                className="flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/5 transition-all"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleConfirmEdit}
-                                className="flex-1 h-12 bg-primary hover:bg-primary-hover text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all"
-                            >
-                                Salvar Alterações
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Payment Modal */}
-            {paymentModal.open && paymentModal.record && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200 overflow-y-auto">
-                    <div className="bg-[#111a22] border border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-                        <button
-                            onClick={() => setPaymentModal({ open: false, record: null })}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-                        >
-                            <span className="material-symbols-outlined">close</span>
-                        </button>
-
-                        <h3 className="text-lg font-black text-white uppercase tracking-tight mb-1">Registrar Pagamento</h3>
-                        <p className="text-sm text-slate-400 mb-6">{paymentModal.record.schools?.name}</p>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Valor a deduzir (R$)</label>
-                                <input
-                                    title="Valor a deduzir"
-                                    type="number"
-                                    value={amountToPay}
-                                    onChange={e => setAmountToPay(e.target.value)}
-                                    className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white font-bold outline-none focus:border-emerald-500 transition-all"
-                                    placeholder="0.00"
-                                />
-                                <div className="flex justify-between mt-1 text-[10px] font-bold">
-                                    <span className="text-slate-500">Total: {formatCurrency(paymentModal.record.amount)}</span>
-                                    <span className="text-amber-500">Restante: {formatCurrency(Math.max(0, Number(paymentModal.record.amount) - (Number(paymentModal.record.paid_amount) || 0)))}</span>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Data</label>
-                                    <input
-                                        title="Data do Pagamento"
-                                        type="date"
-                                        value={paymentDate}
-                                        onChange={e => setPaymentDate(e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Método</label>
-                                    <select
-                                        value={paymentMethod}
-                                        title="Método de Pagamento"
-                                        onChange={e => setPaymentMethod(e.target.value)}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-primary transition-all appearance-none"
-                                    >
-                                        <option value="Pix">Pix</option>
-                                        <option value="Boleto">Boleto</option>
-                                        <option value="Transferência">Transferência</option>
-                                        <option value="Cartão">Cartão</option>
-                                        <option value="Dinheiro">Dinheiro</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-8 flex gap-3">
-                            <button
-                                onClick={() => setPaymentModal({ open: false, record: null })}
-                                className="flex-1 h-12 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/5 transition-all"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleConfirmPayment}
-                                className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
-                            >
-                                Confirmar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl">
+            <div className="p-4 bg-cyan-500/5 border border-cyan-500/10 rounded-2xl">
                 <div className="flex gap-3">
-                    <span className="material-symbols-outlined text-primary">info</span>
+                    <span className="material-symbols-outlined text-cyan-500">info</span>
                     <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                        <strong className="text-primary uppercase mr-1">Nota:</strong>
+                        <strong className="text-cyan-500 uppercase mr-1">Nota:</strong>
                         Este módulo é de uso exclusivo da <strong>BRN GROUP</strong>. Estes pagamentos referem-se à licença de uso do software e assessoria, pagos de forma externa pelos gestores, não impactando o livro caixa oficial das escolas cadastrado no sistema.
                     </p>
                 </div>

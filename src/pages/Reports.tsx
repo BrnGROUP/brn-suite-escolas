@@ -16,6 +16,7 @@ import { supabase } from '../lib/supabaseClient';
 import { usePermissions, useAccessibleSchools } from '../hooks/usePermissions';
 import { useReports } from '../hooks/useReports';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import { formatCurrency } from '../lib/printUtils';
 
 // Subcomponents
@@ -32,6 +33,7 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
   const [editingContractId, setEditingContractId] = useState<string | null>(null);
   const [view, setView] = useState<'processes' | 'contracts'>('processes');
   const { addToast } = useToast();
+  const { confirm } = useConfirm();
 
   // Filters
   const [filters, setFilters] = useState({
@@ -124,7 +126,11 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta prestação de contas?')) return;
+    if (!await confirm({
+      title: 'Excluir Prestação de Contas',
+      message: 'Tem certeza que deseja excluir esta prestação de contas? Esta ação é irreversível.',
+      isDestructive: true
+    })) return;
 
     const { error } = await supabase.from('accountability_processes').delete().eq('id', id);
 
@@ -137,7 +143,11 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
   };
 
   const handleDeleteContract = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este contrato? Isso não excluirá os lançamentos vinculados.')) return;
+    if (!await confirm({
+      title: 'Excluir Contrato de Fornecedor',
+      message: 'Tem certeza que deseja excluir este contrato? Isso não excluirá os lançamentos vinculados.',
+      isDestructive: true
+    })) return;
 
     const { error } = await supabase.from('supplier_contracts').delete().eq('id', id);
 
@@ -222,18 +232,27 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
           { label: 'Processos em Aberto', val: stats.pendingProcesses, icon: 'pending_actions', color: 'amber' },
           { label: 'Processos Concluídos', val: stats.completedProcesses, icon: 'verified', color: 'emerald' },
           { label: 'Total em Notas', val: formatCurrency(stats.totalNotesValue), icon: 'receipt', color: 'blue' },
-          { label: 'Cotações Realizadas', val: stats.totalQuotes, icon: 'request_quote', color: 'indigo' },
-        ].map((s, idx) => (
-          <div key={idx} className="bg-[#111a22] p-6 rounded-3xl border border-white/5 flex items-center gap-5 hover:border-primary/20 transition-all group">
-            <div className={`w-14 h-14 rounded-2xl bg-${s.color}-500/10 flex items-center justify-center text-${s.color}-500 shrink-0 group-hover:scale-110 transition-transform`}>
-              <span className="material-symbols-outlined text-3xl">{s.icon}</span>
+          { label: 'Cotações Realizadas', val: stats.totalQuotes, icon: 'request_quote', color: 'cyan' },
+        ].map((s, idx) => {
+          const colorClasses = {
+            amber: { bg: 'bg-amber-500/10', text: 'text-amber-500' },
+            emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-500' },
+            blue: { bg: 'bg-blue-500/10', text: 'text-blue-500' },
+            cyan: { bg: 'bg-cyan-500/10', text: 'text-cyan-500' }
+          }[s.color] || { bg: 'bg-cyan-500/10', text: 'text-cyan-500' };
+
+          return (
+            <div key={idx} className="bg-[#111a22] p-6 rounded-3xl border border-white/5 flex items-center gap-5 hover:border-primary/20 transition-all group">
+              <div className={`w-14 h-14 rounded-2xl ${colorClasses.bg} flex items-center justify-center ${colorClasses.text} shrink-0 group-hover:scale-110 transition-transform`}>
+                <span className="material-symbols-outlined text-3xl">{s.icon}</span>
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1 truncate">{s.label}</span>
+                <span className="text-xl font-black text-white block truncate">{s.val}</span>
+              </div>
             </div>
-            <div className="min-w-0">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1 truncate">{s.label}</span>
-              <span className="text-xl font-black text-white block truncate">{s.val}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Filter Bar */}

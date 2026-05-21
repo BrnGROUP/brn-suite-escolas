@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabaseClient';
 import { User, UserRole, TransactionStatus } from '../types';
 import { useToast } from '../context/ToastContext';
+import { calculateFinancialStats } from '../lib/financialCalculations';
+import { useAuxData } from './useAuxData';
 
 export interface DashboardFilters {
     schoolId: string;
@@ -37,26 +39,7 @@ export const useDashboard = (user: User) => {
     // -- QUERIES --
 
     // 1. Auxiliary Data (Schools, Programs, Rubrics, Suppliers, Bank Accounts)
-    const { data: auxData = { schools: [], programs: [], rubrics: [], suppliers: [], bankAccounts: [] } } = useQuery({
-        queryKey: ['dashboard_aux'],
-        queryFn: async () => {
-            const [schools, programs, rubrics, suppliers, bankAccounts] = await Promise.all([
-                supabase.from('schools').select('*').order('name'),
-                supabase.from('programs').select('*').order('name'),
-                supabase.from('rubrics').select('*').order('name'),
-                supabase.from('suppliers').select('*').order('name'),
-                supabase.from('bank_accounts').select('*').order('name')
-            ]);
-            return {
-                schools: schools.data || [],
-                programs: programs.data || [],
-                rubrics: rubrics.data || [],
-                suppliers: suppliers.data || [],
-                bankAccounts: bankAccounts.data || []
-            };
-        },
-        staleTime: 1000 * 60 * 30 // 30 minutes
-    });
+    const { data: auxData = { schools: [], programs: [], rubrics: [], suppliers: [], bankAccounts: [] } } = useAuxData();
 
     // 2. Pending Users (Admin Only)
     const { data: pendingUsersCount = 0 } = useQuery({
@@ -164,16 +147,8 @@ export const useDashboard = (user: User) => {
         }
 
         // 2. Calculate Stats
-        const stats = {
-            receita: 0,
-            despesa: 0,
-            pendencias: 0,
-            repasses: 0,
-            rendimentos: 0,
-            tarifas: 0,
-            impostosDevolucoes: 0,
-            reprogramado: filteredReprog.reduce((acc: number, curr: any) => acc + Number(curr.value || 0), 0)
-        };
+        const reprogrammedVal = filteredReprog.reduce((acc: number, curr: any) => acc + Number(curr.value || 0), 0);
+        const stats = calculateFinancialStats(filteredEntries, reprogrammedVal);
 
         const monthsMap: Record<string, { name: string, receita: number, despesa: number }> = {};
         const natureMap: Record<string, number> = {};
@@ -181,26 +156,6 @@ export const useDashboard = (user: User) => {
         filteredEntries.forEach((e: any) => {
             const val = Number(e.value);
             const absVal = Math.abs(val);
-
-            // Basic Stats
-            if (e.status === TransactionStatus.PENDENTE) stats.pendencias++;
-
-            if (e.type === 'Entrada') {
-                stats.receita += val;
-
-                // Strict Category-based identification
-                const catUpper = (e.category || '').toUpperCase().trim();
-
-                if (catUpper === 'RENDIMENTO DE APLICAÇÃO') {
-                    stats.rendimentos += absVal;
-                } else if (catUpper === 'REPASSE / CRÉDITO' || catUpper === 'OUTROS') {
-                    stats.repasses += absVal;
-                }
-            } else {
-                stats.despesa += absVal;
-                if (e.category === 'Tarifa Bancária') stats.tarifas += absVal;
-                if (e.category === 'Impostos / Tributos' || e.category === 'Devolução de Recurso (FNDE/Estado)') stats.impostosDevolucoes += absVal;
-            }
 
             // Charts Data - Flow
             const dateObj = new Date(e.date);
@@ -222,11 +177,12 @@ export const useDashboard = (user: User) => {
         // 3. Final Formats
         const sortedMonths = Object.keys(monthsMap)
             .sort((a, b) => {
-                const [y1, m1] = a.split('-').map(Number);
-                const [y2, m2] = b.split('-').map(Number);
+                const [y1 = 0, m1 = 0] = a.split('-').map(Number);
+                const [y2 = 0, m2 = 0] = b.split('-').map(Number);
                 return y1 !== y2 ? y1 - y2 : m1 - m2;
             })
-            .map(key => monthsMap[key]);
+            .map(key => monthsMap[key])
+            .filter((m): m is { name: string, receita: number, despesa: number } => !!m);
 
         let accBal = stats.reprogramado;
         const flowData = sortedMonths.map(m => {
@@ -339,7 +295,7 @@ export const useDashboard = (user: User) => {
         const currentMonth = today.getMonth() + 1;
         const currentYear = today.getFullYear();
         // Check last 3 months
-        const periodsToCheck = [];
+        const periodsToCheck: { month: number; year: number; }[] = [];
         for (let i = 1; i <= 3; i++) {
             let m = currentMonth - i;
             let y = currentYear;
@@ -370,11 +326,17 @@ export const useDashboard = (user: User) => {
                         const isContaCorrente = type === 'Conta Corrente';
                         let missingParts = [];
 
-                        if (!uploadRecord) {
-                            missingParts.push(isContaCorrente ? 'OFX e PDF' : 'PDF');
+                        if (uploadRecord?.no_movement) {
+                            // If no_movement is true, OFX is NOT required. But PDF IS required according to user!
+                            // "Inseriremos apenas o extrato no formato PDF, tanto o da conta corrente quanto o de investimento."
+                            if (!uploadRecord.pdf_url && !uploadRecord.file_url) missingParts.push('PDF');
                         } else {
-                            if (isContaCorrente && !uploadRecord.file_url) missingParts.push('OFX');
-                            if (!uploadRecord.pdf_url) missingParts.push('PDF');
+                            if (!uploadRecord) {
+                                missingParts.push(isContaCorrente ? 'OFX e PDF' : 'PDF');
+                            } else {
+                                if (isContaCorrente && !uploadRecord.file_url) missingParts.push('OFX');
+                                if (!uploadRecord.pdf_url) missingParts.push('PDF');
+                            }
                         }
 
                         if (missingParts.length > 0) {
@@ -452,18 +414,7 @@ export const useDashboard = (user: User) => {
         }
 
         return {
-            stats: {
-                receita: Number(stats.receita.toFixed(2)),
-                despesa: Number(stats.despesa.toFixed(2)),
-                repasses: Number(stats.repasses.toFixed(2)),
-                rendimentos: Number(stats.rendimentos.toFixed(2)),
-                tarifas: Number(stats.tarifas.toFixed(2)),
-                impostosDevolucoes: Number(stats.impostosDevolucoes.toFixed(2)),
-                pendencias: stats.pendencias,
-                reprogramado: Number(stats.reprogramado.toFixed(2)),
-                saldo: Number((stats.receita - stats.despesa).toFixed(2)),
-                totalDisponivel: Number(((stats.receita - stats.despesa) + stats.reprogramado).toFixed(2))
-            },
+            stats,
             flowData,
             pieData,
             alerts

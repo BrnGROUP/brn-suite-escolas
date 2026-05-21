@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { User, ContractSignature } from '../types';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface ContractProps {
     user: User;
@@ -14,6 +15,7 @@ const Contract: React.FC<ContractProps> = ({ user, onSigned }) => {
     const [signatureData, setSignatureData] = useState<ContractSignature | null>(null);
     const [ip, setIp] = useState('');
     const { addToast } = useToast();
+    const { confirm } = useConfirm();
 
     useEffect(() => {
         checkSignature();
@@ -31,7 +33,7 @@ const Contract: React.FC<ContractProps> = ({ user, onSigned }) => {
     };
 
     const checkSignature = async () => {
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('contract_signatures')
             .select('*')
             .eq('user_id', user.id)
@@ -46,7 +48,12 @@ const Contract: React.FC<ContractProps> = ({ user, onSigned }) => {
     };
 
     const handleSign = async () => {
-        if (!confirm('Ao clicar em OK, você concorda com todos os termos apresentados e assina digitalmente este contrato.')) return;
+        if (!await confirm({
+            title: 'Assinar Termo de Responsabilidade',
+            message: 'Ao clicar em OK, você concorda com todos os termos apresentados e assina digitalmente este contrato.',
+            confirmText: 'Aceitar e Assinar',
+            cancelText: 'Cancelar'
+        })) return;
 
         setLoading(true);
         try {
@@ -174,7 +181,7 @@ const Contract: React.FC<ContractProps> = ({ user, onSigned }) => {
                     <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-yellow-500 text-3xl print:text-slate-700">gavel</span>
                         <div>
-                            <h1 className="text-xl font-bold uppercase tracking-wider print:text-black">Termo de Responsabilidade</h1>
+                            <h2 className="text-xl font-bold uppercase tracking-wider print:text-black">Termo de Responsabilidade</h2>
                             <p className="text-xs text-slate-400 print:text-slate-500">Leia atentamente antes de prosseguir</p>
                         </div>
                     </div>

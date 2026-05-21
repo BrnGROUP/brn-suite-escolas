@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 
@@ -9,6 +10,7 @@ interface DashboardAlertsProps {
 }
 
 const DashboardAlerts: React.FC<DashboardAlertsProps> = ({ alerts, selectedAlert, setSelectedAlert }) => {
+    const navigate = useNavigate();
     const [activeAlertTab, setActiveAlertTab] = useState<'Tudo' | 'Auditoria' | 'Gestão' | 'Financeiro' | 'Sistema' | 'Conciliação'>('Tudo');
     const [alertSchoolSearch, setAlertSchoolSearch] = useState('');
 
@@ -291,7 +293,7 @@ const DashboardAlerts: React.FC<DashboardAlertsProps> = ({ alerts, selectedAlert
                                         <Button
                                             onClick={() => {
                                                 setSelectedAlert(null);
-                                                window.dispatchEvent(new CustomEvent('changePage', { detail: 'notifications' }));
+                                                navigate('/notifications');
                                             }}
                                             className="w-full"
                                             size="lg"

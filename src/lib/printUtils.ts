@@ -56,17 +56,6 @@ export const numberToWords = (value: number) => {
     let result = "";
 
     if (integerPart > 0) {
-        if (integerPart >= 1000000) {
-            const milhao = Math.floor(integerPart / 1000000);
-            const restM = integerPart % 1000000;
-            result += (milhao === 1 ? "um milhão" : formatPart(milhao) + " milhões");
-            if (restM > 0) {
-                if (restM < 100 || restM % 100 === 0) result += " e ";
-                else result += ", ";
-                result += integerPart < 2000000 && restM < 1000 ? formatPart(restM) : ""; // simplistic
-            }
-        }
-        
         // Handling thousands
         const getThousands = (val: number) => {
             if (val < 1000) return formatPart(val);
@@ -81,7 +70,18 @@ export const numberToWords = (value: number) => {
             return str;
         };
 
-        result = getThousands(integerPart);
+        if (integerPart >= 1000000) {
+            const milhao = Math.floor(integerPart / 1000000);
+            const restM = integerPart % 1000000;
+            result += (milhao === 1 ? "um milhão" : formatPart(milhao) + " milhões");
+            if (restM > 0) {
+                if (restM < 1000) result += " e ";
+                else result += ", ";
+                result += getThousands(restM);
+            }
+        } else {
+            result = getThousands(integerPart);
+        }
         result += integerPart === 1 ? " real" : " reais";
     }
 

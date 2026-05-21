@@ -9,10 +9,11 @@ interface CapaModalProps {
     schoolName: string;
     accountName: string;
     monthYear: string;
+    isReimport?: boolean;
 }
 
 const CapaModal: React.FC<CapaModalProps> = ({
-    capaForm, setCapaForm, onConfirm, onClose, schoolName, accountName, monthYear
+    capaForm, setCapaForm, onConfirm, onClose, schoolName, accountName, monthYear, isReimport
 }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
@@ -32,6 +33,19 @@ const CapaModal: React.FC<CapaModalProps> = ({
                         Para garantir a auditoria do **Técnico GEE**, informe os valores totais que aparecem no **Resumo do Mês** do seu extrato PDF.
                     </p>
                 </div>
+
+                {/* Reimport warning */}
+                {isReimport && (
+                    <div className="px-8 py-4 bg-amber-500/10 border-b border-amber-500/20 flex items-start gap-3">
+                        <span className="material-symbols-outlined text-amber-400 text-xl mt-0.5 flex-shrink-0">warning</span>
+                        <div>
+                            <p className="text-amber-400 text-xs font-black uppercase tracking-wide">Extrato já importado anteriormente</p>
+                            <p className="text-amber-300/70 text-[11px] mt-1 leading-relaxed">
+                                O lançamento de rendimento deste mês será <strong className="text-amber-300">substituído</strong> pelos valores informados abaixo. O registro anterior será removido.
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Info Card */}
                 <div className="px-8 py-4 bg-white/5 flex flex-col gap-1 border-b border-white/5">
@@ -107,9 +121,9 @@ const CapaModal: React.FC<CapaModalProps> = ({
                         </button>
                         <button
                             onClick={onConfirm}
-                            className="flex-[2] bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-[10px] py-4 rounded-2xl shadow-xl shadow-emerald-500/20 transition-all active:scale-95"
+                            className={`flex-[2] ${isReimport ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20'} text-white font-black uppercase tracking-widest text-[10px] py-4 rounded-2xl shadow-xl transition-all active:scale-95`}
                         >
-                            Finalizar e Vincular
+                            {isReimport ? 'Substituir Lançamento' : 'Finalizar e Vincular'}
                         </button>
                     </div>
                 </div>

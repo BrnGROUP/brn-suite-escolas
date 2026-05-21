@@ -1,5 +1,20 @@
 import { formatCurrency, numberToWords, getSchoolDayBefore, formatCNPJ } from './printUtils';
 
+export interface DocumentProcess {
+    id: string;
+    financial_entries?: any;
+    financial_entry?: any;
+    quotes?: any[];
+    accountability_quotes?: any[];
+    accountability_quote?: any[];
+    items?: any[];
+    accountability_items?: any[];
+    contract?: any;
+    discount?: number;
+    category?: string;
+    monthly_value?: number;
+}
+
 const getForoByCity = (city: string = '') => {
     const cityUpper = city.toUpperCase().trim();
     const mapping: { [key: string]: string } = {
@@ -13,8 +28,7 @@ const getForoByCity = (city: string = '') => {
     return mapping[cityUpper] || cityUpper;
 };
 
-
-export const generateAtaHTML = (process: any) => {
+export const extractDocumentData = (process: DocumentProcess) => {
     let entry = process.financial_entries || process.financial_entry;
     if (Array.isArray(entry)) entry = entry[0];
 
@@ -31,37 +45,72 @@ export const generateAtaHTML = (process: any) => {
             supplier_cnpj: sup.cnpj,
             total_value: Math.abs(entry.value || 0),
             is_winner: true,
-            supplier_id: sup.id
+            supplier_id: sup.id,
+            suppliers: sup
         }];
     }
 
     const winnerQuote = quotes.find((q: any) => q.is_winner);
     const competitorQuotes = quotes.filter((q: any) => !q.is_winner) || [];
     const allQuotes = [winnerQuote, ...competitorQuotes].filter(Boolean).slice(0, 3);
+    const winner = winnerQuote;
+    const supplier = winnerQuote?.suppliers || winnerQuote?.supplier || entry?.suppliers || entry?.supplier;
+
+    const invoiceDate = entry?.date ? new Date(entry.date) : new Date();
+    const paymentDate = entry?.payment_date ? new Date(entry.payment_date) : null;
+
+    return {
+        entry,
+        school,
+        program,
+        quotes,
+        winnerQuote,
+        competitorQuotes,
+        allQuotes,
+        winner,
+        supplier,
+        invoiceDate,
+        paymentDate
+    };
+};
+
+export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boolean = false) => {
+    return `<head>
+    <meta charset="utf-8"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: black; }
+        @media print {
+            body { background: white !important; padding: 0 !important; margin: 0 !important; }
+            .no-print { display: none !important; }
+            @page { size: ${isLandscape ? 'A4 landscape' : 'A4'}; margin: ${isLandscape ? '1cm' : '0'}; }
+        }
+        .text-justified { text-align: justify; text-justify: inter-word; }
+        ${customStyles}
+    </style>
+</head>`;
+};
+
+export const generateAtaHTML = (process: DocumentProcess) => {
+    const { entry, school, program, winnerQuote, allQuotes } = extractDocumentData(process);
 
     const invoiceDate = entry?.date ? new Date(entry.date) : new Date();
     const docDate = getSchoolDayBefore(invoiceDate, 2);
     const meetingTime = docDate.getDate() % 2 === 0 ? '15:30' : '09:00';
 
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8"/>
-    <title>Ata de Assembleia - BRN Suite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #ffffff; padding: 20px; color: black; }
+    const customStyles = `
+        body { padding: 20px; }
         @media print {
-            body { background: white !important; padding: 0 !important; margin: 0 !important; }
             .print-container { box-shadow: none !important; border: none !important; width: 100% !important; padding: 1.5cm 2cm !important; }
-            @page { size: A4; margin: 0; }
-            .no-print { display: none !important; }
         }
         .print-container { background: white; width: 210mm; margin: 0 auto; padding: 2cm; min-height: 297mm; }
-        .text-justified { text-align: justify; text-justify: inter-word; line-height: 1.6; }
-    </style>
-</head>
+        .text-justified { line-height: 1.6; }
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(customStyles)}
 <body class="flex flex-col items-center">
     <div class="print-container">
         <!-- Header -->
@@ -80,7 +129,7 @@ export const generateAtaHTML = (process: any) => {
 
         <!-- Proponents Section -->
         <div class="space-y-6 mb-12 text-[14px]">
-            ${allQuotes.map((q, i) => `
+            ${allQuotes.map((q: any, i: number) => `
             <div>
                 <p class="font-bold mb-1">${i + 1} - ${q.supplier_name?.toUpperCase()}</p>
                 <div class="ml-4 grid grid-cols-[60px_1fr] gap-x-2 leading-relaxed">
@@ -132,47 +181,18 @@ export const generateAtaHTML = (process: any) => {
 
 
 
-export const generateConsolidacaoHTML = (process: any) => {
-    let entry = process.financial_entries || process.financial_entry;
-    if (Array.isArray(entry)) entry = entry[0];
-
-    const school = entry?.schools || entry?.school;
-    const program = entry?.programs || entry?.program;
-
-    let quotes = process.quotes || process.accountability_quotes || process.accountability_quote || [];
-
-    // Fallback
-    if (quotes.length === 0 && entry?.suppliers) {
-        const sup = entry.suppliers;
-        quotes = [{
-            supplier_name: sup.name,
-            supplier_cnpj: sup.cnpj,
-            total_value: Math.abs(entry.value || 0),
-            is_winner: true,
-            supplier_id: sup.id
-        }];
-    }
-
-    const winnerQuote = quotes.find((q: any) => q.is_winner);
-    const competitorQuotes = quotes.filter((q: any) => !q.is_winner) || [];
-    const allQuotes = [winnerQuote, ...competitorQuotes].filter(Boolean).slice(0, 3);
+export const generateConsolidacaoHTML = (process: DocumentProcess) => {
+    const { school, program, allQuotes, invoiceDate } = extractDocumentData(process);
     const items = (process.items || process.accountability_items || []);
-    const invoiceDate = entry?.date ? new Date(entry.date) : new Date();
 
     const getUnitPrice = (item: any, quote: any) => {
         const qItem = quote.accountability_quote_items?.find((qi: any) => qi.description === item.description);
         return quote.is_winner ? item.winner_unit_price : (qItem?.unit_price || 0);
     };
 
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8"/>
-    <title>Consolidação de Pesquisas</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: white; padding: 10px; font-size: 8px; }
-        @media print { @page { size: A4 landscape; margin: 1cm; } body { padding: 0; } }
+    const customStyles = `
+        body { padding: 10px; font-size: 8px; }
+        @media print { body { padding: 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
         th, td { border: 1.5px solid black; padding: 2px 4px; }
         .bg-gray { background-color: #f3f3f3; }
@@ -181,8 +201,11 @@ export const generateConsolidacaoHTML = (process: any) => {
         .text-right { text-align: right; }
         .uppercase { text-transform: uppercase; }
         .bloco-title { background: #eee; font-weight: bold; padding: 4px; border: 1.5px solid black; border-bottom: none; }
-    </style>
-</head>
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(customStyles, true)}
 <body>
     <div class="w-full">
         <div class="flex justify-between items-end mb-4">
@@ -302,52 +325,29 @@ export const generateConsolidacaoHTML = (process: any) => {
 </html>`;
 };
 
-export const generateOrdemHTML = (process: any) => {
-    let entry = process.financial_entries || process.financial_entry;
-    if (Array.isArray(entry)) entry = entry[0];
-
-    const school = entry?.schools || entry?.school;
-    let quotes = process.quotes || process.accountability_quotes || process.accountability_quote || [];
-
-    // Fallback
-    if (quotes.length === 0 && entry?.suppliers) {
-        quotes = [{
-            supplier_name: entry.suppliers.name,
-            supplier_cnpj: entry.suppliers.cnpj,
-            total_value: Math.abs(entry.value || 0),
-            is_winner: true
-        }];
-    }
-
-    const winner = quotes.find((q: any) => q.is_winner);
+export const generateOrdemHTML = (process: DocumentProcess) => {
+    const { school, winner, invoiceDate } = extractDocumentData(process);
     const items = (process.items || process.accountability_items || []).slice(0, 27);
-    const invoiceDate = entry?.date ? new Date(entry.date) : new Date();
     const dateText = invoiceDate.toLocaleDateString('pt-BR');
 
     const rows = [...items];
     while (rows.length < 27) rows.push({});
 
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8"/>
-    <title>Ordem de Compra</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
+    const customStyles = `
         * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: white; padding: 10px; font-size: 10px; }
-        @media print { 
-            @page { size: A4; margin: 1cm; } 
-            body { padding: 0; } 
-        }
+        body { padding: 10px; font-size: 10px; }
+        @media print { body { padding: 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: -1px; table-layout: fixed; }
         th, td { border: 1.5px solid black; padding: 4px 8px; height: 18px; word-wrap: break-word; overflow: hidden; }
         .bg-gray { background-color: #f3f3f3; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .uppercase { text-transform: uppercase; }
-    </style>
-</head>
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(customStyles)}
 <body>
     <div style="width: 100%; max-width: 190mm; margin: 0 auto;">
         <table>
@@ -432,30 +432,11 @@ export const generateOrdemHTML = (process: any) => {
 </html>`;
 };
 
-export const generateReciboHTML = (process: any) => {
-    let entry = process.financial_entries || process.financial_entry;
-    if (Array.isArray(entry)) entry = entry[0];
-
-    const school = entry?.schools || entry?.school;
-    const program = entry?.programs || entry?.program;
-    let quotes = process.quotes || process.accountability_quotes || process.accountability_quote || [];
-
-    // Fallback
-    if (quotes.length === 0 && entry?.suppliers) {
-        quotes = [{
-            supplier_name: entry.suppliers.name,
-            supplier_cnpj: entry.suppliers.cnpj,
-            total_value: Math.abs(entry.value || 0),
-            is_winner: true
-        }];
-    }
-
-    const winner = quotes.find((q: any) => q.is_winner);
-    const supplier = winner?.suppliers || winner?.supplier || entry?.suppliers || entry?.supplier;
+export const generateReciboHTML = (process: DocumentProcess) => {
+    const { entry, school, program, winner, supplier, paymentDate } = extractDocumentData(process);
 
     // Dates
     const invoiceDate = entry?.date ? new Date(entry.date) : null;
-    const paymentDate = entry?.payment_date ? new Date(entry.payment_date) : null;
 
     const dispInvoiceDate = invoiceDate ? invoiceDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '___/___/_____';
     const dispPaymentDate = paymentDate ? paymentDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '___/___/_____';
@@ -478,24 +459,20 @@ export const generateReciboHTML = (process: any) => {
         paymentLabel = 'TRANSFERÊNCIA';
     }
 
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8"/>
-    <title>Recibo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
+    const customStyles = `
         * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f8fafc; padding: 20px; }
+        body { background: #f8fafc; padding: 20px; }
         @media print { 
-            @page { size: A4; margin: 0; } 
             body { background: white !important; padding: 0 !important; }
             .print-container { padding: 1.5cm !important; width: 100% !important; border: none !important; box-shadow: none !important; } 
         }
         .print-container { background: white; width: 190mm; margin: 0 auto; padding: 2cm; min-height: 297mm; border: 1px solid #e2e8f0; position: relative; }
         .text-justified { text-align: justify; text-justify: inter-word; line-height: 1.8; }
-    </style>
-</head>
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(customStyles)}
 <body class="flex flex-col items-center">
     <div class="print-container">
         <div class="text-center border-b pb-8 mb-12">
@@ -546,58 +523,35 @@ export const generateReciboHTML = (process: any) => {
 </html>`;
 };
 
-export const generateCotacaoHTML = (process: any, supplierIdx: number = 0) => {
-    let entry = process.financial_entries || process.financial_entry;
-    if (Array.isArray(entry)) entry = entry[0];
-    const school = entry?.schools || entry?.school;
-
-    const dbQuotes = process.quotes || process.accountability_quotes || process.accountability_quote || [];
-    const winnerQuoteDB = dbQuotes.find((q: any) => q.is_winner);
-    const competitorQuotes = dbQuotes.filter((q: any) => !q.is_winner) || [];
-
-    const winnerQuote = winnerQuoteDB ? {
-        ...winnerQuoteDB,
-        suppliers: winnerQuoteDB.suppliers || entry?.suppliers
-    } : (entry?.suppliers ? {
-        supplier_name: entry.suppliers.name,
-        supplier_cnpj: entry.suppliers.cnpj,
-        total_value: Math.abs(entry.value || 0),
-        is_winner: true,
-        suppliers: entry.suppliers
-    } : null);
-
-    const quotes = [winnerQuote, ...competitorQuotes].filter(Boolean);
-    const quote = quotes[supplierIdx];
+export const generateCotacaoHTML = (process: DocumentProcess, supplierIdx: number = 0) => {
+    const { school, allQuotes, invoiceDate } = extractDocumentData(process);
+    const quote = allQuotes[supplierIdx];
 
     if (!quote) return '<h1>Erro: Cotação não encontrada</h1>';
 
     const supplier = (quote as any).suppliers || (quote as any).supplier;
     const items = (process.items || process.accountability_items || []).slice(0, 27);
-    const invoiceDate = entry?.date ? new Date(entry.date) : new Date();
     const quoteDate = getSchoolDayBefore(invoiceDate, 15);
     const dateText = quoteDate.toLocaleDateString('pt-BR');
 
     const rows = [...items];
     while (rows.length < 27) rows.push({});
 
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8"/>
-    <title>Planilha de Pesquisa de Preços</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
+    const customStyles = `
         * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: white; padding: 10px; font-size: 9px; }
-        @media print { @page { size: A4; margin: 1cm; } body { padding: 0; } }
+        body { padding: 10px; font-size: 9px; }
+        @media print { body { padding: 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: -1px; table-layout: fixed; }
         th, td { border: 1px solid black; padding: 3px 6px; height: 18px; word-wrap: break-word; }
         .bg-gray { background-color: #f3f3f3; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
-    </style>
-</head>
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(customStyles)}
 <body>
     <div style="width: 100%; max-width: 190mm; margin: 0 auto;">
         <table>
@@ -692,34 +646,15 @@ export const generateCotacaoHTML = (process: any, supplierIdx: number = 0) => {
 </html>`;
 };
 
-export const generateContratoServicoHTML = (process: any) => {
-    let entry = process.financial_entries || process.financial_entry;
-    if (Array.isArray(entry)) entry = entry[0];
-
-    const contract = (process as any).contract;
+export const generateContratoServicoHTML = (process: DocumentProcess) => {
+    const { entry, school, program, supplier } = extractDocumentData(process);
+    const contract = process.contract;
     const terms = contract?.terms_json || {};
-    const category = (process as any).category || contract?.category || entry?.category;
+    const category = process.category || contract?.category || entry?.category;
 
     if (category === 'GÁS') {
         return generateContratoGasHTML(process);
     }
-
-    const school = entry?.schools || entry?.school;
-    const program = entry?.programs || entry?.program;
-    let quotes = process.quotes || process.accountability_quotes || process.accountability_quote || [];
-
-    if (quotes.length === 0 && entry?.suppliers) {
-        quotes = [{
-            supplier_name: entry.suppliers.name,
-            supplier_cnpj: entry.suppliers.cnpj,
-            total_value: Math.abs(entry.value || 0),
-            is_winner: true,
-            suppliers: entry.suppliers
-        }];
-    }
-
-    const winner = quotes.find((q: any) => q.is_winner);
-    const supplier = winner?.suppliers || winner?.supplier || entry?.suppliers || entry?.supplier;
 
     const monthlyValue = contract?.monthly_value || (Math.abs(entry?.value || 0));
     const contractTotalValue = contract?.total_value || (monthlyValue * 12);
@@ -741,40 +676,25 @@ export const generateContratoServicoHTML = (process: any) => {
     const durationDisplay = `${diffMonths} (${numberToWords(diffMonths)})`;
     const natureDisplay = entry?.nature || (contract as any)?.nature || 'Custeio';
 
-    const pageTitle = category === 'INTERNET'
-        ? `Contrato de Prestação de Serviços Contínuos de Internet - ${formattedTotalValue} - ${startDate}`
-        : `Contrato de Prestação de Serviços Contínuos - ${formattedTotalValue} - ${startDate}`;
-
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8"/>
-    <title>${pageTitle}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    const customStyles = `
         body { 
-            font-family: 'Inter', sans-serif; 
-            background: white; 
-            color: black; 
             line-height: 1.35; 
             font-size: 11px;
             -webkit-print-color-adjust: exact;
         }
         .print-container { width: 210mm; margin: 0 auto; padding: 1.5cm 2.5cm; min-height: 297mm; }
-        .text-justified { text-align: justify; text-justify: inter-word; }
         h1 { font-size: 14px; font-weight: 700; text-align: center; text-transform: uppercase; margin-bottom: 20px; }
         .clause { margin-top: 14px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid black; display: block; margin-bottom: 8px; font-size: 11px; break-after: avoid; page-break-after: avoid; }
         .clause-block { break-inside: avoid; page-break-inside: avoid; }
         @media print {
-            body { padding: 0 !important; margin: 0 !important; }
-            @page { size: A4; margin: 2cm 2cm; }
-            .no-print { display: none !important; }
             .print-container { padding: 0 !important; width: 100% !important; margin: 0 !important; }
         }
         .header-box { border-bottom: 1.5px solid black; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
-    </style>
-</head>
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(customStyles)}
 <body>
     <div class="print-container">
         <div class="header-box">
@@ -915,28 +835,10 @@ export const generateContratoServicoHTML = (process: any) => {
 </html>`;
 };
 
-export const generateContratoGasHTML = (process: any) => {
-    let entry = process.financial_entries || process.financial_entry;
-    if (Array.isArray(entry)) entry = entry[0];
-
-    const contract = (process as any).contract;
+export const generateContratoGasHTML = (process: DocumentProcess) => {
+    const { entry, school, program, supplier } = extractDocumentData(process);
+    const contract = process.contract;
     const terms = contract?.terms_json || {};
-    const school = entry?.schools || entry?.school;
-    const program = entry?.programs || entry?.program;
-    let quotes = process.quotes || process.accountability_quotes || process.accountability_quote || [];
-
-    if (quotes.length === 0 && entry?.suppliers) {
-        quotes = [{
-            supplier_name: entry.suppliers.name,
-            supplier_cnpj: entry.suppliers.cnpj,
-            total_value: Math.abs(entry.value || 0),
-            is_winner: true,
-            suppliers: entry.suppliers
-        }];
-    }
-
-    const winner = quotes.find((q: any) => q.is_winner);
-    const supplier = winner?.suppliers || winner?.supplier || entry?.suppliers || entry?.supplier;
 
     const totalValue = contract?.total_value || (Math.abs(entry?.value || 0));
     const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue);
@@ -949,16 +851,7 @@ export const generateContratoGasHTML = (process: any) => {
     const startDate = new Date(startDateStr + 'T12:00:00').toLocaleDateString('pt-BR');
     const endDate = new Date(endDateStr + 'T12:00:00').toLocaleDateString('pt-BR');
 
-    const pageTitle = `Contrato de Fornecimento de Gás - ${formattedTotalValue} - ${startDate}`;
-
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8"/>
-    <title>${pageTitle}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    const customStyles = `
         body { font-family: 'Inter', sans-serif; background: white; color: black; line-height: 1.35; font-size: 11px; }
         .print-container { width: 210mm; margin: 0 auto; padding: 1.5cm 2.5cm; min-height: 297mm; }
         .text-justified { text-align: justify; text-justify: inter-word; }
@@ -966,14 +859,14 @@ export const generateContratoGasHTML = (process: any) => {
         .clause { margin-top: 14px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid black; display: block; margin-bottom: 8px; font-size: 11px; break-after: avoid; page-break-after: avoid; }
         .clause-block { break-inside: avoid; page-break-inside: avoid; }
         @media print {
-            body { padding: 0 !important; margin: 0 !important; }
-            @page { size: A4; margin: 2cm 2cm; }
-            .no-print { display: none !important; }
             .print-container { padding: 0 !important; width: 100% !important; margin: 0 !important; }
         }
         .header-box { border-bottom: 1.5px solid black; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
-    </style>
-</head>
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(customStyles)}
 <body>
     <div class="print-container">
         <div class="header-box">
@@ -1075,12 +968,8 @@ export const generateContratoGasHTML = (process: any) => {
 </html>`;
 };
 
-export const generateAditivoHTML = (process: any) => {
-    let entry = process.financial_entries || process.financial_entry;
-    if (Array.isArray(entry)) entry = entry[0];
-
-    const school = entry?.schools || entry?.school;
-    const supplier = entry?.suppliers || entry?.supplier;
+export const generateAditivoHTML = (process: DocumentProcess) => {
+    const { school, supplier } = extractDocumentData(process);
 
     const docDate = (process as any).contract?.start_date ? new Date((process as any).contract.start_date + 'T12:00:00') : new Date();
     const dateLong = docDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -1091,31 +980,21 @@ export const generateAditivoHTML = (process: any) => {
     const monthlyValue = (process as any).monthly_value || (process as any).contract?.monthly_value || 0;
 
     const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((process as any).contract?.total_value || 0);
-    const docFormattedDate = docDate.toLocaleDateString('pt-BR');
-    const pageTitle = `Termo Aditivo ao Contrato - ${formattedTotalValue} - ${docFormattedDate}`;
-
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8"/>
-    <title>Termo Aditivo de Contrato - BRN Suite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background: white; color: black; line-height: 1.35; font-size: 11px; }
+    const customStyles = `
+        body { line-height: 1.35; font-size: 11px; }
         .print-container { width: 210mm; margin: 0 auto; padding: 1.5cm 2.5cm; min-height: 297mm; }
-        .text-justified { text-align: justify; text-justify: inter-word; }
         h1 { text-transform: uppercase; font-weight: 700; text-align: center; font-size: 16px; margin-bottom: 30px; }
         .clause { font-weight: 700; text-transform: uppercase; margin-top: 14px; margin-bottom: 10px; text-decoration: underline; break-after: avoid; page-break-after: avoid; }
         .clause-block { break-inside: avoid; page-break-inside: avoid; }
         @media print {
-            body { padding: 0 !important; margin: 0 !important; }
             @page { size: A4; margin: 2cm 2cm; }
-            .no-print { display: none !important; }
             .print-container { padding: 0 !important; width: 100% !important; margin: 0 !important; }
         }
-    </style>
-</head>
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(customStyles)}
 <body>
     <div class="print-container">
         <h1>TERMO ADITIVO DE PRORROGAÇÃO E REAJUSTE DE CONTRATO</h1>

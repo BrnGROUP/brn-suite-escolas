@@ -2,6 +2,7 @@ import * as React from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { TransactionNature } from '../../types';
 import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
 interface ReprogrammedBalancesModalProps {
     isOpen: boolean;
@@ -69,6 +70,7 @@ const ReprogrammedBalancesModal: React.FC<ReprogrammedBalancesModalProps> = ({
     const [searchVal, setSearchVal] = React.useState('');
     const [reprogSchoolFilter, setReprogSchoolFilter] = React.useState('');
     const { addToast } = useToast();
+    const { confirm } = useConfirm();
 
     const filteredBalances = React.useMemo(() => {
         const query = searchVal.toLowerCase();
@@ -104,7 +106,11 @@ const ReprogrammedBalancesModal: React.FC<ReprogrammedBalancesModalProps> = ({
     };
 
     const handleDeleteReprogrammed = React.useCallback(async (id: string) => {
-        if (!confirm('Excluir este saldo reprogramado?')) return;
+        if (!await confirm({
+            title: 'Excluir Saldo Reprogramado',
+            message: 'Tem certeza que deseja excluir este saldo reprogramado? Esta ação não pode ser desfeita.',
+            isDestructive: true
+        })) return;
         try {
             const { error } = await supabase.from('reprogrammed_balances').delete().eq('id', id);
             if (error) throw error;
@@ -113,7 +119,7 @@ const ReprogrammedBalancesModal: React.FC<ReprogrammedBalancesModalProps> = ({
         } catch (error: any) {
             addToast(`Erro ao excluir: ${error.message}`, 'error');
         }
-    }, [fetchReprogrammedBalances, addToast]);
+    }, [fetchReprogrammedBalances, addToast, confirm]);
 
     const schoolOptions = React.useMemo(() => accessibleSchools.map(s => <option key={s.id} value={s.id}>{s.name}</option>), [accessibleSchools]);
     const programOptions = React.useMemo(() => programs.map(p => <option key={p.id} value={p.id}>{p.name}</option>), [programs]);

@@ -6,7 +6,7 @@ interface ImportZoneProps {
     setDragActive: (active: boolean) => void;
     uploadType: 'Conta Corrente' | 'Conta Investimento';
     setUploadType: (type: 'Conta Corrente' | 'Conta Investimento') => void;
-    onFileUpload: (file: File) => void;
+    onFileUpload: (file: File, isNoMovement?: boolean) => void;
     filterMonth: string;
     selectedSchoolId: string;
     selectedBankAccountId: string;
@@ -18,10 +18,13 @@ const ImportZone: React.FC<ImportZoneProps> = ({
     selectedSchoolId, selectedBankAccountId, onShowStatus
 }) => {
     const isSelectionComplete = selectedSchoolId && selectedBankAccountId;
+    const [isNoMovement, setIsNoMovement] = React.useState(false);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) onFileUpload(file);
+        if (file) {
+            onFileUpload(file, isNoMovement);
+        }
     };
 
     return (
@@ -29,7 +32,7 @@ const ImportZone: React.FC<ImportZoneProps> = ({
             className={`border-2 border-dashed rounded-3xl p-16 flex flex-col items-center justify-center gap-4 transition-all ${dragActive ? 'border-primary bg-primary/5' : 'border-white/10 bg-card-dark/30'} ${!isSelectionComplete ? 'opacity-75 grayscale-[0.5]' : ''}`}
             onDragOver={(e) => { e.preventDefault(); if (isSelectionComplete) setDragActive(true); }}
             onDragLeave={() => setDragActive(false)}
-            onDrop={(e) => { e.preventDefault(); setDragActive(false); if (isSelectionComplete && e.dataTransfer.files[0]) onFileUpload(e.dataTransfer.files[0]); }}
+            onDrop={(e) => { e.preventDefault(); setDragActive(false); if (isSelectionComplete && e.dataTransfer.files[0]) onFileUpload(e.dataTransfer.files[0], isNoMovement); }}
         >
             <div className={`w-20 h-20 rounded-full flex items-center justify-center ${!isSelectionComplete ? 'bg-amber-500/10 text-amber-500' : 'bg-white/5 text-slate-500'}`}>
                 <span className="material-symbols-outlined text-4xl">{!isSelectionComplete ? 'warning' : 'upload_file'}</span>
@@ -61,6 +64,19 @@ const ImportZone: React.FC<ImportZoneProps> = ({
                 >
                     Investimento
                 </button>
+            </div>
+
+            <div className="flex items-center gap-2 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer bg-white/5 px-4 py-2 rounded-xl hover:bg-white/10 transition-all border border-white/5">
+                    <input
+                        type="checkbox"
+                        checked={isNoMovement}
+                        onChange={(e) => setIsNoMovement(e.target.checked)}
+                        disabled={!isSelectionComplete}
+                        className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary focus:ring-primary/50 cursor-pointer"
+                    />
+                    <span className="text-[11px] font-black uppercase text-slate-300">Mês Sem Movimento (Envia Apenas PDF)</span>
+                </label>
             </div>
 
             <div className="flex flex-col md:flex-row gap-3">

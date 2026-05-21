@@ -25,7 +25,6 @@ const Dashboard: React.FC<{ user: User }> = ({ user }) => {
     isSendingBroadcast
   } = useDashboard(user);
 
-  const dashPerm = usePermissions(user, 'entries');
   const accessibleSchools = useAccessibleSchools(user, availableOptions.schools);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -151,6 +150,10 @@ const Dashboard: React.FC<{ user: User }> = ({ user }) => {
                 <option value="none">Nenhuma / Natureza Direta</option>
                 {availableOptions.rubrics
                   .filter(r => !filters.program || r.program_id === filters.program)
+                  .filter(r => {
+                    const activeSchool = user.schoolId || filters.schoolId;
+                    return !activeSchool || !r.school_id || r.school_id === activeSchool;
+                  })
                   .map(r => (
                     <option key={r.id} value={r.id}>{r.name}</option>
                   ))}

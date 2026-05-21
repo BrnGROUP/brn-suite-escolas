@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { generateRelatorioGerencialHTML } from '../lib/reportUtils';
 import { TransactionStatus, User, UserRole } from '../types';
@@ -13,8 +13,10 @@ import EntryFormModal from '../components/financial/EntryFormModal';
 import ReportOptionsModal from '../components/reports/ReportOptionsModal';
 import { generateCSV, ReportOptions } from '../lib/reportUtils';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
+    const { confirm } = useConfirm();
     // Search and Filter States
     const [filters, setFilters] = useState({
         school: '',
@@ -44,7 +46,6 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
     const [showReprogrammedModal, setShowReprogrammedModal] = useState(false);
     const [showReportOptions, setShowReportOptions] = useState(false);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
-    const [isExporting, setIsExporting] = useState(false);
 
     // Editing state
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -67,7 +68,11 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
     };
 
     const handleDelete = async (entry: FinancialEntryExtended) => {
-        if (!confirm('Excluir este lançamento?')) return;
+        if (!await confirm({
+            title: 'Excluir Lançamento',
+            message: 'Tem certeza de que deseja excluir este lançamento? Esta ação não pode ser desfeita.',
+            isDestructive: true
+        })) return;
         const { error } = entry.batch_id
             ? await supabase.from('financial_entries').delete().eq('batch_id', entry.batch_id)
             : await supabase.from('financial_entries').delete().eq('id', entry.id);
@@ -89,7 +94,11 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
     };
 
     const handleBulkDelete = async () => {
-        if (!confirm(`Excluir ${selectedIds.length} lançamentos selecionados?`)) return;
+        if (!await confirm({
+            title: 'Excluir Lançamentos Selecionados',
+            message: `Tem certeza de que deseja excluir os ${selectedIds.length} lançamentos selecionados? Esta ação não pode ser desfeita.`,
+            isDestructive: true
+        })) return;
         const { error } = await supabase.from('financial_entries').delete().in('id', selectedIds);
         if (error) {
             addToast(`Erro: ${error.message}`, 'error');
@@ -102,7 +111,6 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
 
     const handleExport = async (options: ReportOptions) => {
         setShowReportOptions(false);
-        setIsExporting(true);
         try {
             let exportEntries = entries;
             let exportReprogrammed = reprogrammedBalances;
@@ -175,13 +183,14 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
         } catch (err) {
             console.error('Export Error:', err);
             addToast('Erro ao gerar relatório', 'error');
-        } finally {
-            setIsExporting(false);
         }
     };
 
     const reconcileEntries = async (ids: string[]) => {
-        if (!confirm(`Deseja conciliar ${ids.length} lançamentos selecionados?`)) return;
+        if (!await confirm({
+            title: 'Conciliar Lançamentos',
+            message: `Deseja realmente conciliar os ${ids.length} lançamentos selecionados? Isso consolidará os registros no sistema.`
+        })) return;
         const { error } = await supabase.from('financial_entries').update({ status: TransactionStatus.CONCILIADO }).in('id', ids);
         if (error) {
             addToast(`Erro: ${error.message}`, 'error');

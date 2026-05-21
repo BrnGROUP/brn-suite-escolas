@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { User, Supplier } from '../../types';
 import { useToast } from '../../context/ToastContext';
+import { FORO_CITIES } from '../../lib/constants';
 
 interface SupplierContractModalProps {
     isOpen: boolean;
@@ -59,12 +59,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     const [schoolSearch, setSchoolSearch] = useState('');
     const [foroCity, setForoCity] = useState('');
 
-    const FORO_CITIES = [
-        'Maceió', 'Arapiraca', 'Marechal Deodoro', 'Palmeira dos Índios', 
-        'União dos Palmares', 'Murici', 'São Miguel dos Campos', 
-        'Santana do Ipanema', 'Delmiro Gouveia', 'Coruripe', 'Penedo', 
-        'Viçosa', 'Atalaia', 'São Luiz do Quitunde', 'Porto Calvo', 'Maragogi', 'Matriz de Camaragibe'
-    ].sort();
+
 
     useEffect(() => {
         if (isOpen) {

@@ -17,7 +17,7 @@ interface UserListSectionProps {
 
 export const getRoleBadgeColor = (role: UserRole) => {
     switch (role) {
-        case UserRole.ADMIN: return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200';
+        case UserRole.ADMIN: return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200';
         case UserRole.OPERADOR: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200';
         case UserRole.DIRETOR: return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200';
         case UserRole.TECNICO_GEE: return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200';
@@ -80,7 +80,7 @@ const UserListSection: React.FC<UserListSectionProps> = ({
                                     </td>
                                     <td className="px-6 py-4">
                                         <button
-                                            onClick={() => onToggleStatus(u.id, u.active)}
+                                            onClick={() => onToggleStatus(u.id, u.active ?? false)}
                                             disabled={u.id === currentUser.id}
                                             className={`text-xs font-bold ${u.active ? 'text-emerald-500' : 'text-rose-500'} ${u.id === currentUser.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         >
@@ -125,7 +125,7 @@ const UserListSection: React.FC<UserListSectionProps> = ({
                                 <div className="flex items-center justify-between pt-1">
                                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${getRoleBadgeColor(u.role)}`}>{u.role}</span>
                                     <button
-                                        onClick={() => onToggleStatus(u.id, u.active)}
+                                        onClick={() => onToggleStatus(u.id, u.active ?? false)}
                                         disabled={u.id === currentUser.id}
                                         className={`text-[11px] font-black uppercase px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-lg ${u.active ? 'text-emerald-500' : 'text-rose-500'} ${u.id === currentUser.id ? 'opacity-50' : ''}`}
                                     >

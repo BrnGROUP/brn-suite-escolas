@@ -3,6 +3,7 @@ import React from 'react';
 import { useReconciliationHistory, useDeleteReconciliationHistory } from '../../hooks/useReconciliationHistory';
 import { User } from '../../types';
 import { useToast } from '../../context/ToastContext';
+import { useConfirm } from '../../context/ConfirmContext';
 
 interface ReconciliationHistoryModalProps {
     isOpen: boolean;
@@ -17,10 +18,15 @@ const ReconciliationHistoryModal: React.FC<ReconciliationHistoryModalProps> = ({
 }) => {
     const { data: history = [], isLoading } = useReconciliationHistory(user, { schoolId, bankAccountId });
     const { addToast } = useToast();
+    const { confirm } = useConfirm();
     const deleteMutation = useDeleteReconciliationHistory();
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Deseja excluir este extrato do histórico? (Lançamentos já conciliados na aba Financeiro precisarão ser desfeitos manualmente se necessário)')) return;
+        if (!await confirm({
+            title: 'Excluir Extrato do Histórico',
+            message: 'Deseja excluir este extrato do histórico? (Lançamentos já conciliados na aba Financeiro precisarão ser desfeitos manualmente se necessário). Esta ação é irreversível.',
+            isDestructive: true
+        })) return;
         deleteMutation.mutate(id, {
             onSuccess: () => addToast('Registro excluído com sucesso.', 'success'),
             onError: (err: any) => addToast('Erro ao excluir: ' + err.message, 'error')
@@ -67,7 +73,7 @@ const ReconciliationHistoryModal: React.FC<ReconciliationHistoryModalProps> = ({
                                 <div key={record.id} className="bg-white/5 border border-white/5 rounded-3xl p-6 hover:bg-white/[0.08] transition-all group relative overflow-hidden">
                                     {/* Background glow for record type */}
                                     {record.account_type === 'Conta Investimento' && (
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[60px] pointer-events-none" />
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 blur-[60px] pointer-events-none" />
                                     )}
 
                                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
@@ -82,7 +88,7 @@ const ReconciliationHistoryModal: React.FC<ReconciliationHistoryModalProps> = ({
 
                                             <div className="flex flex-col gap-0.5">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${record.account_type === 'Conta Investimento' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${record.account_type === 'Conta Investimento' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
                                                         {record.account_type}
                                                     </span>
                                                     <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tighter flex items-center gap-1">
@@ -142,7 +148,7 @@ const ReconciliationHistoryModal: React.FC<ReconciliationHistoryModalProps> = ({
                                                     href={record.file_url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex items-center gap-2 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl transition-all"
+                                                    className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 rounded-xl transition-all"
                                                 >
                                                     <span className="material-symbols-outlined text-xl">database</span>
                                                     <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">DADOS</span>

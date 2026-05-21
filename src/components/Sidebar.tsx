@@ -1,12 +1,13 @@
 
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { User, UserRole } from '../types';
 import { supabase } from '../lib/supabaseClient';
 
 interface SidebarProps {
     user: User | null;
-    activePage: string;
-    onPageChange: (page: string) => void;
+    activePage?: string;
+    onPageChange?: (page: string) => void;
     onLogout: () => void;
     isCollapsed: boolean;
     onToggleCollapse: () => void;
@@ -16,8 +17,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({
     user,
-    activePage,
-    onPageChange,
     onLogout,
     isCollapsed,
     onToggleCollapse,
@@ -162,29 +161,37 @@ const Sidebar: React.FC<SidebarProps> = ({
                         {group.items.map(item => {
                             const hasBadge = (item.id === 'notifications' && counts.notifications > 0) || (item.id === 'users' && counts.pendingUsers > 0);
                             const badgeCount = item.id === 'notifications' ? counts.notifications : counts.pendingUsers;
+                            const toPath = `/${item.id}`;
 
                             return (
-                                <button
+                                <NavLink
                                     key={item.id}
-                                    onClick={() => onPageChange(item.id)}
+                                    to={toPath}
+                                    onClick={onMobileClose}
                                     title={!showFull ? item.label : ''}
-                                    className={`flex items-center ${showFull ? 'gap-3 px-3 mx-0' : 'justify-center mx-auto w-12'} py-2.5 rounded-xl text-sm font-bold transition-all duration-300 group/item relative ${activePage === item.id
-                                        ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-[1.02]'
-                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
-                                        }`}
+                                    className={({ isActive }) => 
+                                        `flex items-center ${showFull ? 'gap-3 px-3 mx-0' : 'justify-center mx-auto w-12'} py-2.5 rounded-xl text-sm font-bold transition-all duration-300 group/item relative ${isActive
+                                            ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-[1.02]'
+                                            : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                        }`
+                                    }
                                 >
-                                    <span className={`material-symbols-outlined text-[22px] shrink-0 ${activePage === item.id ? 'text-white' : 'text-slate-500 group-hover/item:text-primary transition-colors'}`}>
-                                        {item.icon}
-                                    </span>
-                                    {showFull && <span className="truncate animate-in fade-in slide-in-from-left-1">{item.label}</span>}
+                                    {({ isActive }) => (
+                                        <>
+                                            <span className={`material-symbols-outlined text-[22px] shrink-0 ${isActive ? 'text-white' : 'text-slate-500 group-hover/item:text-primary transition-colors'}`}>
+                                                {item.icon}
+                                            </span>
+                                            {showFull && <span className="truncate animate-in fade-in slide-in-from-left-1">{item.label}</span>}
 
-                                    {/* Badge */}
-                                    {hasBadge && (
-                                        <span className={`absolute ${!showFull ? '-top-1 -right-1' : 'right-3'} flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white ring-2 ring-[#0f172a] shadow-lg animate-bounce`}>
-                                            {badgeCount > 9 ? '9+' : badgeCount}
-                                        </span>
+                                            {/* Badge */}
+                                            {hasBadge && (
+                                                <span className={`absolute ${!showFull ? '-top-1 -right-1' : 'right-3'} flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black text-white ring-2 ring-[#0f172a] shadow-lg animate-bounce`}>
+                                                    {badgeCount > 9 ? '9+' : badgeCount}
+                                                </span>
+                                            )}
+                                        </>
                                     )}
-                                </button>
+                                </NavLink>
                             );
                         })}
                     </div>

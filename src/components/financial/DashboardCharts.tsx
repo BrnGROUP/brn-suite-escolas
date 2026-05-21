@@ -38,11 +38,11 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ flowData, pieData }) 
                                 <XAxis dataKey="name" stroke="#92adc9" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#92adc9" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `R$${value / 1000}k`} />
                                 <Tooltip
-                                    formatter={(value: number) =>
+                                    formatter={(value: any) =>
                                         new Intl.NumberFormat('pt-BR', {
                                             style: 'currency',
                                             currency: 'BRL'
-                                        }).format(value)
+                                        }).format(Number(value || 0))
                                     }
                                     contentStyle={{ backgroundColor: '#1c2936', borderColor: '#2d3f52', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)' }}
                                     itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 'bold' }}
@@ -86,11 +86,11 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ flowData, pieData }) 
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    formatter={(value: number) =>
+                                    formatter={(value: any) =>
                                         new Intl.NumberFormat('pt-BR', {
                                             style: 'currency',
                                             currency: 'BRL'
-                                        }).format(value)
+                                        }).format(Number(value || 0))
                                     }
                                     contentStyle={{ backgroundColor: '#1c2936', border: 'none', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)' }}
                                     itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: 'bold' }}

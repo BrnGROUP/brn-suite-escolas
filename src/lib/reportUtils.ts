@@ -81,7 +81,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
         const val = Number(r.value || 0);
         const progNode = ensurePath(schoolName, progName, r.schools?.conselho_escolar);
         progNode.previousBalance += val;
-        dataBySchool[schoolName].previousBalance += val;
+        dataBySchool[schoolName]!.previousBalance += val;
     });
 
     entries.forEach(e => {
@@ -94,12 +94,12 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
 
         if (type === 'Entrada') {
             progNode.credits += val;
-            dataBySchool[schoolName].credits += val;
+            dataBySchool[schoolName]!.credits += val;
         } else {
             progNode.debits += Math.abs(val);
-            dataBySchool[schoolName].debits += Math.abs(val);
-            if (e.nature === 'Custeio') dataBySchool[schoolName].custeio += Math.abs(val);
-            else if (e.nature === 'Capital') dataBySchool[schoolName].capital += Math.abs(val);
+            dataBySchool[schoolName]!.debits += Math.abs(val);
+            if (e.nature === 'Custeio') dataBySchool[schoolName]!.custeio += Math.abs(val);
+            else if (e.nature === 'Capital') dataBySchool[schoolName]!.capital += Math.abs(val);
         }
         progNode.entries.push(e);
     });

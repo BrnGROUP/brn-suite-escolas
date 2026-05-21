@@ -1,5 +1,5 @@
 import React from 'react';
-import { BankTransaction } from '../../hooks/useBankReconciliation';
+import { BankTransaction } from '../../types';
 
 interface ReconciliationReportProps {
     transactions: BankTransaction[];

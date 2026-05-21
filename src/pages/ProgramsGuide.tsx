@@ -177,7 +177,7 @@ const ProgramsGuide: React.FC<ProgramsGuideProps> = ({ onBack }) => {
                                 icon="schedule"
                                 description="Adaptação de espaços e aquisição de materiais para jornada ampliada."
                                 items={['Colchonetes e roupas de cama', 'Jogos pedagógicos', 'Instalação de chuveiros', 'Utensílios de cozinha']}
-                                colorTheme="purple"
+                                colorTheme="cyan"
                             />
                             <ProgramCard
                                 title="PDDE Sala de Recursos"
@@ -455,7 +455,7 @@ interface ProgramCardProps {
     description: string;
     items: Array<string | { label: string; icon: string }>;
     icon: string;
-    colorTheme?: 'primary' | 'blue' | 'emerald' | 'orange' | 'purple' | 'cyan' | 'pink' | 'green' | 'indigo';
+    colorTheme?: 'primary' | 'blue' | 'emerald' | 'orange' | 'cyan' | 'pink' | 'green' | 'indigo';
     listTitle?: string;
 }
 
@@ -467,7 +467,6 @@ const ProgramCard: React.FC<ProgramCardProps> = ({ title, description, items, ic
         emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'group-hover:border-emerald-500/30', glow: 'bg-emerald-500/20' },
         green: { bg: 'bg-green-500/10', text: 'text-green-500', border: 'group-hover:border-green-500/30', glow: 'bg-green-500/20' },
         orange: { bg: 'bg-orange-500/10', text: 'text-orange-500', border: 'group-hover:border-orange-500/30', glow: 'bg-orange-500/20' },
-        purple: { bg: 'bg-purple-500/10', text: 'text-purple-500', border: 'group-hover:border-purple-500/30', glow: 'bg-purple-500/20' },
         cyan: { bg: 'bg-cyan-500/10', text: 'text-cyan-500', border: 'group-hover:border-cyan-500/30', glow: 'bg-cyan-500/20' },
         pink: { bg: 'bg-pink-500/10', text: 'text-pink-500', border: 'group-hover:border-pink-500/30', glow: 'bg-pink-500/20' },
         indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-500', border: 'group-hover:border-indigo-500/30', glow: 'bg-indigo-500/20' },
@@ -532,7 +531,5 @@ const DocButton = ({ icon, label, onClick }: any) => (
         <span className="text-xs font-bold uppercase tracking-widest text-center">{label}</span>
     </button>
 );
-
-const btnOutlineClass = "px-6 h-12 rounded-xl border border-white/20 text-white font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center";
 
 export default ProgramsGuide;

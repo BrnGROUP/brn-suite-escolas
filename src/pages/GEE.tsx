@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { User, UserRole } from '../types';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 interface GEE {
     id: string;
@@ -14,6 +15,7 @@ interface GEE {
 const GEEPage: React.FC<{ user: User }> = ({ user }) => {
     const [gees, setGees] = useState<GEE[]>([]);
     const { addToast } = useToast();
+    const { confirm } = useConfirm();
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingGee, setEditingGee] = useState<GEE | null>(null);
@@ -74,7 +76,11 @@ const GEEPage: React.FC<{ user: User }> = ({ user }) => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Tem certeza? Isso pode afetar o vínculo de técnicos e escolas.')) return;
+        if (!await confirm({
+            title: 'Excluir Regional (GEE)',
+            message: 'Tem certeza? Isso pode afetar o vínculo de técnicos e escolas. Esta ação não poderá ser desfeita.',
+            isDestructive: true
+        })) return;
 
         setLoading(true);
         const { error } = await supabase.from('gee').delete().eq('id', id);
