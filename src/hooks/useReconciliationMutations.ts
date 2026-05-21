@@ -106,6 +106,7 @@ export const useReconciliationMutations = ({
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['system_entries'] });
+      queryClient.invalidateQueries({ queryKey: ['financial_entries'] });
       setTransactions((prev) => prev.filter((t) => t.id !== variables.bt.id));
       setShowManualMatch(false);
       setManualMatchBT(null);
@@ -134,6 +135,7 @@ export const useReconciliationMutations = ({
     },
     onSuccess: (_, matchedList) => {
       queryClient.invalidateQueries({ queryKey: ['system_entries'] });
+      queryClient.invalidateQueries({ queryKey: ['financial_entries'] });
       const matchedIds = matchedList.map((m) => m.id);
       setTransactions((prev) => prev.filter((t) => !matchedIds.includes(t.id)));
     },
@@ -163,6 +165,7 @@ export const useReconciliationMutations = ({
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['system_entries'] });
+      queryClient.invalidateQueries({ queryKey: ['financial_entries'] });
       setTransactions((prev) => prev.filter((t) => t.id !== variables.bt.id));
       setShowQuickCreate(false);
       setQuickCreateBT(null);
@@ -199,6 +202,7 @@ export const useReconciliationMutations = ({
     },
     onSuccess: (_, bt) => {
       queryClient.invalidateQueries({ queryKey: ['system_entries'] });
+      queryClient.invalidateQueries({ queryKey: ['financial_entries'] });
       setTransactions((prev) => prev.filter((t) => t.id !== bt.id));
       addToast(
         bt.type === 'C'
@@ -273,6 +277,7 @@ export const useReconciliationMutations = ({
     },
     onSuccess: (_, { entryId }) => {
       queryClient.invalidateQueries({ queryKey: ['system_entries'] });
+      queryClient.invalidateQueries({ queryKey: ['financial_entries'] });
       // Reset the matched bt to pending in local state
       setTransactions(prev =>
         prev.map(t =>

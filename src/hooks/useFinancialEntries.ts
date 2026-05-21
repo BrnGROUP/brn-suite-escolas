@@ -192,6 +192,7 @@ export function useFinancialEntries(user: User, filters: any = {}) {
              queryClient.invalidateQueries({ queryKey: ['suppliers_list'] });
              queryClient.invalidateQueries({ queryKey: ['aux_data'] });
              queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
+             queryClient.invalidateQueries({ queryKey: ['system_entries'] });
         }
     };
 }
