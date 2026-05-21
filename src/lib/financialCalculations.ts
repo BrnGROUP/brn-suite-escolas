@@ -20,6 +20,7 @@ export interface FinancialStats {
   reprogramado: number;
   saldo: number;
   totalDisponivel: number;
+  reembolsos: number;
 }
 
 /**
@@ -36,6 +37,7 @@ export const calculateFinancialStats = (
   let rendimentos = 0;
   let tarifas = 0;
   let impostosDevolucoes = 0;
+  let reembolsos = 0;
 
   entries.forEach((e) => {
     const val = Number(e.value);
@@ -53,6 +55,8 @@ export const calculateFinancialStats = (
         rendimentos += absVal;
       } else if (catUpper === 'REPASSE / CRÉDITO' || catUpper === 'OUTROS') {
         repasses += absVal;
+      } else if (catUpper === 'REEMBOLSO / ESTORNO') {
+        reembolsos += absVal;
       }
     } else {
       despesa += absVal;
@@ -82,5 +86,6 @@ export const calculateFinancialStats = (
     reprogramado: Number(reprogrammedTotal.toFixed(2)),
     saldo: Number(saldo.toFixed(2)),
     totalDisponivel: Number((saldo + reprogrammedTotal).toFixed(2)),
+    reembolsos: Number(reembolsos.toFixed(2)),
   };
 };

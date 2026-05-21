@@ -10,6 +10,7 @@ interface DashboardStatsProps {
         despesa: number;
         tarifas: number;
         impostosDevolucoes: number;
+        reembolsos?: number;
     };
     loading: boolean;
 }
@@ -76,6 +77,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, loading }) => {
             {cards.map((stat, i) => {
                 // Specialized rendering for Reserva & Rend. detailing
                 const isReservoirCard = stat.label === 'Reserva & Rend.';
+                const isSaldoTotalCard = stat.label === 'Saldo Total';
 
                 return (
                     <Card
@@ -106,6 +108,21 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats, loading }) => {
                                             </span>
                                         </div>
                                     )}
+                                </div>
+                            ) : isSaldoTotalCard && stats.reembolsos !== undefined && stats.reembolsos > 0 ? (
+                                <div className="mt-1 flex flex-col gap-0.5 animate-in fade-in duration-300">
+                                    <div className="flex items-center gap-1">
+                                        <div className="w-1 h-1 rounded-full bg-blue-500 shrink-0"></div>
+                                        <span className="text-[7px] md:text-[9px] text-slate-400 font-bold uppercase truncate">
+                                            Reprog: {formatCurrency(stats.reprogramado)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <div className="w-1 h-1 rounded-full bg-emerald-500 shrink-0"></div>
+                                        <span className="text-[7px] md:text-[9px] text-slate-400 font-bold uppercase truncate">
+                                            Reembolsos: {formatCurrency(stats.reembolsos)}
+                                        </span>
+                                    </div>
                                 </div>
                             ) : (
                                 <span className="text-[8px] md:text-[10px] text-slate-400 font-bold mt-1 uppercase line-clamp-1">

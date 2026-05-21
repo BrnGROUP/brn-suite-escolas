@@ -171,7 +171,8 @@ export function useFinancialEntries(user: User, filters: any = {}) {
             rendimentos: calculated.rendimentos,
             tarifas: calculated.tarifas,
             impostosDevolucoes: calculated.impostosDevolucoes,
-            reprogrammed: calculated.reprogramado
+            reprogrammed: calculated.reprogramado,
+            reembolsos: calculated.reembolsos
         };
     }, [entries, reprogrammedBalances, filters.school, filters.program]);
 

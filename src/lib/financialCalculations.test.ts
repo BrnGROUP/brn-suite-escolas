@@ -16,6 +16,7 @@ describe('calculateFinancialStats', () => {
       reprogramado: 0,
       saldo: 0,
       totalDisponivel: 0,
+      reembolsos: 0,
     });
   });
 
@@ -48,5 +49,15 @@ describe('calculateFinancialStats', () => {
 
     const stats = calculateFinancialStats(entries);
     expect(stats.impostosDevolucoes).toBe(350);
+  });
+
+  it('should aggregate supplier refunds under reembolsos', () => {
+    const entries: EntryLike[] = [
+      { value: 2000, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Reembolso / Estorno' },
+      { value: 200, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Reembolso / Estorno' },
+    ];
+
+    const stats = calculateFinancialStats(entries);
+    expect(stats.reembolsos).toBe(2200);
   });
 });

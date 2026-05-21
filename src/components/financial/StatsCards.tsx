@@ -13,6 +13,7 @@ interface StatsCardsProps {
         tarifas: number;
         reprogrammed: number;
         impostosDevolucoes?: number;
+        reembolsos?: number;
     };
 }
 
@@ -29,9 +30,17 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
                     <span className="material-symbols-outlined text-blue-500 text-[20px] opacity-50 group-hover:opacity-100">account_balance_wallet</span>
                 </div>
                 <div className="text-2xl font-black text-white">{totalAccountBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>
-                <div className="mt-2 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Sendo {stats.reprogrammed.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} Reprogramado</span>
+                <div className="mt-2 flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase">Sendo {stats.reprogrammed.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} Reprogramado</span>
+                    </div>
+                    {stats.reembolsos !== undefined && stats.reembolsos > 0 && (
+                        <div className="flex items-center gap-1.5 animate-in fade-in duration-300">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase">Sendo {stats.reembolsos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} Reembolsos/Estornos</span>
+                        </div>
+                    )}
                 </div>
             </div>
 

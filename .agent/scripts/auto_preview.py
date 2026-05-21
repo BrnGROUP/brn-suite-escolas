@@ -72,8 +72,9 @@ def start_server(port=3000):
     print(f"🚀 Starting preview on port {port}...")
     
     with open(LOG_FILE, "w") as log:
+        exec_cmd = " ".join(cmd) if isinstance(cmd, list) and sys.platform == 'win32' else cmd
         process = subprocess.Popen(
-            cmd,
+            exec_cmd,
             cwd=str(root),
             stdout=log,
             stderr=log,
