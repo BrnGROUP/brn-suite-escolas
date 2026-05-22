@@ -99,6 +99,28 @@ export const useBankReconciliation = (user: User) => {
         enabled: !!selectedSchoolId
     });
 
+    // Fetch upload records for the selected month/year
+    const { data: currentUploads = [], isLoading: isLoadingUploads, refetch: refetchUploads } = useQuery({
+        queryKey: ['current_uploads', selectedSchoolId, selectedBankAccountId, filterMonth],
+        queryFn: async () => {
+            if (!selectedSchoolId || !selectedBankAccountId || !filterMonth) return [];
+            const parts = filterMonth.split('-').map(Number);
+            const year = parts[0] || new Date().getFullYear();
+            const month = parts[1] || (new Date().getMonth() + 1);
+
+            const { data, error } = await supabase
+                .from('bank_statement_uploads')
+                .select('*')
+                .eq('school_id', selectedSchoolId)
+                .eq('bank_account_id', selectedBankAccountId)
+                .eq('month', month)
+                .eq('year', year);
+            if (error) throw error;
+            return data || [];
+        },
+        enabled: !!selectedSchoolId && !!selectedBankAccountId && !!filterMonth
+    });
+
     // Reactive Matching: autoMatch when transactions or systemEntries change
     useEffect(() => {
         if (transactions.length > 0 && !isLoadingSystem) {
@@ -154,7 +176,8 @@ export const useBankReconciliation = (user: User) => {
         handleConfirmCapa,
         pendingFile,
         setPendingFile,
-        isReimport
+        isReimport,
+        declareFileExempt
     } = upload;
 
     // Custom wrappers & extra helpers
@@ -305,6 +328,10 @@ export const useBankReconciliation = (user: User) => {
         isExportingAll,
         pendingFile,
         setPendingFile,
-        isReimport
+        isReimport,
+        currentUploads,
+        isLoadingUploads,
+        refetchUploads,
+        declareFileExempt
     };
 };

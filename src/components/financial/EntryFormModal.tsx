@@ -76,7 +76,7 @@ const EntryFormModal: React.FC<EntryFormModalProps> = (props) => {
         setAuthNumber,
         attachments,
         entryLogs,
-        linkedStatement,
+        linkedStatements,
         selectedContractId,
         setSelectedContractId,
         schoolContracts,
@@ -213,7 +213,7 @@ const EntryFormModal: React.FC<EntryFormModalProps> = (props) => {
                             attachments={attachments}
                             handleFileUpload={handleFileUpload}
                             removeAttachment={removeAttachment}
-                            linkedStatement={linkedStatement}
+                            linkedStatements={linkedStatements}
                             schoolContracts={schoolContracts}
                             selectedContractId={selectedContractId}
                             setSelectedContractId={setSelectedContractId}

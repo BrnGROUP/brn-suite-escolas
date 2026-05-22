@@ -10,7 +10,7 @@ interface AttachmentSectionProps {
     attachments: any[];
     handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, cat: string) => Promise<void>;
     removeAttachment: (id: string) => void;
-    linkedStatement: any;
+    linkedStatements: any[];
     schoolContracts: any[];
     selectedContractId: string;
     setSelectedContractId: (val: string) => void;
@@ -29,7 +29,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({
     attachments,
     handleFileUpload,
     removeAttachment,
-    linkedStatement,
+    linkedStatements,
     schoolContracts,
     selectedContractId,
     setSelectedContractId,
@@ -162,25 +162,95 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({
                             </div>
                         ))}
 
-                        {linkedStatement && (
-                            <div className={`flex items-center justify-between p-3 rounded-2xl border transition-all animate-in slide-in-from-left-2 ${linkedStatement.pdf_url ? 'bg-emerald-500/10 border-emerald-500/20 hover:border-emerald-500/40' : 'bg-amber-500/10 border-amber-500/20 hover:border-amber-500/40'}`}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${linkedStatement.pdf_url ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                                        <span className="material-symbols-outlined text-base">account_balance</span>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-xs text-white font-bold truncate max-w-[150px]">{linkedStatement.pdf_name || linkedStatement.file_name}</p>
-                                        <p className={`text-[9px] font-black uppercase tracking-tighter ${linkedStatement.pdf_url ? 'text-emerald-400' : 'text-amber-400'}`}>{linkedStatement.pdf_url ? 'Extrato Oficial (PDF)' : 'Extrato de Dados (OFX/CSV)'}</p>
-                                    </div>
-                                </div>
-                                <a 
-                                    href={linkedStatement.pdf_url || linkedStatement.file_url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${linkedStatement.pdf_url ? 'hover:bg-emerald-500/20 text-emerald-400 hover:text-white' : 'hover:bg-amber-500/20 text-amber-400 hover:text-white'}`}
-                                >
-                                    <span className="material-symbols-outlined text-base">visibility</span>
-                                </a>
+                        {linkedStatements && linkedStatements.length > 0 && (
+                            <div className="flex flex-col gap-3 w-full">
+                                {linkedStatements.map(statement => {
+                                    const isInvest = statement.account_type === 'Conta Investimento';
+                                    const badgeClasses = isInvest 
+                                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' 
+                                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                                    const iconName = isInvest ? 'trending_up' : 'account_balance_wallet';
+
+                                    return (
+                                        <div key={statement.id} className="bg-black/20 border border-white/5 p-4 rounded-2xl space-y-3 animate-in fade-in slide-in-from-left-2 duration-300">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`material-symbols-outlined text-sm ${isInvest ? 'text-cyan-400' : 'text-emerald-400'}`}>{iconName}</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Extratos vinculados</span>
+                                                </div>
+                                                <span className={`text-[8px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${badgeClasses}`}>
+                                                    {statement.account_type}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className="space-y-2">
+                                                {statement.pdf_url && (
+                                                    <div className={`flex items-center justify-between p-3 rounded-xl border transition-all ${statement.pdf_url === 'EXEMPT' ? 'bg-amber-500/5 border-amber-500/10' : 'bg-emerald-500/5 border-emerald-500/10 hover:border-emerald-500/30'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${statement.pdf_url === 'EXEMPT' ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                                <span className="material-symbols-outlined text-base">
+                                                                    {statement.pdf_url === 'EXEMPT' ? 'block' : 'account_balance'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-xs text-white font-bold truncate max-w-[200px]">{statement.pdf_name}</p>
+                                                                <p className={`text-[9px] font-black uppercase tracking-tighter ${statement.pdf_url === 'EXEMPT' ? 'text-amber-500' : 'text-emerald-400'}`}>
+                                                                    {statement.pdf_url === 'EXEMPT' ? 'Extrato PDF: Não se aplica' : 'Extrato Oficial (PDF)'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        {statement.pdf_url !== 'EXEMPT' ? (
+                                                            <a 
+                                                                href={statement.pdf_url} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="w-8 h-8 flex items-center justify-center rounded-xl transition-all hover:bg-emerald-500/20 text-emerald-400 hover:text-white"
+                                                            >
+                                                                <span className="material-symbols-outlined text-base">visibility</span>
+                                                            </a>
+                                                        ) : (
+                                                            <div className="w-8 h-8 flex items-center justify-center text-slate-500 cursor-help" title={`Dispensado: ${statement.no_movement_reason || 'Não se aplica'}`}>
+                                                                <span className="material-symbols-outlined text-base">help</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {statement.file_url && (
+                                                    <div className={`flex items-center justify-between p-3 rounded-xl border transition-all ${statement.file_url === 'EXEMPT' ? 'bg-amber-500/5 border-amber-500/10' : 'bg-cyan-500/5 border-cyan-500/10 hover:border-cyan-500/30'}`}>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${statement.file_url === 'EXEMPT' ? 'bg-amber-500/20 text-amber-500' : 'bg-cyan-500/20 text-cyan-400'}`}>
+                                                                <span className="material-symbols-outlined text-base">
+                                                                    {statement.file_url === 'EXEMPT' ? 'block' : 'database'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <p className="text-xs text-white font-bold truncate max-w-[200px]">{statement.file_name}</p>
+                                                                <p className={`text-[9px] font-black uppercase tracking-tighter ${statement.file_url === 'EXEMPT' ? 'text-amber-500' : 'text-cyan-400'}`}>
+                                                                    {statement.file_url === 'EXEMPT' ? 'Dados OFX: Não se aplica' : 'Extrato de Dados (OFX/CSV)'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        {statement.file_url !== 'EXEMPT' ? (
+                                                            <a 
+                                                                href={statement.file_url} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="w-8 h-8 flex items-center justify-center rounded-xl transition-all hover:bg-cyan-500/20 text-cyan-400 hover:text-white"
+                                                            >
+                                                                <span className="material-symbols-outlined text-base">visibility</span>
+                                                            </a>
+                                                        ) : (
+                                                            <div className="w-8 h-8 flex items-center justify-center text-slate-500 cursor-help" title={`Dispensado: ${statement.no_movement_reason || 'Não se aplica'}`}>
+                                                                <span className="material-symbols-outlined text-base">help</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
 

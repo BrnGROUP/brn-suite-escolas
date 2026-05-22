@@ -62,7 +62,7 @@ export const useEntryForm = ({
     const [attachments, setAttachments] = React.useState<any[]>([]);
     const [technicalProcess, setTechnicalProcess] = React.useState<any>(null);
     const [entryLogs, setEntryLogs] = React.useState<any[]>([]);
-    const [linkedStatement, setLinkedStatement] = React.useState<any>(null);
+    const [linkedStatements, setLinkedStatements] = React.useState<any[]>([]);
     const [selectedContractId, setSelectedContractId] = React.useState('');
     const [schoolContracts, setSchoolContracts] = React.useState<any[]>([]);
     const [auditInfo, setAuditInfo] = React.useState<{ created_by?: string; updated_by?: string; created_at?: string } | null>(null);
@@ -128,7 +128,7 @@ export const useEntryForm = ({
         setPaymentDate('');
         setAttachments([]);
         setTechnicalProcess(null);
-        setLinkedStatement(null);
+        setLinkedStatements([]);
         setIsSplitMode(false);
         setSplitItems([]);
         setSingleRubricId('');
@@ -142,7 +142,7 @@ export const useEntryForm = ({
         const targetDate = entryDateStr || paymentDate || date;
 
         if (!targetAccId || !targetDate) {
-            setLinkedStatement(null);
+            setLinkedStatements([]);
             return;
         }
 
@@ -158,13 +158,10 @@ export const useEntryForm = ({
                 .select('*')
                 .eq('bank_account_id', targetAccId)
                 .eq('month', month)
-                .eq('year', year)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
+                .eq('year', year);
 
             if (error) throw error;
-            setLinkedStatement(data);
+            setLinkedStatements(data || []);
         } catch (error) {
             console.error('Erro ao buscar extrato vinculado:', error);
         }
@@ -501,7 +498,8 @@ export const useEntryForm = ({
                 resetForm();
             }
         }
-    }, [isOpen, editingId, editingBatchId, fetchEntryData, resetForm]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, editingId, editingBatchId]);
 
     // Force valid category when type changes
     React.useEffect(() => {
@@ -633,7 +631,7 @@ export const useEntryForm = ({
         attachments,
         technicalProcess,
         entryLogs,
-        linkedStatement,
+        linkedStatements,
         selectedContractId,
         setSelectedContractId,
         schoolContracts,

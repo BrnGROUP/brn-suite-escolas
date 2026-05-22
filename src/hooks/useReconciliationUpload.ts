@@ -134,6 +134,11 @@ export const useReconciliationUpload = ({
 
       return { publicUrl };
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['current_uploads'] });
+      queryClient.invalidateQueries({ queryKey: ['reconciliation_history'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard_data'] });
+    },
   });
 
   const handleFileUpload = async (file: File, isNoMovement: boolean = false) => {
@@ -199,6 +204,42 @@ export const useReconciliationUpload = ({
       if (!isPdf) {
         // 1. Initial Parse for data validation
         const text = await file.text();
+
+        // Validate bank account number to avoid wrong statement uploads
+        const currentAccount = bankAccounts.find((a: any) => a.id === selectedBankAccountId);
+        if (currentAccount && currentAccount.account_number) {
+          const cleanSelectedAcc = currentAccount.account_number.replace(/[^\d]/g, '').replace(/^0+/, '');
+          
+          if (lowName.endsWith('.ofx') || lowName.endsWith('.ofc')) {
+            const acctIdMatch = text.match(/<ACCTID>([^<\r\n]*)/i);
+            if (acctIdMatch && acctIdMatch[1]) {
+              const fileAccRaw = acctIdMatch[1].trim();
+              const cleanFileAcc = fileAccRaw.replace(/[^\d]/g, '').replace(/^0+/, '');
+              
+              if (cleanSelectedAcc && cleanFileAcc && cleanSelectedAcc !== cleanFileAcc) {
+                const proceed = await confirm({
+                  title: 'Aviso de Conta Bancária Divergente',
+                  message: `Atenção: O extrato importado parece pertencer à conta bancária de número "${fileAccRaw}", mas a conta selecionada no sistema é "${currentAccount.name}" (${currentAccount.account_number}).\n\nDeseja realizar a importação mesmo assim?`,
+                  isDestructive: true
+                });
+                if (!proceed) return;
+              }
+            }
+          } else if (lowName.endsWith('.csv')) {
+            const hasAccInName = file.name.replace(/[^\d]/g, '').includes(cleanSelectedAcc);
+            const hasAccInText = text.replace(/[^\d]/g, '').includes(cleanSelectedAcc);
+            
+            if (cleanSelectedAcc.length >= 4 && !hasAccInName && !hasAccInText) {
+              const proceed = await confirm({
+                title: 'Aviso de Conta Bancária Divergente (CSV)',
+                message: `Atenção: Não encontramos o número da conta "${currentAccount.account_number}" no conteúdo ou no nome do arquivo CSV importado.\n\nDeseja realizar a importação mesmo assim?`,
+                isDestructive: true
+              });
+              if (!proceed) return;
+            }
+          }
+        }
+
         let parseResult;
         if (lowName.endsWith('.ofx') || lowName.endsWith('.ofc')) {
           parseResult = parseOFX(text, file.name, uploadType);
@@ -403,6 +444,64 @@ export const useReconciliationUpload = ({
     }
   };
 
+  const declareFileExempt = useMutation({
+    mutationFn: async ({
+      fileType,
+      reason,
+    }: {
+      fileType: 'OFX' | 'PDF';
+      reason: string;
+    }) => {
+      const parts = filterMonth.split('-').map(Number);
+      const year = parts[0] || new Date().getFullYear();
+      const month = parts[1] || (new Date().getMonth() + 1);
+
+      // Fetch existing to merge
+      const { data: existing } = await supabase
+        .from('bank_statement_uploads')
+        .select('*')
+        .eq('bank_account_id', selectedBankAccountId)
+        .eq('month', month)
+        .eq('year', year)
+        .eq('account_type', uploadType)
+        .maybeSingle();
+
+      const payload: any = {
+        ...(existing || {}),
+        school_id: selectedSchoolId,
+        bank_account_id: selectedBankAccountId,
+        month,
+        year,
+        account_type: uploadType,
+        uploaded_by: user.id,
+      };
+
+      if (fileType === 'OFX') {
+        payload.file_url = 'EXEMPT';
+        payload.file_name = `Não se aplica: ${reason}`;
+      } else {
+        payload.pdf_url = 'EXEMPT';
+        payload.pdf_name = `Não se aplica: ${reason}`;
+      }
+
+      payload.no_movement_reason = reason;
+      payload.no_movement_confirmed_by = user.id;
+      payload.no_movement_confirmed_at = new Date().toISOString();
+
+      const { error: dbError } = await supabase.from('bank_statement_uploads').upsert(payload, {
+        onConflict: 'bank_account_id, month, year, account_type',
+      });
+
+      if (dbError) throw dbError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['current_uploads'] });
+      queryClient.invalidateQueries({ queryKey: ['reconciliation_history'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard_data'] });
+      addToast('Isenção de documento registrada com sucesso.', 'success');
+    },
+  });
+
   return {
     handleFileUpload,
     handleConfirmCapa,
@@ -410,5 +509,7 @@ export const useReconciliationUpload = ({
     setPendingFile,
     isReimport,
     recordUploadMutation,
+    declareFileExempt,
   };
 };
+

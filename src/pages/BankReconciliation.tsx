@@ -69,6 +69,10 @@ const BankReconciliation: React.FC<{ user: User }> = ({ user }) => {
                         selectedSchoolId={recon.selectedSchoolId}
                         selectedBankAccountId={recon.selectedBankAccountId}
                         onShowStatus={() => recon.setShowMonthStatus(true)}
+                        currentUploads={recon.currentUploads}
+                        isLoadingUploads={recon.isLoadingUploads}
+                        onDeclareExempt={(fileType, reason) => recon.declareFileExempt.mutate({ fileType, reason })}
+                        bankAccounts={recon.bankAccounts}
                     />
                 )
             ) : (

@@ -133,26 +133,66 @@ const ReconciliationHistoryModal: React.FC<ReconciliationHistoryModalProps> = ({
                                         {/* Actions Side */}
                                         <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                                             {record.pdf_url && (
-                                                <a
-                                                    href={record.pdf_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl transition-all"
-                                                >
-                                                    <span className="material-symbols-outlined text-xl">picture_as_pdf</span>
-                                                    <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">PDF</span>
-                                                </a>
+                                                record.pdf_url === 'EXEMPT' ? (
+                                                    <div 
+                                                        className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-xl cursor-help relative group/tooltip"
+                                                        title={`PDF Dispensado: ${record.pdf_name || record.no_movement_reason || 'Sem justificativa'}`}
+                                                    >
+                                                        <span className="material-symbols-outlined text-base">block</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">PDF: N/A</span>
+                                                        {/* Premium dynamic tooltip */}
+                                                        <div className="absolute bottom-full mb-2 hidden group-hover/tooltip:flex flex-col bg-slate-950 border border-white/10 rounded-xl p-3 shadow-2xl z-50 text-[10px] w-64 text-left pointer-events-none -right-4 transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
+                                                            <div className="flex flex-col gap-1 text-slate-400">
+                                                                <span className="text-amber-400 font-black uppercase text-[8px] tracking-wider">🚫 PDF Dispensado (N/A)</span>
+                                                                <p className="text-slate-300 font-bold leading-relaxed">{record.pdf_name?.replace('Não se aplica: ', '') || record.no_movement_reason}</p>
+                                                                <div className="border-t border-white/5 my-1" />
+                                                                <span className="flex items-center gap-1 font-medium"><span className="material-symbols-outlined text-[12px]">person</span> Por: {record.users?.name || 'Gestor'}</span>
+                                                                <span className="flex items-center gap-1 font-medium"><span className="material-symbols-outlined text-[12px]">event</span> Em: {record.no_movement_confirmed_at ? new Date(record.no_movement_confirmed_at).toLocaleString('pt-BR') : 'N/A'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <a
+                                                        href={record.pdf_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-xl transition-all"
+                                                    >
+                                                        <span className="material-symbols-outlined text-xl">picture_as_pdf</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">PDF</span>
+                                                    </a>
+                                                )
                                             )}
                                             {record.file_url && (
-                                                <a
-                                                    href={record.file_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 rounded-xl transition-all"
-                                                >
-                                                    <span className="material-symbols-outlined text-xl">database</span>
-                                                    <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">DADOS</span>
-                                                </a>
+                                                record.file_url === 'EXEMPT' ? (
+                                                    <div 
+                                                        className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-xl cursor-help relative group/tooltip"
+                                                        title={`Dados Dispensados: ${record.file_name || record.no_movement_reason || 'Sem justificativa'}`}
+                                                    >
+                                                        <span className="material-symbols-outlined text-base">block</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">DADOS: N/A</span>
+                                                        {/* Premium dynamic tooltip */}
+                                                        <div className="absolute bottom-full mb-2 hidden group-hover/tooltip:flex flex-col bg-slate-950 border border-white/10 rounded-xl p-3 shadow-2xl z-50 text-[10px] w-64 text-left pointer-events-none -right-4 transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
+                                                            <div className="flex flex-col gap-1 text-slate-400">
+                                                                <span className="text-amber-400 font-black uppercase text-[8px] tracking-wider">🚫 Dados Dispensados (N/A)</span>
+                                                                <p className="text-slate-300 font-bold leading-relaxed">{record.file_name?.replace('Não se aplica: ', '') || record.no_movement_reason}</p>
+                                                                <div className="border-t border-white/5 my-1" />
+                                                                <span className="flex items-center gap-1 font-medium"><span className="material-symbols-outlined text-[12px]">person</span> Por: {record.users?.name || 'Gestor'}</span>
+                                                                <span className="flex items-center gap-1 font-medium"><span className="material-symbols-outlined text-[12px]">event</span> Em: {record.no_movement_confirmed_at ? new Date(record.no_movement_confirmed_at).toLocaleString('pt-BR') : 'N/A'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <a
+                                                        href={record.file_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 px-3 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/20 rounded-xl transition-all"
+                                                    >
+                                                        <span className="material-symbols-outlined text-xl">database</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-widest whitespace-nowrap">DADOS</span>
+                                                    </a>
+                                                )
                                             )}
                                             <button
                                                 onClick={() => handleDelete(record.id)}

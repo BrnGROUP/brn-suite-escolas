@@ -326,16 +326,25 @@ export const useDashboard = (user: User) => {
                         const isContaCorrente = type === 'Conta Corrente';
                         let missingParts = [];
 
+                        const isOFXExempt = uploadRecord?.file_url === 'EXEMPT';
+                        const isPDFExempt = uploadRecord?.pdf_url === 'EXEMPT';
+
                         if (uploadRecord?.no_movement) {
                             // If no_movement is true, OFX is NOT required. But PDF IS required according to user!
-                            // "Inseriremos apenas o extrato no formato PDF, tanto o da conta corrente quanto o de investimento."
-                            if (!uploadRecord.pdf_url && !uploadRecord.file_url) missingParts.push('PDF');
+                            // Unless the PDF itself was marked as exempt!
+                            if (!uploadRecord.pdf_url && !uploadRecord.file_url && !isPDFExempt) {
+                                missingParts.push('PDF');
+                            }
                         } else {
                             if (!uploadRecord) {
                                 missingParts.push(isContaCorrente ? 'OFX e PDF' : 'PDF');
                             } else {
-                                if (isContaCorrente && !uploadRecord.file_url) missingParts.push('OFX');
-                                if (!uploadRecord.pdf_url) missingParts.push('PDF');
+                                if (isContaCorrente && !uploadRecord.file_url && !isOFXExempt) {
+                                    missingParts.push('OFX');
+                                }
+                                if (!uploadRecord.pdf_url && !isPDFExempt) {
+                                    missingParts.push('PDF');
+                                }
                             }
                         }
 
