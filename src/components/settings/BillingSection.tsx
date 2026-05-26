@@ -378,22 +378,22 @@ const BillingSection: React.FC<BillingSectionProps> = ({
     return (
         <div className="flex flex-col gap-8 animate-in fade-in duration-500">
             {/* Header / Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-[#111a22] p-6 rounded-2xl border border-white/5 flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total no Período</span>
-                    <span className="text-2xl font-black text-white">{formatCurrency(stats.total)}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+                <div className="bg-[#111a22] p-4 sm:p-5 lg:p-6 rounded-2xl border border-white/5 flex flex-col gap-1 min-w-0 overflow-hidden">
+                    <span className="text-[9px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest truncate">Total no Período</span>
+                    <span className="text-lg sm:text-xl xl:text-lg min-[1400px]:text-2xl font-black text-white whitespace-nowrap truncate hover:overflow-visible hover:whitespace-normal transition-all" title={formatCurrency(stats.total)}>{formatCurrency(stats.total)}</span>
                 </div>
-                <div className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/10 flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Recebido</span>
-                    <span className="text-2xl font-black text-emerald-500">{formatCurrency(stats.received)}</span>
+                <div className="bg-emerald-500/5 p-4 sm:p-5 lg:p-6 rounded-2xl border border-emerald-500/10 flex flex-col gap-1 min-w-0 overflow-hidden">
+                    <span className="text-[9px] sm:text-[10px] font-black text-emerald-500 uppercase tracking-widest truncate">Recebido</span>
+                    <span className="text-lg sm:text-xl xl:text-lg min-[1400px]:text-2xl font-black text-emerald-500 whitespace-nowrap truncate hover:overflow-visible hover:whitespace-normal transition-all" title={formatCurrency(stats.received)}>{formatCurrency(stats.received)}</span>
                 </div>
-                <div className="bg-amber-500/5 p-6 rounded-2xl border border-amber-500/10 flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Pendente</span>
-                    <span className="text-2xl font-black text-amber-500">{formatCurrency(stats.pending)}</span>
+                <div className="bg-amber-500/5 p-4 sm:p-5 lg:p-6 rounded-2xl border border-amber-500/10 flex flex-col gap-1 min-w-0 overflow-hidden">
+                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 uppercase tracking-widest truncate">Pendente</span>
+                    <span className="text-lg sm:text-xl xl:text-lg min-[1400px]:text-2xl font-black text-amber-500 whitespace-nowrap truncate hover:overflow-visible hover:whitespace-normal transition-all" title={formatCurrency(stats.pending)}>{formatCurrency(stats.pending)}</span>
                 </div>
-                <div className="bg-red-500/5 p-6 rounded-2xl border border-red-500/10 flex flex-col gap-1">
-                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Em Atraso (Geral)</span>
-                    <span className="text-2xl font-black text-red-500">{formatCurrency(totalLateAmount)}</span>
+                <div className="bg-red-500/5 p-4 sm:p-5 lg:p-6 rounded-2xl border border-red-500/10 flex flex-col gap-1 min-w-0 overflow-hidden">
+                    <span className="text-[9px] sm:text-[10px] font-black text-red-500 uppercase tracking-widest truncate">Em Atraso (Geral)</span>
+                    <span className="text-lg sm:text-xl xl:text-lg min-[1400px]:text-2xl font-black text-red-500 whitespace-nowrap truncate hover:overflow-visible hover:whitespace-normal transition-all" title={formatCurrency(totalLateAmount)}>{formatCurrency(totalLateAmount)}</span>
                 </div>
             </div>
 
@@ -538,7 +538,7 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                         const progressBarStyle = { '--prog-width': `${progress}%` } as React.CSSProperties;
 
                         return (
-                            <div key={record.id} className="bg-[#111a22] border border-white/5 p-5 rounded-2xl flex flex-col md:flex-row md:items-stretch justify-between gap-4 md:gap-6 hover:bg-white/[0.02] transition-all group overflow-hidden relative">
+                            <div key={record.id} className="bg-[#111a22] border border-white/5 p-5 rounded-2xl flex flex-col xl:flex-row xl:items-stretch justify-between gap-4 xl:gap-6 hover:bg-white/[0.02] transition-all group overflow-hidden relative">
                                 {paid > 0 && record.status !== 'Pago' && (
                                     <div className="absolute bottom-0 left-0 h-1 bg-emerald-500/20 w-[var(--prog-width)]" style={progressBarStyle}></div>
                                 )}
@@ -578,9 +578,9 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 w-full md:w-auto mt-2 md:mt-0 border-t border-white/5 pt-4 md:border-0 md:pt-0 shrink-0">
-                                    <div className="flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end">
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest md:block">Valor Total</span>
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-8 w-full xl:w-auto mt-2 xl:mt-0 border-t border-white/5 pt-4 xl:border-0 xl:pt-0 shrink-0">
+                                    <div className="flex flex-row xl:flex-col justify-between xl:justify-end items-center xl:items-end">
+                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest xl:block">Valor Total</span>
                                         <div className="text-right">
                                             <span className="text-lg font-black text-white">{formatCurrency(total)}</span>
                                             {paid > 0 && record.status !== 'Pago' && (
@@ -590,11 +590,11 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                                     </div>
 
                                     {record.status !== 'Pago' && (
-                                        <div className="flex flex-col w-full md:w-auto gap-2">
+                                        <div className="flex flex-col w-full xl:w-auto gap-2">
                                             <button
                                                 onClick={() => openPaymentModal(record)}
                                                 disabled={!isAdmin}
-                                                className={`h-10 w-full md:w-[180px] flex items-center justify-center rounded-lg font-bold text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 whitespace-nowrap ${isAdmin
+                                                className={`h-10 w-full xl:w-[180px] flex items-center justify-center rounded-lg font-bold text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 whitespace-nowrap ${isAdmin
                                                     ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
                                                     : 'bg-slate-700 text-slate-400 cursor-not-allowed shadow-none'
                                                     }`}
@@ -602,13 +602,13 @@ const BillingSection: React.FC<BillingSectionProps> = ({
                                                 {isAdmin ? 'Informar Pagamento' : 'Aguardando Pagamento'}
                                             </button>
                                             {paid > 0 && (
-                                                <span className="text-[10px] text-amber-500 font-bold text-center md:text-right w-full">Restam: {formatCurrency(remaining)}</span>
+                                                <span className="text-[10px] text-amber-500 font-bold text-center xl:text-right w-full">Restam: {formatCurrency(remaining)}</span>
                                             )}
                                         </div>
                                     )}
 
                                     {record.status === 'Pago' && (
-                                            <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
+                                            <div className="flex items-center justify-between xl:justify-end gap-2 w-full xl:w-auto">
                                                 <div className="text-right">
                                                     <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-widest block italic">Pago em</span>
                                                     <span className="text-[10px] font-bold text-emerald-500 italic">
