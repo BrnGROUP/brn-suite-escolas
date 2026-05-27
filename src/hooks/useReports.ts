@@ -76,16 +76,15 @@ export const useReports = (user: User, filters: ReportsFilters) => {
                 .from('accountability_processes')
                 .select(`
                     *, 
+                    schools(name),
                     financial_entries(*, schools(*), programs(name), rubrics(name), suppliers(*), payment_methods(name)),
+                    supplier_contracts(*, schools(name), programs(name), rubrics(name), suppliers(*)),
                     accountability_items(*),
                     accountability_quotes(*, suppliers(*), accountability_quote_items(*))
                 `)
                 .order('created_at', { ascending: false });
 
             if (filters.schoolId) query = query.eq('school_id', filters.schoolId);
-            // We use or condition to filter by program_id either in entries or in the process itself if we add it, 
-            // but for now let's just make the entry join optional
-            if (filters.programId) query = query.eq('financial_entries.program_id', filters.programId);
             if (filters.status) query = query.eq('status', filters.status);
             if (filters.search) query = query.or(`description.ilike.%${filters.search}%,financial_entries.description.ilike.%${filters.search}%`);
 
@@ -101,7 +100,25 @@ export const useReports = (user: User, filters: ReportsFilters) => {
 
             const { data, error } = await query;
             if (error) throw error;
-            return data as AccountabilityProcess[];
+
+            let results = (data || []).map((p: any) => {
+                const schoolObj = p.schools || p.financial_entries?.schools || p.supplier_contracts?.schools || null;
+                const programObj = p.financial_entries?.programs || p.supplier_contracts?.programs || null;
+                return {
+                    ...p,
+                    schools: schoolObj,
+                    programs: programObj
+                };
+            });
+
+            if (filters.programId) {
+                results = results.filter((p: any) => 
+                    p.financial_entries?.program_id === filters.programId || 
+                    p.supplier_contracts?.program_id === filters.programId
+                );
+            }
+
+            return results as AccountabilityProcess[];
         },
         enabled: !!user.id
     });

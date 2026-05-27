@@ -132,6 +132,8 @@ export function useFinancialEntries(user: User, filters: any = {}) {
             if (filters.quick === 'repasses') q = q.eq('category', 'Repasse / Crédito');
             if (filters.quick === 'tarifas') q = q.eq('category', 'Tarifa Bancária');
             if (filters.quick === 'rendimentos') q = q.eq('category', 'Rendimento de Aplicação');
+            if (filters.quick === 'entradas') q = q.eq('type', 'Entrada');
+            if (filters.quick === 'saidas') q = q.eq('type', 'Saída');
 
             const { data, error } = await q;
             if (error) throw error;
