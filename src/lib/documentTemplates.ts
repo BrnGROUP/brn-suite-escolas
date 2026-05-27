@@ -686,8 +686,13 @@ export const generateCotacaoHTML = (process: any, supplierIdx: number = 0) => {
                 <p>Prazo máximo de entrega/execução: 02 dias a partir da ordem de compra/serviço pela Unidade Executora;</p>
                 <p>Recebimento mediante apresentação de nota fiscal e certidões;</p>
                 <p>Pagamento após conferência atesto da nota fiscal, mediante apresentação de recibo.</p>
+            </div>
+            ${supplier?.stamp_url ? `
+            <div class="flex items-center justify-center min-w-[140px] h-[80px] mr-4 relative">
+                <img src="${supplier.stamp_url}" class="w-32 h-auto opacity-90 mix-blend-multiply pointer-events-none rotate-[-3deg]" />
+            </div>
+            ` : ''}
         </div>
-    </div>
 </body>
 </html>`;
 };
