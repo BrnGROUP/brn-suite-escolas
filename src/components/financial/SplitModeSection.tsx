@@ -13,6 +13,8 @@ interface SplitModeSectionProps {
     setSingleNature: (val: TransactionNature) => void;
     filteredRubrics: any[];
     allRubrics: any[];
+    selectedProgramId?: string;
+    programs?: any[];
 }
 
 export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
@@ -25,8 +27,17 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
     singleNature,
     setSingleNature,
     filteredRubrics,
-    allRubrics
+    allRubrics,
+    selectedProgramId,
+    programs
 }) => {
+    const isCusteioOnly = React.useMemo(() => {
+        if (!selectedProgramId || !programs) return false;
+        const prog = programs.find((p: any) => p.id === selectedProgramId);
+        if (!prog) return false;
+        const nameUpper = (prog.name || '').toUpperCase().trim();
+        return nameUpper === 'MAIS MERENDA' || nameUpper === 'PNAE';
+    }, [selectedProgramId, programs]);
     return (
         <div className="flex flex-col gap-4 border-t border-white/5 pt-6">
             <div className="flex justify-between items-center">
@@ -90,7 +101,7 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
                                         className="bg-[#1e293b] text-white text-xs h-10 rounded-lg px-3 w-full border border-white/5 outline-none focus:border-cyan-500"
                                     >
                                         <option value={TransactionNature.CUSTEIO}>Custeio</option>
-                                        <option value={TransactionNature.CAPITAL}>Capital</option>
+                                        {!isCusteioOnly && <option value={TransactionNature.CAPITAL}>Capital</option>}
                                     </select>
                                 </div>
                                 <div className="w-full md:w-32">
@@ -182,7 +193,7 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
                             className="bg-[#1e293b] rounded-xl h-12 px-4 text-white outline-none w-full border border-white/5 focus:border-cyan-500"
                         >
                             <option value={TransactionNature.CUSTEIO}>Custeio</option>
-                            <option value={TransactionNature.CAPITAL}>Capital</option>
+                            {!isCusteioOnly && <option value={TransactionNature.CAPITAL}>Capital</option>}
                         </select>
                     </div>
                 </div>

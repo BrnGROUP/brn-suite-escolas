@@ -202,6 +202,8 @@ const EntryFormModal: React.FC<EntryFormModalProps> = (props) => {
                             setSingleNature={setSingleNature}
                             filteredRubrics={filteredRubrics}
                             allRubrics={props.auxData.rubrics}
+                            selectedProgramId={selectedProgramId}
+                            programs={props.auxData.programs}
                         />
 
                         <AttachmentSection

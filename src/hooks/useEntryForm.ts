@@ -510,6 +510,24 @@ export const useEntryForm = ({
         }
     }, [type, isOpen, category]);
 
+    // Force Custeio nature for PNAE and Mais Merenda programs
+    React.useEffect(() => {
+        if (!isOpen || !selectedProgramId || !programs) return;
+        const prog = programs.find((p: any) => p.id === selectedProgramId);
+        if (!prog) return;
+        const nameUpper = (prog.name || '').toUpperCase().trim();
+        if (nameUpper === 'MAIS MERENDA' || nameUpper === 'PNAE') {
+            setSingleNature(TransactionNature.CUSTEIO);
+            setSplitItems(prev => {
+                const hasNonCusteio = prev.some(item => item.nature !== TransactionNature.CUSTEIO);
+                if (hasNonCusteio) {
+                    return prev.map(item => ({ ...item, nature: TransactionNature.CUSTEIO }));
+                }
+                return prev;
+            });
+        }
+    }, [selectedProgramId, programs, isOpen]);
+
     // Contracts loader
     React.useEffect(() => {
         if (!isOpen || !selectedSchoolId || !selectedSupplierId) {
