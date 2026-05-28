@@ -516,7 +516,7 @@ export const useEntryForm = ({
         const prog = programs.find((p: any) => p.id === selectedProgramId);
         if (!prog) return;
         const nameUpper = (prog.name || '').toUpperCase().trim();
-        if (nameUpper === 'MAIS MERENDA' || nameUpper === 'PNAE') {
+        if (nameUpper.includes('MAIS MERENDA') || nameUpper.includes('PNAE')) {
             setSingleNature(TransactionNature.CUSTEIO);
             setSplitItems(prev => {
                 const hasNonCusteio = prev.some(item => item.nature !== TransactionNature.CUSTEIO);

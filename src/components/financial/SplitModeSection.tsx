@@ -36,7 +36,7 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
         const prog = programs.find((p: any) => p.id === selectedProgramId);
         if (!prog) return false;
         const nameUpper = (prog.name || '').toUpperCase().trim();
-        return nameUpper === 'MAIS MERENDA' || nameUpper === 'PNAE';
+        return nameUpper.includes('MAIS MERENDA') || nameUpper.includes('PNAE');
     }, [selectedProgramId, programs]);
     return (
         <div className="flex flex-col gap-4 border-t border-white/5 pt-6">
