@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { User, UserRole, School, Permission, RolePermission } from '../types';
+import { User, UserRole, School, RolePermission } from '../types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 export interface SupportRequest {
     id: string;
@@ -27,9 +28,38 @@ export interface UserForm {
     avatar_url?: string;
 }
 
+const DEFAULT_ROLE_PERMISSIONS = [
+    { role: 'Administrador', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Administrador', resource: 'schools', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Administrador', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Administrador', resource: 'settings', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Administrador', resource: 'users', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Operador', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Operador', resource: 'schools', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Operador', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Operador', resource: 'settings', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Operador', resource: 'users', can_view: true, can_create: true, can_edit: true, can_delete: false },
+    { role: 'Diretor', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Diretor', resource: 'schools', can_view: true, can_create: false, can_edit: true, can_delete: false },
+    { role: 'Diretor', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
+    { role: 'Diretor', resource: 'settings', can_view: true, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Diretor', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Técnico GEE', resource: 'entries', can_view: true, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Técnico GEE', resource: 'schools', can_view: true, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Técnico GEE', resource: 'reports', can_view: true, can_create: false, can_edit: true, can_delete: false },
+    { role: 'Técnico GEE', resource: 'settings', can_view: true, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Técnico GEE', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Cliente', resource: 'entries', can_view: true, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Cliente', resource: 'schools', can_view: true, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Cliente', resource: 'reports', can_view: true, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Cliente', resource: 'settings', can_view: false, can_create: false, can_edit: false, can_delete: false },
+    { role: 'Cliente', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
+];
+
 export const useUsers = (currentUser: User) => {
     const queryClient = useQueryClient();
     const { addToast } = useToast();
+    const { confirm } = useConfirm();
     const [showModal, setShowModal] = useState(false);
     const [editingUser, setEditingUser] = useState<UserForm | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -87,34 +117,7 @@ export const useUsers = (currentUser: User) => {
             if (error) throw error;
 
             if (!data || data.length === 0) {
-                const defaults = [
-                    { role: 'Administrador', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Administrador', resource: 'schools', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Administrador', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Administrador', resource: 'settings', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Administrador', resource: 'users', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Operador', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Operador', resource: 'schools', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Operador', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Operador', resource: 'settings', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Operador', resource: 'users', can_view: true, can_create: true, can_edit: true, can_delete: false },
-                    { role: 'Diretor', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Diretor', resource: 'schools', can_view: true, can_create: false, can_edit: true, can_delete: false },
-                    { role: 'Diretor', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                    { role: 'Diretor', resource: 'settings', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Diretor', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Técnico GEE', resource: 'entries', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Técnico GEE', resource: 'schools', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Técnico GEE', resource: 'reports', can_view: true, can_create: false, can_edit: true, can_delete: false },
-                    { role: 'Técnico GEE', resource: 'settings', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Técnico GEE', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Cliente', resource: 'entries', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Cliente', resource: 'schools', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Cliente', resource: 'reports', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Cliente', resource: 'settings', can_view: false, can_create: false, can_edit: false, can_delete: false },
-                    { role: 'Cliente', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
-                ];
-                const { data: newData, error: insertError } = await supabase.from('role_permissions').upsert(defaults, { onConflict: 'role, resource' }).select();
+                const { data: newData, error: insertError } = await supabase.from('role_permissions').upsert(DEFAULT_ROLE_PERMISSIONS, { onConflict: 'role, resource' }).select();
                 if (insertError) throw insertError;
                 return newData || [];
             }
@@ -247,34 +250,7 @@ export const useUsers = (currentUser: User) => {
 
     const resetPermissionsMutation = useMutation({
         mutationFn: async () => {
-            const defaults = [
-                { role: 'Administrador', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Administrador', resource: 'schools', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Administrador', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Administrador', resource: 'settings', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Administrador', resource: 'users', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Operador', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Operador', resource: 'schools', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Operador', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Operador', resource: 'settings', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Operador', resource: 'users', can_view: true, can_create: true, can_edit: true, can_delete: false },
-                { role: 'Diretor', resource: 'entries', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Diretor', resource: 'schools', can_view: true, can_create: false, can_edit: true, can_delete: false },
-                { role: 'Diretor', resource: 'reports', can_view: true, can_create: true, can_edit: true, can_delete: true },
-                { role: 'Diretor', resource: 'settings', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Diretor', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Técnico GEE', resource: 'entries', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Técnico GEE', resource: 'schools', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Técnico GEE', resource: 'reports', can_view: true, can_create: false, can_edit: true, can_delete: false },
-                { role: 'Técnico GEE', resource: 'settings', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Técnico GEE', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Cliente', resource: 'entries', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Cliente', resource: 'schools', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Cliente', resource: 'reports', can_view: true, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Cliente', resource: 'settings', can_view: false, can_create: false, can_edit: false, can_delete: false },
-                { role: 'Cliente', resource: 'users', can_view: false, can_create: false, can_edit: false, can_delete: false },
-            ];
-            const { error } = await supabase.from('role_permissions').upsert(defaults, { onConflict: 'role, resource' });
+            const { error } = await supabase.from('role_permissions').upsert(DEFAULT_ROLE_PERMISSIONS, { onConflict: 'role, resource' });
             if (error) throw error;
         },
         onSuccess: () => {
@@ -360,8 +336,12 @@ export const useUsers = (currentUser: User) => {
         });
     };
 
-    const handleResetPermissions = () => {
-        if (!confirm('Deseja redefinir todas as permissões para os padrões do sistema?')) return;
+    const handleResetPermissions = async () => {
+        if (!await confirm({
+            title: 'Redefinir Permissões',
+            message: 'Deseja redefinir todas as permissões para os padrões do sistema? Esta ação afetará todos os usuários instantaneamente.',
+            isDestructive: true
+        })) return;
         resetPermissionsMutation.mutate(undefined, {
             onError: (err: any) => addToast('Erro ao resetar permissões: ' + err.message, 'error'),
             onSuccess: () => addToast('Permissões redefinidas!', 'success')
@@ -388,7 +368,11 @@ export const useUsers = (currentUser: User) => {
 
     const handleExecuteClosure = async () => {
         if (!closurePeriodName.trim()) return addToast('Informe o nome do novo período', 'warning');
-        if (!confirm(`Deseja realizar o encerramento do exercício atual?`)) return;
+        if (!await confirm({
+            title: 'Encerrar Exercício Atual',
+            message: 'Deseja realmente realizar o encerramento do exercício atual? Esta é uma operação administrativa de alta criticidade.',
+            isDestructive: true
+        })) return;
         executeClosureMutation.mutate(undefined, {
             onError: (err: any) => addToast('Erro: ' + err.message, 'error')
         });

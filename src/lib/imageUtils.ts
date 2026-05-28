@@ -12,7 +12,7 @@ interface CompressionOptions {
 
 export const compressImage = async (file: File, options: CompressionOptions = {}): Promise<File | Blob> => {
     const {
-        maxSizeMB = 1,
+        maxSizeMB: _maxSizeMB = 1,
         maxWidthOrHeight = 1600,
         initialQuality = 0.7
     } = options;

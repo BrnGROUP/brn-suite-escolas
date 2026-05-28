@@ -121,7 +121,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                                         <span className="text-xs text-blue-400 font-black uppercase tracking-wider">{entry.program}</span>
                                         <span className="text-xs text-slate-500 font-medium line-clamp-1">{entry.rubric}</span>
                                     </div>
-                                    <div className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${entry.nature === 'Custeio' ? 'text-purple-400 bg-purple-500/10' : 'text-amber-400 bg-amber-500/10'}`}>
+                                    <div className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${entry.nature === 'Custeio' ? 'text-sky-400 bg-sky-500/10' : 'text-amber-400 bg-amber-500/10'}`}>
                                         {entry.nature}
                                     </div>
                                 </div>
@@ -227,7 +227,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                                             <div className="flex items-center gap-1.5 mt-0.5">
                                                 <span className="text-[10px] text-slate-400">{entry.rubric}</span>
                                                 <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-                                                <span className={`text-[10px] font-black uppercase ${entry.nature === 'Custeio' ? 'text-purple-400' : 'text-amber-400'}`}>
+                                                <span className={`text-[10px] font-black uppercase ${entry.nature === 'Custeio' ? 'text-sky-400' : 'text-amber-400'}`}>
                                                     {entry.nature}
                                                 </span>
                                             </div>

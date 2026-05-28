@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { User, UserRole, TransactionNature } from '../types';
-import { usePermissions, useAccessibleSchools } from '../hooks/usePermissions';
+import { User, UserRole } from '../types';
+import { useAccessibleSchools } from '../hooks/usePermissions';
 import { useToast } from '../context/ToastContext';
 
 interface DocumentFile {
@@ -43,7 +43,6 @@ const DocumentSafe: React.FC<{ user: User }> = ({ user }) => {
     const [filterEndDate, setFilterEndDate] = useState('');
     const { addToast } = useToast();
     const [schools, setSchools] = useState<any[]>([]);
-    const [processes, setProcesses] = useState<any[]>([]);
     const [selectedDoc, setSelectedDoc] = useState<DocumentFile | null>(null);
     const [showChecklist, setShowChecklist] = useState(false);
     const [isSavingChecklist, setIsSavingChecklist] = useState(false);
@@ -249,8 +248,12 @@ const DocumentSafe: React.FC<{ user: User }> = ({ user }) => {
             seen.add(p.value);
             return true;
         }).sort((a, b) => {
-            const [am, ay] = a.value.split('-').map(Number);
-            const [bm, by] = b.value.split('-').map(Number);
+            const partsA = a.value.split('-').map(Number);
+            const partsB = b.value.split('-').map(Number);
+            const am = partsA[0] || 0;
+            const ay = partsA[1] || 0;
+            const bm = partsB[0] || 0;
+            const by = partsB[1] || 0;
             return by - ay || bm - am;
         });
     }, [documents]);

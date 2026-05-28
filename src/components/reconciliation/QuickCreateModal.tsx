@@ -1,5 +1,5 @@
 import React from 'react';
-import { BankTransaction } from '../../hooks/useBankReconciliation';
+import { BankTransaction } from '../../types';
 
 interface QuickCreateModalProps {
     bt: BankTransaction;
@@ -9,12 +9,13 @@ interface QuickCreateModalProps {
     rubrics: any[];
     suppliers: any[];
     isMatching: boolean;
+    schoolId?: string;
     onClose: () => void;
     onConfirm: () => void;
 }
 
 const QuickCreateModal: React.FC<QuickCreateModalProps> = ({
-    bt, quickForm, setQuickForm, programs, rubrics, suppliers, isMatching, onClose, onConfirm
+    bt, quickForm, setQuickForm, programs, rubrics, suppliers, isMatching, schoolId, onClose, onConfirm
 }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -103,7 +104,8 @@ const QuickCreateModal: React.FC<QuickCreateModalProps> = ({
                                 .filter(r => {
                                     if (!quickForm.program_id) return false;
                                     const rProgId = typeof r.program_id === 'object' ? r.program_id?.id : r.program_id;
-                                    return rProgId === quickForm.program_id;
+                                    if (rProgId !== quickForm.program_id) return false;
+                                    return !schoolId || !r.school_id || r.school_id === schoolId;
                                 })
                                 .map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                         </select>
@@ -136,10 +138,13 @@ const QuickCreateModal: React.FC<QuickCreateModalProps> = ({
                             <option value="Repasse / Crédito">Repasse / Crédito</option>
                             <option value="Impostos / Tributos">Impostos / Tributos</option>
                             <option value="Devolução de Recurso (FNDE/Estado)">Devolução de Recurso (FNDE/Estado)</option>
+                            <option value="Aplicação Financeira">Aplicação Financeira</option>
+                            <option value="Resgate de Aplicação">Resgate de Aplicação</option>
+                            <option value="Doação/Recursos próprios">Doação/Recursos próprios</option>
                         </select>
                     </div>
 
-                    {quickForm.category !== 'Tarifa Bancária' && quickForm.category !== 'Rendimento de Aplicação' ? (
+                    {quickForm.category !== 'Tarifa Bancária' && quickForm.category !== 'Rendimento de Aplicação' && quickForm.category !== 'Aplicação Financeira' && quickForm.category !== 'Resgate de Aplicação' && quickForm.category !== 'Doação/Recursos próprios' ? (
                         <div className="flex flex-col gap-1">
                             <label htmlFor="qc-supplier" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Fornecedor (Opcional)</label>
                             <select title="Selecione o Fornecedor" aria-label="Selecione o Fornecedor"

@@ -144,7 +144,6 @@ export interface School {
     director_address?: string;
     custom_description?: string;
     active?: boolean;
-    gov_password?: string;
     notes?: string;
 }
 
@@ -326,9 +325,28 @@ export interface StatementUpload {
     account_type: 'Conta Corrente' | 'Conta Investimento';
     file_url: string;
     file_name: string;
+    pdf_url?: string;
+    pdf_name?: string;
+    no_movement?: boolean;
+    no_movement_reason?: string;
+    no_movement_confirmed_by?: string;
+    no_movement_confirmed_at?: string;
     reported_revenue?: number;
     reported_taxes?: number;
     reported_balance?: number;
     uploaded_by?: string;
     created_at: string;
 }
+
+export interface BankTransaction {
+    id: string;
+    date: string;
+    description: string;
+    value: number;
+    type: 'C' | 'D'; // Credit or Debit
+    fitid: string;  // Bank unique transaction ID
+    matched_entry_id?: string;
+    status: 'pending' | 'matched' | 'new' | 'reconciled' | 'ignored';
+    extract_type: 'Conta Corrente' | 'Conta Investimento';
+}
+

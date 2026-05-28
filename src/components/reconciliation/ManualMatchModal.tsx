@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { BankTransaction } from '../../hooks/useBankReconciliation';
+import { BankTransaction } from '../../types';
 
 interface ManualMatchModalProps {
     bt: BankTransaction;
     systemEntries: any[];
+    suppliers: any[];
+    programs: any[];
+    rubrics: any[];
     manualSearch: string;
     setManualSearch: (s: string) => void;
     onConfirmMatch: (bt: BankTransaction, entryIds: string[], splitInfo?: { originalEntryId: string, value: number }) => void;
@@ -11,17 +14,60 @@ interface ManualMatchModalProps {
 }
 
 const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
-    bt, systemEntries, manualSearch, setManualSearch, onConfirmMatch, onClose
+    bt, systemEntries, suppliers, programs, rubrics, manualSearch, setManualSearch, onConfirmMatch, onClose
 }) => {
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [showSplitConfirm, setShowSplitConfirm] = useState(false);
+    const [filterByType, setFilterByType] = useState(true);
 
-    const filteredEntries = systemEntries
-        .filter(e =>
-            e.description.toLowerCase().includes(manualSearch.toLowerCase()) ||
-            e.value.toString().includes(manualSearch) ||
-            (bt.type === 'C' ? e.type === 'Entrada' : e.type === 'Saída')
-        )
+    // Map system entries to include display names of supplier, program, and rubric
+    const mappedEntries = React.useMemo(() => {
+        return systemEntries.map(e => ({
+            ...e,
+            supplierName: suppliers.find(s => s.id === e.supplier_id)?.name || 'Geral/Outros',
+            programName: programs.find(p => p.id === e.program_id)?.name || 'Sem Programa',
+            rubricName: rubrics.find(r => r.id === e.rubric_id)?.name || 'Sem Rubrica'
+        }));
+    }, [systemEntries, suppliers, programs, rubrics]);
+
+    const filteredEntries = mappedEntries
+        .filter(e => {
+            // Option to strictly match standard accounting types (C = Entrada, D = Saída)
+            if (filterByType) {
+                const typeMatches = bt.type === 'C' ? e.type === 'Entrada' : e.type === 'Saída';
+                if (!typeMatches) return false;
+            }
+
+            // If there's no search term, return all entries
+            if (!manualSearch.trim()) return true;
+
+            const searchLower = manualSearch.toLowerCase().trim();
+
+            // Match text fields
+            const matchesText = 
+                e.description.toLowerCase().includes(searchLower) ||
+                e.supplierName.toLowerCase().includes(searchLower) ||
+                e.programName.toLowerCase().includes(searchLower) ||
+                (e.document_number && e.document_number.toLowerCase().includes(searchLower));
+
+            if (matchesText) return true;
+
+            // Match numeric values in multiple BRL/standard formats
+            const valNum = Math.abs(Number(e.value)); // use absolute value for comparisons
+            const valStr = valNum.toString();
+            const valFixed = valNum.toFixed(2);
+            const valBrl = valNum.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            const valBrlNoDec = valNum.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+            const valCurrency = valNum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).toLowerCase();
+
+            return (
+                valStr.includes(searchLower) ||
+                valFixed.includes(searchLower) ||
+                valBrl.includes(searchLower) ||
+                valBrlNoDec.includes(searchLower) ||
+                valCurrency.includes(searchLower)
+            );
+        })
         .sort((a, b) => {
             const aValDiff = Math.abs(Number(a.value) - bt.value);
             const bValDiff = Math.abs(Number(b.value) - bt.value);
@@ -29,7 +75,7 @@ const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
             return new Date(b.date).getTime() - new Date(a.date).getTime();
         });
 
-    const selectedEntries = systemEntries.filter(e => selectedIds.includes(e.id));
+    const selectedEntries = mappedEntries.filter(e => selectedIds.includes(e.id));
     const totalSelected = selectedEntries.reduce((sum, e) => sum + Math.abs(Number(e.value)), 0);
     const diff = bt.value - totalSelected;
     const isExactMatch = Math.abs(diff) < 0.01;
@@ -79,18 +125,31 @@ const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
                     </button>
                 </div>
 
-                <div className="flex h-[450px]">
+                <div className="flex h-[480px]">
                     {/* Left Side: Search & List */}
-                    <div className="flex-1 flex flex-col p-6 gap-4 border-r border-white/5">
-                        <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 text-sm">search</span>
-                            <input
-                                type="text"
-                                value={manualSearch}
-                                onChange={e => setManualSearch(e.target.value)}
-                                placeholder="Buscar lançamentos no sistema..."
-                                className="w-full bg-card-dark border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs text-white outline-none focus:border-indigo-500 transition-all"
-                            />
+                    <div className="flex-1 flex flex-col p-6 gap-4 border-r border-white/5 min-w-0">
+                        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                            <div className="relative flex-1">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 text-sm">search</span>
+                                <input
+                                    type="text"
+                                    value={manualSearch}
+                                    onChange={e => setManualSearch(e.target.value)}
+                                    placeholder="Buscar por descrição, fornecedor, programa ou valor..."
+                                    className="w-full bg-card-dark border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs text-white outline-none focus:border-indigo-500 transition-all"
+                                />
+                            </div>
+                            <label className="flex items-center gap-2 cursor-pointer px-4 py-2 bg-white/5 border border-white/10 rounded-2xl select-none hover:bg-white/10 transition-all shrink-0">
+                                <input
+                                    type="checkbox"
+                                    checked={filterByType}
+                                    onChange={e => setFilterByType(e.target.checked)}
+                                    className="w-4 h-4 rounded border-white/20 bg-[#0f172a] text-indigo-500 focus:ring-indigo-500/50"
+                                />
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    Apenas {bt.type === 'C' ? 'Entradas' : 'Saídas'}
+                                </span>
+                            </label>
                         </div>
 
                         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
@@ -101,28 +160,52 @@ const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
                                         <button
                                             key={entry.id}
                                             onClick={() => toggleId(entry.id)}
-                                            className={`w-full text-left p-4 rounded-2xl border transition-all flex justify-between items-center group ${
+                                            className={`w-full text-left p-4 rounded-2xl border transition-all flex gap-3 items-center group ${
                                                 isSelected 
                                                 ? 'bg-indigo-500/20 border-indigo-500/50 ring-1 ring-indigo-500/50' 
                                                 : 'bg-white/5 border-white/5 hover:bg-white/10'
                                             }`}
                                         >
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
-                                                    isSelected ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-white/20'
-                                                }`}>
-                                                    {isSelected && <span className="material-symbols-outlined text-xs">check</span>}
+                                            <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
+                                                isSelected ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-white/20'
+                                            }`}>
+                                                {isSelected && <span className="material-symbols-outlined text-xs font-black">check</span>}
+                                            </div>
+                                            <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                                <span className={`text-xs font-black uppercase tracking-tight truncate ${isSelected ? 'text-indigo-300' : 'text-white'}`}>
+                                                    {entry.description}
+                                                </span>
+                                                
+                                                {/* Date & Document Info */}
+                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                                                    <span className="flex items-center gap-1 text-slate-400 shrink-0">
+                                                        <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                                                        {new Date(entry.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                                                    </span>
+                                                    {entry.document_number && (
+                                                        <>
+                                                            <span className="text-white/10">•</span>
+                                                            <span className="flex items-center gap-1 text-slate-500 shrink-0">
+                                                                <span className="material-symbols-outlined text-[12px]">description</span>
+                                                                Nº {entry.document_number}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                 </div>
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className={`text-xs font-bold uppercase ${isSelected ? 'text-indigo-300' : 'text-white'}`}>{entry.description}</span>
-                                                    <div className="flex items-center gap-2 text-[9px] text-slate-500 font-bold uppercase tracking-widest">
-                                                        <span>{new Date(entry.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
-                                                        <span>•</span>
-                                                        <span className="truncate max-w-[100px]">{entry.supplier}</span>
+
+                                                {/* Supplier & Program/Rubric metadata */}
+                                                <div className="flex flex-col gap-0.5 mt-0.5 text-slate-500">
+                                                    <div className="text-[10px] text-slate-300 font-bold flex items-center gap-1 truncate">
+                                                        <span className="material-symbols-outlined text-[13px] text-indigo-400 shrink-0">person</span>
+                                                        <span className="truncate">Fornecedor: {entry.supplierName}</span>
+                                                    </div>
+                                                    <div className="text-[9px] text-slate-500 font-medium flex items-center gap-1 truncate">
+                                                        <span className="material-symbols-outlined text-[13px] text-slate-600 shrink-0">label</span>
+                                                        <span className="truncate">{entry.programName} {entry.rubricName && `• ${entry.rubricName}`}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex flex-col items-end gap-1">
+                                            <div className="flex flex-col items-end shrink-0 pl-2">
                                                 <span className={`text-xs font-black ${entry.type === 'Entrada' ? 'text-emerald-400' : 'text-red-400'}`}>
                                                     {Number(entry.value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                                 </span>
@@ -141,18 +224,22 @@ const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
                     </div>
 
                     {/* Right Side: Selection Summary */}
-                    <div className="w-[280px] bg-black/20 p-6 flex flex-col justify-between">
-                        <div className="space-y-6">
+                    <div className="w-[280px] bg-black/20 p-6 flex flex-col justify-between shrink-0">
+                        <div className="flex flex-col gap-4 min-h-0">
                             <div>
                                 <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Itens Selecionados ({selectedIds.length})</h4>
-                                <div className="space-y-3 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="space-y-3 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
                                     {selectedEntries.map(e => (
-                                        <div key={e.id} className="flex justify-between items-center group">
-                                            <div className="min-w-0">
-                                                <p className="text-[10px] text-white font-bold uppercase truncate">{e.description}</p>
-                                                <p className="text-[8px] text-slate-500">{new Date(e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</p>
+                                        <div key={e.id} className="flex justify-between items-start group bg-white/[0.02] border border-white/5 rounded-xl p-2.5 gap-2">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-[10px] text-white font-black uppercase truncate">{e.description}</p>
+                                                <p className="text-[9px] text-indigo-300 font-bold truncate mt-0.5">{e.supplierName}</p>
+                                                <div className="flex items-center gap-1 text-[8px] text-slate-500 font-medium mt-0.5">
+                                                    <span>{new Date(e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
+                                                    {e.document_number && <span>• Nº {e.document_number}</span>}
+                                                </div>
                                             </div>
-                                            <span className="text-[10px] text-emerald-400 font-black ml-2">
+                                            <span className="text-[10px] text-emerald-400 font-black whitespace-nowrap pt-0.5">
                                                 {Number(e.value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                             </span>
                                         </div>
@@ -247,4 +334,5 @@ const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
 };
 
 export default ManualMatchModal;
+
 

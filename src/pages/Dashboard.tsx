@@ -25,7 +25,6 @@ const Dashboard: React.FC<{ user: User }> = ({ user }) => {
     isSendingBroadcast
   } = useDashboard(user);
 
-  const dashPerm = usePermissions(user, 'entries');
   const accessibleSchools = useAccessibleSchools(user, availableOptions.schools);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -95,28 +94,25 @@ const Dashboard: React.FC<{ user: User }> = ({ user }) => {
         {showFilters && (
           <div className="bg-[#111a22] border border-surface-border rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end animate-in fade-in slide-in-from-top-4">
             <div className="flex flex-col gap-1.5 w-full">
-              <label className="text-text-secondary text-xs font-semibold uppercase tracking-wider">Escola</label>
+              <label htmlFor="dash_school_filter" className="text-text-secondary text-xs font-semibold uppercase tracking-wider">Escola</label>
               {user.schoolId ? (
                 <div className="text-white font-bold capitalize px-3 py-2 bg-background-dark rounded border border-border-dark truncate text-xs">
                   {availableOptions.schools.find(s => s.id === user.schoolId)?.name || 'Minha Escola'}
                 </div>
               ) : (
-                <>
-                  <label htmlFor="dash_school_filter" className="text-text-secondary text-xs font-semibold uppercase tracking-wider">Escola</label>
-                  <select
-                    id="dash_school_filter"
-                    title="Filtrar por Escola"
-                    aria-label="Filtrar por Escola"
-                    value={filters.schoolId}
-                    onChange={(e) => setFilters(prev => ({ ...prev, schoolId: e.target.value }))}
-                    className="bg-background-dark text-white border border-border-dark rounded-lg px-3 py-2 text-xs focus:border-primary outline-none"
-                  >
-                    <option value="">Todas as Escolas</option>
-                    {accessibleSchools.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </>
+                <select
+                  id="dash_school_filter"
+                  title="Filtrar por Escola"
+                  aria-label="Filtrar por Escola"
+                  value={filters.schoolId}
+                  onChange={(e) => setFilters(prev => ({ ...prev, schoolId: e.target.value }))}
+                  className="bg-background-dark text-white border border-border-dark rounded-lg px-3 py-2 text-xs focus:border-primary outline-none"
+                >
+                  <option value="">Todas as Escolas</option>
+                  {accessibleSchools.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
               )}
             </div>
 
@@ -151,6 +147,10 @@ const Dashboard: React.FC<{ user: User }> = ({ user }) => {
                 <option value="none">Nenhuma / Natureza Direta</option>
                 {availableOptions.rubrics
                   .filter(r => !filters.program || r.program_id === filters.program)
+                  .filter(r => {
+                    const activeSchool = user.schoolId || filters.schoolId;
+                    return !activeSchool || !r.school_id || r.school_id === activeSchool;
+                  })
                   .map(r => (
                     <option key={r.id} value={r.id}>{r.name}</option>
                   ))}

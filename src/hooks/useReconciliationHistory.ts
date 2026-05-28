@@ -44,6 +44,8 @@ export const useDeleteReconciliationHistory = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['reconciliation_history'] });
+            queryClient.invalidateQueries({ queryKey: ['current_uploads'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboard_data'] });
         }
     });
 };

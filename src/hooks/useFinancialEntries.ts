@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { TransactionStatus, TransactionNature, User, UserRole } from '../types';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { calculateFinancialStats } from '../lib/financialCalculations';
+import { useAuxData } from './useAuxData';
 
 export interface FinancialEntryExtended {
     id: string;
@@ -46,31 +48,7 @@ export function useFinancialEntries(user: User, filters: any = {}) {
         bankAccounts: [],
         paymentMethods: [],
         periods: []
-    } } = useQuery({
-        queryKey: ['aux_data'],
-        queryFn: async () => {
-            const [s, p, r, sup, b, pm, per] = await Promise.all([
-                supabase.from('schools').select('id, name').order('name'),
-                supabase.from('programs').select('id, name').order('name'),
-                supabase.from('rubrics').select('id, name, program_id, default_nature, school_id').order('name'),
-                supabase.from('suppliers').select('id, name, cnpj').order('name'),
-                supabase.from('bank_accounts').select('id, name, program_id, school_id, account_number, bank_name, agency').order('name'),
-                supabase.from('payment_methods').select('id, name').order('name'),
-                supabase.from('periods').select('name, is_active').order('name', { ascending: false })
-            ]);
-
-            return {
-                schools: s.data || [],
-                programs: p.data || [],
-                rubrics: r.data || [],
-                suppliers: sup.data || [],
-                bankAccounts: b.data || [],
-                paymentMethods: pm.data || [],
-                periods: per.data || []
-            };
-        },
-        staleTime: 1000 * 60 * 30 // Aux data changes rarely
-    });
+    } } = useAuxData();
 
     // Query for Reprogrammed Balances
     const { data: reprogrammedBalances = [] } = useQuery({
@@ -134,6 +112,19 @@ export function useFinancialEntries(user: User, filters: any = {}) {
             if (filters.quick === 'rendimentos') q = q.eq('category', 'Rendimento de Aplicação');
             if (filters.quick === 'entradas') q = q.eq('type', 'Entrada');
             if (filters.quick === 'saidas') q = q.eq('type', 'Saída');
+            if (filters.quick === 'pending_today') {
+                const today = new Date().toISOString().split('T')[0];
+                q = q.eq('date', today).eq('status', TransactionStatus.PENDENTE);
+            }
+            if (filters.quick === 'this_month') {
+                const now = new Date();
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+                q = q.gte('date', firstDay).lte('date', lastDay);
+            }
+            if (filters.quick === 'high_value') {
+                q = q.or('value.gte.1000,value.lte.-1000');
+            }
 
             const { data, error } = await q;
             if (error) throw error;
@@ -159,7 +150,7 @@ export function useFinancialEntries(user: User, filters: any = {}) {
 
     // Compute stats derived from entries
     const stats = useMemo(() => {
-        let inc = 0, exp = 0, pen = 0, rep = 0, rend = 0, tar = 0, impDev = 0, reprogTotal = 0;
+        let reprogTotal = 0;
 
         // Sum reprogrammed balances based on filters
         reprogrammedBalances.forEach((r: any) => {
@@ -170,37 +161,18 @@ export function useFinancialEntries(user: User, filters: any = {}) {
             }
         });
 
-        entries.forEach((e) => {
-            const val = Math.abs(e.value);
-            if (e.type === 'Entrada') {
-                inc += val;
-
-                // Strict Category-based identification
-                const catUpper = (e.category || '').toUpperCase().trim();
-
-                if (catUpper === 'RENDIMENTO DE APLICAÇÃO') {
-                    rend += val;
-                } else if (catUpper === 'REPASSE / CRÉDITO' || catUpper === 'OUTROS') {
-                    rep += val;
-                }
-            } else {
-                exp += val;
-                if (e.category === 'Tarifa Bancária') tar += val;
-                if (e.category === 'Impostos / Tributos' || e.category === 'Devolução de Recurso (FNDE/Estado)') impDev += val;
-            }
-            if (e.status === TransactionStatus.PENDENTE) pen++;
-        });
-
+        const calculated = calculateFinancialStats(entries, reprogTotal);
         return {
-            income: inc,
-            expense: exp,
-            balance: inc - exp,
-            pending: pen,
-            repasses: rep,
-            rendimentos: rend,
-            tarifas: tar,
-            impostosDevolucoes: impDev,
-            reprogrammed: reprogTotal
+            income: calculated.receita,
+            expense: calculated.despesa,
+            balance: calculated.saldo,
+            pending: calculated.pendencias,
+            repasses: calculated.repasses,
+            rendimentos: calculated.rendimentos,
+            tarifas: calculated.tarifas,
+            impostosDevolucoes: calculated.impostosDevolucoes,
+            reprogrammed: calculated.reprogramado,
+            reembolsos: calculated.reembolsos
         };
     }, [entries, reprogrammedBalances, filters.school, filters.program]);
 
@@ -220,6 +192,7 @@ export function useFinancialEntries(user: User, filters: any = {}) {
              queryClient.invalidateQueries({ queryKey: ['suppliers_list'] });
              queryClient.invalidateQueries({ queryKey: ['aux_data'] });
              queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
+             queryClient.invalidateQueries({ queryKey: ['system_entries'] });
         }
     };
 }

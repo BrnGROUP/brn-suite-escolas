@@ -100,9 +100,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onGuideClick })
         fetchData();
     }, []);
 
-    const toggleFaq = (index: number) => {
-        setActiveFaq(activeFaq === index ? null : index);
-    };
+
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-background-dark text-slate-900 dark:text-white font-sans transition-colors duration-300">
@@ -152,7 +150,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, onGuideClick })
 
                     <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 text-slate-900 dark:text-white leading-tight">
                         Excelência em <br />
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-violet-600">Prestação de Contas</span>
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-emerald-500">Prestação de Contas</span>
                     </h1>
 
                     <p className="mt-6 text-xl text-slate-600 dark:text-text-secondary max-w-3xl mx-auto mb-10 leading-relaxed">

@@ -69,6 +69,10 @@ const BankReconciliation: React.FC<{ user: User }> = ({ user }) => {
                         selectedSchoolId={recon.selectedSchoolId}
                         selectedBankAccountId={recon.selectedBankAccountId}
                         onShowStatus={() => recon.setShowMonthStatus(true)}
+                        currentUploads={recon.currentUploads}
+                        isLoadingUploads={recon.isLoadingUploads}
+                        onDeclareExempt={(fileType, reason) => recon.declareFileExempt.mutate({ fileType, reason })}
+                        bankAccounts={recon.bankAccounts}
                     />
                 )
             ) : (
@@ -85,6 +89,7 @@ const BankReconciliation: React.FC<{ user: User }> = ({ user }) => {
                             onManualMatchStart={(bt) => { recon.setManualMatchBT(bt); recon.setShowManualMatch(true); }}
                             onShowReport={() => recon.setShowReport(true)}
                             onClear={() => recon.setTransactions([])}
+                            onUnlink={recon.handleUnlink}
                         />
                     </div>
                 </div>
@@ -100,6 +105,7 @@ const BankReconciliation: React.FC<{ user: User }> = ({ user }) => {
                     rubrics={recon.rubrics}
                     suppliers={recon.suppliers}
                     isMatching={recon.isMatching}
+                    schoolId={recon.selectedSchoolId}
                     onClose={() => recon.setShowQuickCreate(false)}
                     onConfirm={recon.handleQuickCreate}
                 />
@@ -109,6 +115,9 @@ const BankReconciliation: React.FC<{ user: User }> = ({ user }) => {
                 <ManualMatchModal
                     bt={recon.manualMatchBT}
                     systemEntries={recon.systemEntries}
+                    suppliers={recon.suppliers}
+                    programs={recon.programs}
+                    rubrics={recon.rubrics}
                     manualSearch={recon.manualSearch}
                     setManualSearch={recon.setManualSearch}
                     onConfirmMatch={recon.handleConfirmMatch}
@@ -142,6 +151,7 @@ const BankReconciliation: React.FC<{ user: User }> = ({ user }) => {
                     schoolName={recon.schools.find(s => s.id === recon.selectedSchoolId)?.name || ''}
                     accountName={recon.bankAccounts.find(a => a.id === recon.selectedBankAccountId)?.name || ''}
                     monthYear={new Date(recon.filterMonth + '-02').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                    isReimport={recon.isReimport}
                 />
             )}
 

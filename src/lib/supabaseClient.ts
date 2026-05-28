@@ -5,11 +5,9 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-
-
-
-const isValidUrl = (url: string) => {
+const isValidUrl = (url: string | undefined): url is string => {
   try {
+    if (!url) return false;
     new URL(url);
     return true;
   } catch (_) {
@@ -17,12 +15,10 @@ const isValidUrl = (url: string) => {
   }
 };
 
-// Fallback logic to prevent app crash if keys are missing/invalid
-const finalUrl = isValidUrl(supabaseUrl) ? supabaseUrl : 'https://placeholder-project.supabase.co';
-const finalKey = supabaseAnonKey || 'placeholder-key';
-
 if (!isValidUrl(supabaseUrl) || !supabaseAnonKey) {
-  console.warn('⚠️ Supabase URL or Anon Key is missing or invalid. Check your .env.local file.');
+  const errorMsg = '🚨 [BRN Suite] Supabase URL or Anon Key is missing or invalid. Check your .env.local file for VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.';
+  console.error(errorMsg);
+  throw new Error(errorMsg);
 }
 
-export const supabase = createClient(finalUrl, finalKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

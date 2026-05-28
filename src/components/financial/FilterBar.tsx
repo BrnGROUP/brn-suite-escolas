@@ -197,6 +197,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             <option value="none">Nenhuma / Natureza Direta</option>
                             {auxData.rubrics
                                 .filter(r => !filters.program || r.program_id === filters.program)
+                                .filter(r => !filters.school || !r.school_id || r.school_id === filters.school)
                                 .map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                         </select>
                     </div>

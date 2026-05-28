@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import HelpModal from './common/HelpModal';
@@ -136,6 +137,7 @@ const HELP_CONTENT: Record<string, { title: string, description: string, section
 };
 
 const Topbar: React.FC<TopbarProps> = ({ user, activePageName, onOpenMobileMenu }) => {
+  const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
@@ -291,7 +293,7 @@ const Topbar: React.FC<TopbarProps> = ({ user, activePageName, onOpenMobileMenu 
                 </div>
                 <div className="p-3 bg-white/[0.02] border-t border-white/5 text-center">
                   <button
-                    onClick={() => { setShowNotifications(false); window.dispatchEvent(new CustomEvent('changePage', { detail: 'notifications' })); }}
+                    onClick={() => { setShowNotifications(false); navigate('/notifications'); }}
                     className="text-[10px] font-black text-primary uppercase hover:underline tracking-widest"
                   >
                     Ver todas as notificações

@@ -25,3 +25,14 @@ dist-ssr
 
 .vercel
 .env
+
+# Documentations & Sensitive Contracts
+*.doc
+*.docx
+*.pdf
+
+# Output Logs / Temp Checklists
+*_output.txt
+*_out.txt
+*.txt.tmp
+

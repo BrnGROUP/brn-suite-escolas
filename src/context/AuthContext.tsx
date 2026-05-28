@@ -24,43 +24,57 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             return;
         }
 
-        const { data } = await supabase
-            .from('contract_signatures')
-            .select('id')
-            .eq('user_id', userId)
-            .limit(1)
-            .maybeSingle();
+        try {
+            const { data, error } = await supabase
+                .from('contract_signatures')
+                .select('id')
+                .eq('user_id', userId)
+                .limit(1)
+                .maybeSingle();
 
-        setNeedsSignature(!data);
+            if (error) {
+                console.error('Error checking contract signature:', error);
+                setNeedsSignature(true); // Secure by default
+                return;
+            }
+
+            setNeedsSignature(!data);
+        } catch (err) {
+            console.error('Error checking contract signature:', err);
+            setNeedsSignature(true); // Secure by default
+        }
     };
 
-    const fetchProfile = async (userId: string, email: string) => {
+    const fetchProfile = async (userId: string) => {
         try {
             let { data, error } = await supabase
                 .from('users')
-                .select('*')
+                .select('id, name, email, role, school_id, assigned_schools, active, gee, avatar_url')
                 .eq('id', userId)
                 .maybeSingle();
 
+            if (error) {
+                console.error('Error fetching user profile:', error);
+            }
+
             if (!data && !error) {
-                const { data: claimed } = await supabase.rpc('claim_profile_by_email');
+                const { data: claimed, error: rpcError } = await supabase.rpc('claim_profile_by_email');
+
+                if (rpcError) {
+                    console.error('Error running claim_profile_by_email:', rpcError);
+                }
 
                 if (claimed) {
-                    const { data: refreshed } = await supabase.from('users').select('*').eq('id', userId).single();
-                    data = refreshed;
-                } else {
-                    const newProfile = {
-                        id: userId,
-                        email: email,
-                        name: email.split('@')[0],
-                        role: UserRole.CLIENTE,
-                        school_id: null,
-                        active: true
-                    };
-
-                    const { error: insertError } = await supabase.from('users').insert(newProfile);
-                    if (!insertError) {
-                        data = newProfile as any;
+                    const { data: refreshed, error: refreshError } = await supabase
+                        .from('users')
+                        .select('id, name, email, role, school_id, assigned_schools, active, gee, avatar_url')
+                        .eq('id', userId)
+                        .single();
+                    
+                    if (refreshError) {
+                        console.error('Error fetching claimed profile:', refreshError);
+                    } else {
+                        data = refreshed;
                     }
                 }
             }
@@ -78,7 +92,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     avatar_url: data.avatar_url
                 };
                 setCurrentUser(userObj);
-                checkContractSignature(userObj.id, userObj.role);
+                await checkContractSignature(userObj.id, userObj.role);
             } else {
                 setCurrentUser(null);
             }
@@ -92,31 +106,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const refreshProfile = async () => {
         const { data } = await supabase.auth.getSession();
         if (data.session?.user) {
-            await fetchProfile(data.session.user.id, data.session.user.email!);
+            await fetchProfile(data.session.user.id);
         }
     };
 
     useEffect(() => {
-        const initSession = async () => {
-            const { data, error } = await supabase.auth.getSession();
-            if (data.session?.user) {
-                await fetchProfile(data.session.user.id, data.session.user.email!);
-            } else {
-                setLoading(false);
-            }
-        };
-
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-                fetchProfile(session.user.id, session.user.email!);
+                fetchProfile(session.user.id);
             } else {
                 setCurrentUser(null);
                 setNeedsSignature(false);
                 setLoading(false);
             }
         });
-
-        initSession();
 
         return () => {
             subscription?.unsubscribe();

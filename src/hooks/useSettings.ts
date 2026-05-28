@@ -1,9 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useToast } from '../context/ToastContext';
-import { compressImage } from '../lib/imageUtils';
 import { User } from '../types';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRubricSettings } from './settings/useRubricSettings';
+import { useSupplierSettings } from './settings/useSupplierSettings';
+import { useBankSettings } from './settings/useBankSettings';
+import { useConfirm } from '../context/ConfirmContext';
+
 
 export const BRAZIL_STATES = [
     { uf: 'AC', name: 'Acre' }, { uf: 'AL', name: 'Alagoas' }, { uf: 'AP', name: 'Amapá' },
@@ -65,70 +69,34 @@ const DEFAULT_PLANS = [
 export const useSettings = (user: User) => {
     const queryClient = useQueryClient();
     const { addToast } = useToast();
+    const { confirm } = useConfirm();
     const [activeTab, setActiveTab] = useState('profile');
 
-    // --- FORM STATES ---
-    const [newRubric, setNewRubric] = useState({ name: '', program_id: '', school_id: '', default_nature: 'Custeio' });
-    const [editingRubricId, setEditingRubricId] = useState<string | null>(null);
-    const [rubricSearch, setRubricSearch] = useState('');
-    const [rubricFilterProgram, setRubricFilterProgram] = useState('');
-    const [rubricFilterSchool, setRubricFilterSchool] = useState('');
 
+    // Consolidate Rubric, Supplier, and Bank Settings into sub-hooks
+    const rubricSettings = useRubricSettings();
+    const supplierSettings = useSupplierSettings();
+    const bankSettings = useBankSettings();
+
+    // Local states
     const [newProgram, setNewProgram] = useState({ name: '', description: '' });
-
-    const [newSupplier, setNewSupplier] = useState({
-        name: '',
-        cnpj: '',
-        email: '',
-        phone: '',
-        cep: '',
-        address: '',
-        city: '',
-        uf: '',
-        stamp_url: '',
-        rep_name: '',
-        rep_cpf: '',
-        rep_rg: '',
-        rep_address: ''
-    });
-    const [editingSupplierId, setEditingSupplierId] = useState<string | null>(null);
-    const [isUploadingStamp, setIsUploadingStamp] = useState(false);
-
-    const [newBank, setNewBank] = useState({ name: '', bank_name: '', agency: '', account_number: '', school_id: '', program_id: '' });
-    const [editingBankId, setEditingBankId] = useState<string | null>(null);
-    const [bankSearch, setBankSearch] = useState('');
-    const [bankFilterProgram, setBankFilterProgram] = useState('');
-    const [bankFilterSchool, setBankFilterSchool] = useState('');
-
     const [newPaymentMethod, setNewPaymentMethod] = useState('');
     const [newPeriod, setNewPeriod] = useState({ name: '', is_active: true });
 
     const [profileData, setProfileData] = useState({ name: user.name, email: user.email || '' });
     const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
 
-    const [cities, setCities] = useState<string[]>([]);
-    const [loadingCities, setLoadingCities] = useState(false);
-
-    // --- QUERIES ---
+    // Queries
     const { data: schools = [] } = useQuery({ queryKey: ['schools'], queryFn: async () => (await supabase.from('schools').select('*').order('name')).data || [] });
     const { data: programs = [] } = useQuery({ queryKey: ['programs'], queryFn: async () => (await supabase.from('programs').select('*').order('name')).data || [] });
-    const { data: rubrics = [], isLoading: loadingRubrics } = useQuery({
-        queryKey: ['rubrics'],
-        queryFn: async () => (await supabase.from('rubrics').select('*, programs(name), schools(name)').order('name')).data || []
-    });
-    const { data: suppliers = [], isLoading: loadingSuppliers } = useQuery({ queryKey: ['suppliers'], queryFn: async () => (await supabase.from('suppliers').select('*').order('name')).data || [] });
-    const { data: bankAccounts = [], isLoading: loadingBanks } = useQuery({
-        queryKey: ['bank_accounts'],
-        queryFn: async () => (await supabase.from('bank_accounts').select('*, schools(name), programs(name)').order('name')).data || []
-    });
     const { data: paymentMethods = [], isLoading: loadingPayments } = useQuery({ queryKey: ['payment_methods'], queryFn: async () => (await supabase.from('payment_methods').select('*').order('name')).data || [] });
     const { data: periods = [], isLoading: loadingPeriods } = useQuery({ queryKey: ['periods'], queryFn: async () => (await supabase.from('periods').select('*').order('name', { ascending: false })).data || [] });
+    
     const { data: billingRecords = [], isLoading: loadingBilling } = useQuery({
         queryKey: ['platform_billing', user.schoolId],
         queryFn: async () => {
             let query = supabase.from('platform_billing').select('*, schools(name, plan_id, custom_price, discount_value, address, city, uf, cnpj)').order('reference_month', { ascending: false });
 
-            // If not admin/operator, filter by assigned school
             if (user.role !== 'Administrador' && user.role !== 'Operador') {
                 if (user.schoolId) {
                     query = query.eq('school_id', user.schoolId);
@@ -167,7 +135,7 @@ export const useSettings = (user: User) => {
         }
     }, [systemSettings]);
 
-    // --- MUTATIONS ---
+    // Generic helper mutations
     const createMutation = (table: string, queryKey: string[], onSuccess?: () => void) => useMutation({
         mutationFn: async (payload: any) => {
             const { error } = await supabase.from(table).insert(payload);
@@ -202,73 +170,7 @@ export const useSettings = (user: User) => {
         onSuccess: () => queryClient.invalidateQueries({ queryKey })
     });
 
-    // Specific Mutations
-    const saveRubricMut = useMutation({
-        mutationFn: async (payload: any) => {
-            if (editingRubricId) {
-                const { error } = await supabase.from('rubrics').update(payload).eq('id', editingRubricId);
-                if (error) throw error;
-            } else {
-                const { error } = await supabase.from('rubrics').insert(payload);
-                if (error) throw error;
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['rubrics'] });
-            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
-            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
-            setNewRubric({ name: '', program_id: '', school_id: '', default_nature: 'Custeio' });
-            setEditingRubricId(null);
-            addToast(editingRubricId ? 'Rubrica atualizada!' : 'Rubrica criada!', 'success');
-        },
-        onError: (err: any) => addToast('Erro ao salvar rubrica: ' + err.message, 'error')
-    });
-
-    const saveSupplierMut = useMutation({
-        mutationFn: async (payload: any) => {
-            if (editingSupplierId) {
-                const { error } = await supabase.from('suppliers').update(payload).eq('id', editingSupplierId);
-                if (error) throw error;
-            } else {
-                const { error } = await supabase.from('suppliers').insert(payload);
-                if (error) throw error;
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['suppliers'] });
-            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
-            queryClient.invalidateQueries({ queryKey: ['suppliers_list'] });
-            setNewSupplier({
-                name: '', cnpj: '', email: '', phone: '', cep: '', address: '', city: '', uf: '', stamp_url: '',
-                rep_name: '', rep_cpf: '', rep_rg: '', rep_address: ''
-            });
-            setEditingSupplierId(null);
-            addToast(editingSupplierId ? 'Fornecedor atualizado!' : 'Fornecedor cadastrado!', 'success');
-        },
-        onError: (err: any) => addToast('Erro ao salvar fornecedor: ' + err.message, 'error')
-    });
-
-    const saveBankMut = useMutation({
-        mutationFn: async (payload: any) => {
-            if (editingBankId) {
-                const { error } = await supabase.from('bank_accounts').update(payload).eq('id', editingBankId);
-                if (error) throw error;
-            } else {
-                const { error } = await supabase.from('bank_accounts').insert(payload);
-                if (error) throw error;
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['bank_accounts'] });
-            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
-            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
-            setNewBank({ name: '', bank_name: '', agency: '', account_number: '', school_id: '', program_id: '' });
-            setEditingBankId(null);
-            addToast(editingBankId ? 'Conta bancária atualizada!' : 'Conta bancária criada!', 'success');
-        },
-        onError: (err: any) => addToast('Erro ao salvar conta bancária: ' + err.message, 'error')
-    });
-
+    // Specific Local Mutations
     const upsertSettingMut = useMutation({
         mutationFn: async ({ key, value }: { key: string, value: any }) => {
             const { error } = await supabase.from('system_settings').upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
@@ -320,24 +222,17 @@ export const useSettings = (user: User) => {
 
     const generateBillingMut = useMutation({
         mutationFn: async (month: string) => {
-            // 1. Get Schools with Plans
             const { data: schoolsWithPlan } = await supabase.from('schools').select('id, plan_id, custom_price, discount_value').not('plan_id', 'is', null);
             if (!schoolsWithPlan || schoolsWithPlan.length === 0) return;
 
-            // 2. Get EXISTING billing records for this month (Manual Conflict Check)
             const { data: existingRecords } = await supabase
                 .from('platform_billing')
                 .select('school_id')
                 .eq('reference_month', month)
-                // Assuming standard monthly fee has either default description 'Mensalidade' or NULL
-                // But generally, to avoid ANY duplicate monthly fee, checking school_id + month for specifically 'Mensalidade' logic if needed,
-                // OR checking if ANY record exists might be too aggressive (prevents extras).
-                // Let's assume we want to prevent duplicate "Mensalidade".
                 .ilike('description', 'Mensalidade');
 
             const existingSchoolIds = new Set(existingRecords?.map(r => r.school_id) || []);
 
-            // 3. Filter Schools that DON'T have a 'Mensalidade' yet
             const recordsToInsert = schoolsWithPlan
                 .filter(s => !existingSchoolIds.has(s.id))
                 .map(s => {
@@ -351,19 +246,15 @@ export const useSettings = (user: User) => {
                         school_id: s.id,
                         reference_month: month,
                         amount: finalAmount,
-                        description: 'Mensalidade', // Explicitly set description
+                        description: 'Mensalidade',
                         status: 'Pendente',
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
                     };
                 });
 
-            if (recordsToInsert.length === 0) {
-                // If everyone already has it, just return (or maybe throw a friendly 'Already generated'?)
-                return;
-            }
+            if (recordsToInsert.length === 0) return;
 
-            // 4. Simple Insert
             const { error } = await supabase.from('platform_billing').insert(recordsToInsert);
             if (error) throw error;
         },
@@ -374,62 +265,42 @@ export const useSettings = (user: User) => {
         onError: (err: any) => addToast('Erro ao gerar cobranças: ' + err.message, 'error')
     });
 
-    // --- HANDLERS ---
-    const handleSaveRubric = () => {
-        if (!newRubric.name || !newRubric.program_id) return addToast('Preencha os campos obrigatórios', 'warning');
-        saveRubricMut.mutate({ ...newRubric, school_id: newRubric.school_id || null });
-    };
+    const savePeriodMut = createMutation('periods', ['periods']);
 
-    const handleDeleteRubric = (id: string) => confirm('Excluir?') && deleteMutation('rubrics', ['rubrics']).mutate(id);
-
+    // Handlers
     const handleCreateProgram = () => newProgram.name && createMutation('programs', ['programs'], () => { setNewProgram({ name: '', description: '' }); addToast('Programa criado!', 'success'); }).mutate(newProgram);
-
-    const handleDeleteProgram = (id: string) => confirm('Excluir?') && deleteMutation('programs', ['programs']).mutate(id);
-
-    const handleCreateSupplier = () => {
-        if (!newSupplier.name) return addToast('Nome obrigatório', 'warning');
-        if (!newSupplier.cnpj) return addToast('CNPJ obrigatório', 'warning');
-
-        // Normalização para comparação: remove pontuação, espaços e converte para minúsculo
-        const cleanCNPJ = newSupplier.cnpj.replace(/\D/g, '');
-        const cleanName = newSupplier.name.trim().toLowerCase();
-
-        // Verificar duplicidade localmente (já temos os suppliers da Query)
-        const isDuplicate = suppliers.some((s: any) => {
-            // Se estiver editando, ignora o próprio registro
-            if (editingSupplierId && s.id === editingSupplierId) return false;
-
-            const existingCNPJ = (s.cnpj || '').replace(/\D/g, '');
-            const existingName = (s.name || '').trim().toLowerCase();
-
-            return existingCNPJ === cleanCNPJ || existingName === cleanName;
-        });
-
-        if (isDuplicate) {
-            return addToast('Já existe um fornecedor cadastrado com este Nome ou CNPJ.', 'error');
+    const handleDeleteProgram = async (id: string) => {
+        if (await confirm({
+            title: 'Excluir Programa',
+            message: 'Deseja realmente excluir este programa? Esta ação não pode ser desfeita.',
+            isDestructive: true
+        })) {
+            deleteMutation('programs', ['programs']).mutate(id);
         }
-
-        saveSupplierMut.mutate(newSupplier);
     };
-
-    const handleDeleteSupplier = (id: string) => confirm('Excluir?') && deleteMutation('suppliers', ['suppliers']).mutate(id);
-
-    const handleCreateBank = () => {
-        if (!newBank.name || !newBank.bank_name) return addToast('Campos obrigatórios', 'warning');
-        saveBankMut.mutate({ ...newBank, school_id: newBank.school_id || null, program_id: newBank.program_id || null });
-    };
-
-    const handleDeleteBank = (id: string) => confirm('Excluir?') && deleteMutation('bank_accounts', ['bank_accounts']).mutate(id);
 
     const handleCreatePaymentMethod = () => newPaymentMethod && createMutation('payment_methods', ['payment_methods'], () => { setNewPaymentMethod(''); addToast('Método de pagamento criado!', 'success'); }).mutate({ name: newPaymentMethod });
-
-    const handleDeletePaymentMethod = (id: string) => confirm('Excluir?') && deleteMutation('payment_methods', ['payment_methods']).mutate(id);
+    const handleDeletePaymentMethod = async (id: string) => {
+        if (await confirm({
+            title: 'Excluir Método de Pagamento',
+            message: 'Deseja realmente excluir este método de pagamento? Esta ação não pode ser desfeita.',
+            isDestructive: true
+        })) {
+            deleteMutation('payment_methods', ['payment_methods']).mutate(id);
+        }
+    };
 
     const handleCreatePeriod = () => newPeriod.name && createMutation('periods', ['periods'], () => { setNewPeriod({ name: '', is_active: true }); addToast('Período criado!', 'success'); }).mutate(newPeriod);
-
     const handleTogglePeriod = (id: string, current: boolean) => updateMutation('periods', ['periods'], () => addToast(`Período ${current ? 'desativado' : 'ativado'}!`, 'success')).mutate({ id, payload: { is_active: !current } });
-
-    const handleDeletePeriod = (id: string) => confirm('Excluir?') && deleteMutation('periods', ['periods']).mutate(id);
+    const handleDeletePeriod = async (id: string) => {
+        if (await confirm({
+            title: 'Excluir Período',
+            message: 'Deseja realmente excluir este período? Esta ação não pode ser desfeita.',
+            isDestructive: true
+        })) {
+            deleteMutation('periods', ['periods']).mutate(id);
+        }
+    };
 
     const handleUpdateProfile = () => profileData.name.trim() && updateProfileMut.mutate(profileData.name.trim());
 
@@ -445,31 +316,6 @@ export const useSettings = (user: User) => {
     const handleSaveContacts = () => upsertSettingMut.mutate({ key: 'support_contacts', value: localContacts }, { onSuccess: () => addToast('Contatos salvos!', 'success') });
     const handleSavePlans = () => upsertSettingMut.mutate({ key: 'landing_page_plans', value: localPlans }, { onSuccess: () => addToast('Planos salvos!', 'success') });
 
-    const fetchCities = async (uf: string) => {
-        setLoadingCities(true);
-        try {
-            const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
-            const data = await res.json();
-            setCities(data.map((c: any) => c.nome).sort());
-        } finally { setLoadingCities(false); }
-    };
-
-    const handleStampUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        setIsUploadingStamp(true);
-        try {
-            const processedFile = file.type.startsWith('image/') ? await compressImage(file) : file;
-            const fileName = `stamps/${Date.now()}.${file.name.split('.').pop()}`;
-            await supabase.storage.from('attachments').upload(fileName, processedFile);
-            const { data: { publicUrl } } = supabase.storage.from('attachments').getPublicUrl(fileName);
-            setNewSupplier(prev => ({ ...prev, stamp_url: publicUrl }));
-            addToast('Carimbo enviado com sucesso!', 'success');
-        } catch (err: any) {
-            addToast(err.message, 'error');
-        } finally { setIsUploadingStamp(false); }
-    };
-
     const handleTemplateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -483,24 +329,82 @@ export const useSettings = (user: User) => {
 
     return {
         activeTab, setActiveTab,
-        schools, programs, cities, loadingCities,
-        rubrics, newRubric, setNewRubric, editingRubricId, setEditingRubricId, rubricSearch, setRubricSearch, rubricFilterProgram, setRubricFilterProgram, rubricFilterSchool, setRubricFilterSchool,
+        schools, programs,
+        cities: supplierSettings.cities,
+        loadingCities: supplierSettings.loadingCities,
+        
+        // Rubric settings delegator
+        rubrics: rubricSettings.rubrics,
+        newRubric: rubricSettings.newRubric,
+        setNewRubric: rubricSettings.setNewRubric,
+        editingRubricId: rubricSettings.editingRubricId,
+        setEditingRubricId: rubricSettings.setEditingRubricId,
+        rubricSearch: rubricSettings.rubricSearch,
+        setRubricSearch: rubricSettings.setRubricSearch,
+        rubricFilterProgram: rubricSettings.rubricFilterProgram,
+        setRubricFilterProgram: rubricSettings.setRubricFilterProgram,
+        rubricFilterSchool: rubricSettings.rubricFilterSchool,
+        setRubricFilterSchool: rubricSettings.setRubricFilterSchool,
+        handleSaveRubric: rubricSettings.handleSaveRubric,
+        handleEditRubric: rubricSettings.handleEditRubric,
+        handleDeleteRubric: rubricSettings.handleDeleteRubric,
+        
         newProgram, setNewProgram,
-        suppliers, newSupplier, setNewSupplier, editingSupplierId, setEditingSupplierId, isUploadingStamp,
-        bankAccounts, newBank, setNewBank, editingBankId, setEditingBankId, bankSearch, setBankSearch, bankFilterProgram, setBankFilterProgram, bankFilterSchool, setBankFilterSchool,
+        handleCreateProgram,
+        handleDeleteProgram,
+        
+        // Supplier settings delegator
+        suppliers: supplierSettings.suppliers,
+        newSupplier: supplierSettings.newSupplier,
+        setNewSupplier: supplierSettings.setNewSupplier,
+        editingSupplierId: supplierSettings.editingSupplierId,
+        setEditingSupplierId: supplierSettings.setEditingSupplierId,
+        isUploadingStamp: supplierSettings.isUploadingStamp,
+        handleCreateSupplier: supplierSettings.handleCreateSupplier,
+        handleEditSupplier: supplierSettings.handleEditSupplier,
+        handleDeleteSupplier: supplierSettings.handleDeleteSupplier,
+        handleStampUpload: supplierSettings.handleStampUpload,
+        fetchCities: supplierSettings.fetchCities,
+        
+        // Bank settings delegator
+        bankAccounts: bankSettings.bankAccounts,
+        newBank: bankSettings.newBank,
+        setNewBank: bankSettings.setNewBank,
+        editingBankId: bankSettings.editingBankId,
+        setEditingBankId: bankSettings.setEditingBankId,
+        bankSearch: bankSettings.bankSearch,
+        setBankSearch: bankSettings.setBankSearch,
+        bankFilterProgram: bankSettings.bankFilterProgram,
+        setBankFilterProgram: bankSettings.setBankFilterProgram,
+        bankFilterSchool: bankSettings.bankFilterSchool,
+        setBankFilterSchool: bankSettings.setBankFilterSchool,
+        handleCreateBank: bankSettings.handleCreateBank,
+        handleEditBank: bankSettings.handleEditBank,
+        handleDeleteBank: bankSettings.handleDeleteBank,
+        
         paymentMethods, newPaymentMethod, setNewPaymentMethod,
-        periods, newPeriod, setNewPeriod, isSavingPeriod: createMutation('periods', []).isPending,
+        handleCreatePaymentMethod,
+        handleDeletePaymentMethod,
+        periods, newPeriod, setNewPeriod, isSavingPeriod: savePeriodMut.isPending,
+        handleCreatePeriod,
+        handleTogglePeriod,
+        handleDeletePeriod,
         profileData, setProfileData, updatingProfile: updateProfileMut.isPending, passwords, setPasswords,
+        handleUpdateProfile,
+        handleChangePassword,
         updatingPassword: false,
         supportContacts: localContacts, setSupportContacts: setLocalContacts, loadingContacts: false, savingContacts: upsertSettingMut.isPending,
+        handleSaveContacts,
         plans: localPlans, setPlans: setLocalPlans, loadingPlans: false, savingPlans: upsertSettingMut.isPending,
+        handleSavePlans,
         billingRecords, loadingBilling,
         handleUpdateBilling: updateBillingStatusMut.mutate,
         handleCreateBilling: createBillingRecordMut.mutate,
         handleGenerateBilling: generateBillingMut.mutate,
         templateUrl: systemSettings.templateUrl, loadingAssets: false, isUploadingTemplate: false,
-        loading: loadingRubrics || loadingSuppliers || loadingBanks || loadingPayments || loadingPeriods || loadingBilling,
-        fetchAuxOptions: () => { }, // Compatibility
+        handleTemplateUpload,
+        loading: rubricSettings.loadingRubrics || supplierSettings.loadingSuppliers || bankSettings.loadingBanks || loadingPayments || loadingPeriods || loadingBilling,
+        fetchAuxOptions: () => { },
         fetchRubricData: () => { },
         fetchSupplierData: () => { },
         fetchBankData: () => { },
@@ -509,17 +413,7 @@ export const useSettings = (user: User) => {
         fetchSupportContacts: () => { },
         fetchPlans: () => { },
         fetchAssets: () => { },
-        fetchCities,
-        handleSaveRubric, handleEditRubric: (r: any) => { setNewRubric({ name: r.name, program_id: r.program_id, school_id: r.school_id || '', default_nature: r.default_nature || 'Custeio' }); setEditingRubricId(r.id); },
-        handleDeleteRubric, handleCreateProgram, handleDeleteProgram,
-        handleCreateSupplier, handleEditSupplier: (s: any) => { setNewSupplier({ ...s, rep_name: s.rep_name || '', rep_cpf: s.rep_cpf || '', rep_rg: s.rep_rg || '', rep_address: s.rep_address || '' }); setEditingSupplierId(s.id); },
-        handleDeleteSupplier, handleStampUpload,
-        handleCreateBank, handleEditBank: (b: any) => { setNewBank({ name: b.name || '', bank_name: b.bank_name || '', agency: b.agency || '', account_number: b.account_number || '', school_id: b.school_id || '', program_id: b.program_id || '' }); setEditingBankId(b.id); },
-        handleDeleteBank,
-        handleCreatePaymentMethod, handleDeletePaymentMethod,
-        handleCreatePeriod, handleTogglePeriod, handleDeletePeriod,
-        handleUpdateProfile, handleChangePassword,
-        handleSaveContacts, handleSavePlans, handleTemplateUpload,
+        
         updatePlanField: (i: number, f: string, v: any) => { const p = [...localPlans]; p[i] = { ...p[i], [f]: v }; setLocalPlans(p); },
         handleAddFeature: (pi: number) => { const p = [...localPlans]; if (!p[pi].features) p[pi].features = []; p[pi].features.push(""); setLocalPlans(p); },
         handleRemoveFeature: (pi: number, fi: number) => { const p = [...localPlans]; p[pi].features = p[pi].features.filter((_: any, i: number) => i !== fi); setLocalPlans(p); },

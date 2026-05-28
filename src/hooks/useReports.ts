@@ -63,7 +63,8 @@ export const useReports = (user: User, filters: ReportsFilters) => {
             return (entriesRes.data || []).filter(e =>
                 !usedIds.has(e.id) &&
                 e.category !== 'Tarifa Bancária' &&
-                e.category !== 'Rendimento de Aplicação'
+                e.category !== 'Rendimento de Aplicação' &&
+                !e.description.startsWith('[SALDO]') // Saldo de split pertence ao processo do lançamento original
             ) as FinancialEntry[];
         },
         enabled: !!user.id
