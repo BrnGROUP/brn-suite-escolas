@@ -33,12 +33,14 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
     programs,
     type
 }) => {
-    const isPnaeEntrada = React.useMemo(() => {
-        if (type !== 'Entrada' || !selectedProgramId || !programs) return false;
+    const isClassificationHidden = React.useMemo(() => {
+        if (!selectedProgramId || !programs) return false;
         const prog = programs.find((p: any) => p.id === selectedProgramId);
         if (!prog) return false;
         const nameUpper = (prog.name || '').toUpperCase().trim();
-        return nameUpper.includes('PNAE');
+        const isPnae = nameUpper.includes('PNAE');
+        const isMaisMerenda = nameUpper.includes('MAIS MERENDA');
+        return isMaisMerenda || (isPnae && type === 'Entrada');
     }, [type, selectedProgramId, programs]);
 
     const isCusteioOnly = React.useMemo(() => {
@@ -49,7 +51,7 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
         return nameUpper.includes('MAIS MERENDA') || nameUpper.includes('PNAE');
     }, [selectedProgramId, programs]);
 
-    if (isPnaeEntrada) return null;
+    if (isClassificationHidden) return null;
     return (
         <div className="flex flex-col gap-4 border-t border-white/5 pt-6">
             <div className="flex justify-between items-center">

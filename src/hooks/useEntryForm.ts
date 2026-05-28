@@ -530,7 +530,7 @@ export const useEntryForm = ({
             });
         }
 
-        if (isPnae && type === 'Entrada') {
+        if ((isPnae && type === 'Entrada') || isMaisMerenda) {
             setSingleRubricId('');
             setIsSplitMode(false);
         }
