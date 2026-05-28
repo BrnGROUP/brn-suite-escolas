@@ -19,7 +19,7 @@ export const useAuxData = () => {
     queryKey: ['aux_data'],
     queryFn: async () => {
       const [s, p, r, sup, b, pm, per] = await Promise.all([
-        supabase.from('schools').select('id, name').order('name'),
+        supabase.from('schools').select('id, name, inep').order('name'),
         supabase.from('programs').select('id, name').order('name'),
         supabase.from('rubrics').select('id, name, program_id, default_nature, school_id').order('name'),
         supabase.from('suppliers').select('id, name, cnpj').order('name'),

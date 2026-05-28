@@ -125,7 +125,7 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
                 // Fetch specific data for report to avoid affecting main list UI
                 let query = supabase
                     .from('financial_entries')
-                    .select('*, schools(name), programs(name), rubrics(name), suppliers(name)')
+                    .select('*, schools(name, inep), programs(name), rubrics(name), suppliers(name)')
                     .order('date', { ascending: true });
 
                 if (options.filterSchool) query = query.eq('school_id', options.filterSchool);
@@ -140,6 +140,7 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
                 exportEntries = (data || []).map(e => ({
                     ...e,
                     school: e.schools?.name,
+                    inep: e.schools?.inep || '',
                     program: e.programs?.name,
                     rubric: e.rubrics?.name,
                     supplier: e.suppliers?.name

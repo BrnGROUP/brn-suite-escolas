@@ -30,13 +30,17 @@ const MonthStatusTable: React.FC<MonthStatusTableProps> = ({ systemEntries, prog
     const pending = filteredEntries.filter(e => !e.is_reconciled);
 
     const getMappedEntries = () => {
-        return reconciled.map(e => ({
-            ...e,
-            school: schools.find(s => s.id === e.school_id)?.name || 'Sem Escola',
-            program: programs.find(p => p.id === e.program_id)?.name || 'Sem Programa',
-            rubric: rubrics.find(r => r.id === e.rubric_id)?.name || 'Sem Rubrica',
-            supplier: suppliers.find(s => s.id === e.supplier_id)?.name || 'Geral'
-        }));
+        return reconciled.map(e => {
+            const schoolObj = schools.find(s => s.id === e.school_id);
+            return {
+                ...e,
+                school: schoolObj?.name || 'Sem Escola',
+                inep: schoolObj?.inep || '',
+                program: programs.find(p => p.id === e.program_id)?.name || 'Sem Programa',
+                rubric: rubrics.find(r => r.id === e.rubric_id)?.name || 'Sem Rubrica',
+                supplier: suppliers.find(s => s.id === e.supplier_id)?.name || 'Geral'
+            };
+        });
     };
 
     const handleExportPDF = async () => {

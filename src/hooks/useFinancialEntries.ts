@@ -68,7 +68,7 @@ export function useFinancialEntries(user: User, filters: any = {}) {
         queryFn: async () => {
             let q = supabase.from('financial_entries').select(`
                 *, 
-                schools(name), 
+                schools(name, inep), 
                 programs(name), 
                 rubrics(name), 
                 suppliers(name),

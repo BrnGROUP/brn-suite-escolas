@@ -257,13 +257,17 @@ export const useBankReconciliation = (user: User) => {
                 return;
             }
 
-            const mapped = data.map(e => ({
-                ...e,
-                school: schools.find((s: any) => s.id === e.school_id)?.name || 'Sem Escola',
-                program: programs.find((p: any) => p.id === e.program_id)?.name || 'Sem Programa',
-                rubric: rubrics.find((r: any) => r.id === e.rubric_id)?.name || 'Sem Rubrica',
-                supplier: suppliers.find((s: any) => s.id === e.supplier_id)?.name || 'Geral'
-            }));
+            const mapped = data.map(e => {
+                const schoolObj = schools.find((s: any) => s.id === e.school_id);
+                return {
+                    ...e,
+                    school: schoolObj?.name || 'Sem Escola',
+                    inep: schoolObj?.inep || '',
+                    program: programs.find((p: any) => p.id === e.program_id)?.name || 'Sem Programa',
+                    rubric: rubrics.find((r: any) => r.id === e.rubric_id)?.name || 'Sem Rubrica',
+                    supplier: suppliers.find((s: any) => s.id === e.supplier_id)?.name || 'Geral'
+                };
+            });
 
             if (format === 'csv') {
                 generateCSV(mapped);

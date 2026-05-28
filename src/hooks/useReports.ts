@@ -17,7 +17,7 @@ export const useReports = (user: User, filters: ReportsFilters) => {
         queryKey: ['reports_aux'],
         queryFn: async () => {
             const [s, p, t] = await Promise.all([
-                supabase.from('schools').select('id, name').order('name'),
+                supabase.from('schools').select('id, name, inep').order('name'),
                 supabase.from('programs').select('id, name').order('name'),
                 supabase.from('system_settings').select('value').eq('key', 'import_template_url').maybeSingle()
             ]);

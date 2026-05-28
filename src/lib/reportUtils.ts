@@ -32,6 +32,12 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
     const isLivroCaixa = options.reportMode === 'livro_caixa';
     let reportTitle = isLivroCaixa ? 'Livro Caixa - Prestação de Contas' : 'Relatório de Movimentação';
 
+    let inepCode = '';
+    const entryWithInep = entries.find(e => e.inep || e.schools?.inep);
+    if (entryWithInep) {
+        inepCode = entryWithInep.inep || entryWithInep.schools?.inep || '';
+    }
+
     if (options.filterSchool) {
         const schoolName = entries.find(e => e.school_id === options.filterSchool)?.school || 'Unidade Específica';
         reportTitle = isLivroCaixa ? `Livro Caixa: ${schoolName}` : `Relatório: ${schoolName}`;
@@ -165,7 +171,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
         <header class="relative z-10 flex justify-between items-start mb-10 pb-6 border-b border-slate-100">
             <div>
                 <div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-lg mb-4">
-                    <span class="text-[9px] font-black uppercase tracking-widest">Premium Intelligence System</span>
+                    <span class="text-[9px] font-black uppercase tracking-widest">${inepCode ? `CÓDIGO INEP: ${inepCode}` : 'SISTEMA OFICIAL DE PRESTAÇÃO DE CONTAS'}</span>
                 </div>
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight">${reportTitle}</h1>
                 <p class="text-slate-400 font-bold uppercase text-[10px] tracking-[0.3em] mt-2">${isLivroCaixa ? 'Registro Formal de Movimentação Financeira' : 'Dashboard Executivo de Prestação de Contas'}</p>
