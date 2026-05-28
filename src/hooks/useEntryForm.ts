@@ -510,13 +510,16 @@ export const useEntryForm = ({
         }
     }, [type, isOpen, category]);
 
-    // Force Custeio nature for PNAE and Mais Merenda programs
+    // Force Custeio nature for PNAE and Mais Merenda programs, and force default empty rubric for PNAE inflow
     React.useEffect(() => {
         if (!isOpen || !selectedProgramId || !programs) return;
         const prog = programs.find((p: any) => p.id === selectedProgramId);
         if (!prog) return;
         const nameUpper = (prog.name || '').toUpperCase().trim();
-        if (nameUpper.includes('MAIS MERENDA') || nameUpper.includes('PNAE')) {
+        const isPnae = nameUpper.includes('PNAE');
+        const isMaisMerenda = nameUpper.includes('MAIS MERENDA');
+
+        if (isMaisMerenda || isPnae) {
             setSingleNature(TransactionNature.CUSTEIO);
             setSplitItems(prev => {
                 const hasNonCusteio = prev.some(item => item.nature !== TransactionNature.CUSTEIO);
@@ -526,7 +529,12 @@ export const useEntryForm = ({
                 return prev;
             });
         }
-    }, [selectedProgramId, programs, isOpen]);
+
+        if (isPnae && type === 'Entrada') {
+            setSingleRubricId('');
+            setIsSplitMode(false);
+        }
+    }, [selectedProgramId, programs, isOpen, type]);
 
     // Contracts loader
     React.useEffect(() => {

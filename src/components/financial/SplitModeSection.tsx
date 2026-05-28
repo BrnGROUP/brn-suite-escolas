@@ -15,6 +15,7 @@ interface SplitModeSectionProps {
     allRubrics: any[];
     selectedProgramId?: string;
     programs?: any[];
+    type?: 'Entrada' | 'Saída';
 }
 
 export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
@@ -29,8 +30,17 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
     filteredRubrics,
     allRubrics,
     selectedProgramId,
-    programs
+    programs,
+    type
 }) => {
+    const isPnaeEntrada = React.useMemo(() => {
+        if (type !== 'Entrada' || !selectedProgramId || !programs) return false;
+        const prog = programs.find((p: any) => p.id === selectedProgramId);
+        if (!prog) return false;
+        const nameUpper = (prog.name || '').toUpperCase().trim();
+        return nameUpper.includes('PNAE');
+    }, [type, selectedProgramId, programs]);
+
     const isCusteioOnly = React.useMemo(() => {
         if (!selectedProgramId || !programs) return false;
         const prog = programs.find((p: any) => p.id === selectedProgramId);
@@ -38,6 +48,8 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
         const nameUpper = (prog.name || '').toUpperCase().trim();
         return nameUpper.includes('MAIS MERENDA') || nameUpper.includes('PNAE');
     }, [selectedProgramId, programs]);
+
+    if (isPnaeEntrada) return null;
     return (
         <div className="flex flex-col gap-4 border-t border-white/5 pt-6">
             <div className="flex justify-between items-center">
