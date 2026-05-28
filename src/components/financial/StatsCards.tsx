@@ -42,7 +42,6 @@ const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
                         </div>
                     )}
                 </div>
-                </div>
             </div>
 
             {/* CARD 2: REPASSES */}
