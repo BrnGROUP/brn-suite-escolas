@@ -319,7 +319,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                                         ` : ''}
                                                         <span class="font-black text-slate-900 uppercase text-[11px] tracking-tight">${e.description}</span>
                                                     </div>
-                                                    <div class="mt-1 flex gap-2">
+                                                    <div class="mt-1 flex gap-2 flex-wrap items-center">
                                                         <span class="text-[9px] text-slate-400 font-bold uppercase italic">${e.supplier || 'Geral'}</span>
                                                         ${e.document_number ? `
                                                             <span class="text-[10px] text-slate-300">|</span>
@@ -327,6 +327,10 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                                         ` : ''}
                                                         <span class="text-[10px] text-slate-300">|</span>
                                                         <span class="text-[9px] text-slate-400 font-medium">${e.rubric || 'Recurso Direto'}</span>
+                                                        ${e.nature ? `
+                                                            <span class="text-[10px] text-slate-300">|</span>
+                                                            <span class="text-[9px] font-black uppercase ${e.nature === 'Capital' ? 'text-orange-600' : 'text-blue-600'}">${e.nature}</span>
+                                                        ` : ''}
                                                     </div>
                                                 </td>
                                                 ${isLivroCaixa ? `
