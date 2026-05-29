@@ -6,6 +6,7 @@ import { useAccountabilityProcess } from '../../hooks/useAccountabilityProcess';
 import { ProcessChecklist } from './ProcessChecklist';
 import { ImportModal } from './ImportModal';
 import { AccountabilityItemsTable } from './AccountabilityItemsTable';
+import { useToast } from '../../context/ToastContext';
 
 interface AccountabilityProcessModalProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
   auxData,
   onSave
 }) => {
+  const { addToast } = useToast();
   const {
     loading,
     selectedEntry,
@@ -260,13 +262,17 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                     <button
                       onClick={() => {
-                        const printData = {
-                          id: selectedEntry.id || 'temp',
-                          financial_entry: selectedEntry,
-                          contract: linkedContract,
-                          discount: discount
-                        };
-                        printDocument(generateContratoServicoHTML(printData), getContractPrintTitle(printData));
+                        try {
+                          const printData = {
+                            id: selectedEntry.id || 'temp',
+                            financial_entry: selectedEntry,
+                            contract: linkedContract,
+                            discount: discount
+                          };
+                          printDocument(generateContratoServicoHTML(printData), getContractPrintTitle(printData));
+                        } catch (error: any) {
+                          addToast(error.message, 'error');
+                        }
                       }}
                       className="w-full flex items-center justify-center gap-2 p-4 bg-white/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/50 text-primary rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest"
                     >
@@ -275,13 +281,17 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
                     </button>
                     <button
                       onClick={() => {
-                        const printData = {
-                          id: selectedEntry.id || 'temp',
-                          financial_entry: selectedEntry,
-                          contract: linkedContract,
-                          discount: discount
-                        };
-                        printDocument(generateAditivoHTML(printData), getContractPrintTitle(printData));
+                        try {
+                          const printData = {
+                            id: selectedEntry.id || 'temp',
+                            financial_entry: selectedEntry,
+                            contract: linkedContract,
+                            discount: discount
+                          };
+                          printDocument(generateAditivoHTML(printData), getContractPrintTitle(printData));
+                        } catch (error: any) {
+                          addToast(error.message, 'error');
+                        }
                       }}
                       className="w-full flex items-center justify-center gap-2 p-4 bg-white/5 border border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/50 text-amber-500 rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest"
                     >

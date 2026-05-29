@@ -64,66 +64,74 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
   const accessibleSchools = useAccessibleSchools(user, schools);
 
   const handlePrint = (process: AccountabilityProcess, type: string) => {
-    let html = '';
-    
-    switch (type) {
-      case 'ata':
-        html = generateAtaHTML(process);
-        break;
-      case 'ordem':
-        html = generateOrdemHTML(process);
-        break;
-      case 'consolidacao':
-        html = generateConsolidacaoHTML(process);
-        break;
-      case 'recibo':
-        html = generateReciboHTML(process);
-        break;
-      case 'cotacao1':
-        html = generateCotacaoHTML(process, 0);
-        break;
-      case 'cotacao2':
-        html = generateCotacaoHTML(process, 1);
-        break;
-      case 'cotacao3':
-        html = generateCotacaoHTML(process, 2);
-        break;
-      case 'contrato':
-        html = generateContratoServicoHTML(process);
-        break;
-      default:
-        return;
+    try {
+      let html = '';
+      
+      switch (type) {
+        case 'ata':
+          html = generateAtaHTML(process);
+          break;
+        case 'ordem':
+          html = generateOrdemHTML(process);
+          break;
+        case 'consolidacao':
+          html = generateConsolidacaoHTML(process);
+          break;
+        case 'recibo':
+          html = generateReciboHTML(process);
+          break;
+        case 'cotacao1':
+          html = generateCotacaoHTML(process, 0);
+          break;
+        case 'cotacao2':
+          html = generateCotacaoHTML(process, 1);
+          break;
+        case 'cotacao3':
+          html = generateCotacaoHTML(process, 2);
+          break;
+        case 'contrato':
+          html = generateContratoServicoHTML(process);
+          break;
+        default:
+          return;
+      }
+      const printTitle = type === 'contrato' ? getContractPrintTitle(process) : undefined;
+      printDocument(html, printTitle);
+    } catch (error: any) {
+      addToast(error.message, 'error');
     }
-    const printTitle = type === 'contrato' ? getContractPrintTitle(process) : undefined;
-    printDocument(html, printTitle);
   };
 
   const handlePrintContract = (contract: any) => {
-    // Wrap contract in a structure similar to process for the template
-    const pseudoProcess = {
-      id: contract.id,
-      contract: contract,
-      financial_entries: [{
-        schools: contract.schools,
-        suppliers: contract.suppliers,
-        programs: contract.programs,
-        rubrics: contract.rubrics,
-        description: contract.description,
-        date: contract.start_date,
-        category: contract.category
-      }]
-    };
+    try {
+      // Wrap contract in a structure similar to process for the template
+      const pseudoProcess = {
+        id: contract.id,
+        contract: contract,
+        financial_entries: [{
+          schools: contract.schools,
+          suppliers: contract.suppliers,
+          programs: contract.programs,
+          rubrics: contract.rubrics,
+          description: contract.description,
+          date: contract.start_date,
+          category: contract.category
+        }]
+      };
 
-    let html = '';
-    if (contract.terms_json?.is_aditivo) {
-      html = generateAditivoHTML(pseudoProcess);
-    } else if (contract.category === 'GÁS') {
-      html = generateContratoGasHTML(pseudoProcess);
-    } else {
-      html = generateContratoServicoHTML(pseudoProcess);
+      let html = '';
+      if (contract.terms_json?.is_aditivo) {
+        html = generateAditivoHTML(pseudoProcess);
+      } else if (contract.category === 'GÁS') {
+        html = generateContratoGasHTML(pseudoProcess);
+      } else {
+        html = generateContratoServicoHTML(pseudoProcess);
+      }
+      
+      printDocument(html, getContractPrintTitle(pseudoProcess));
+    } catch (error: any) {
+      addToast(error.message, 'error');
     }
-    
-    printDocument(html, getContractPrintTitle(pseudoProcess));
   };
 
   const handleDelete = async (id: string) => {

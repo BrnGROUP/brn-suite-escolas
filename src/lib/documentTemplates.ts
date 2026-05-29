@@ -36,6 +36,12 @@ export const extractDocumentData = (rawProcess: DocumentProcess) => {
     const school = entry?.schools || entry?.school;
     const program = entry?.programs || entry?.program;
 
+    // Block official document generation if the program resources are not registered
+    const programName = program?.name || (entry as any)?.program || (process as any).contract?.programs?.name;
+    if (!programName || !programName.trim()) {
+        throw new Error('O programa de recursos financeiros (ex: PDDE Básico, PDDE Qualidade) não está cadastrado ou vinculado a este processo. A geração do documento oficial foi bloqueada para evitar informações incorretas. Por favor, vincule um programa válido.');
+    }
+
     let quotes = process.quotes || process.accountability_quotes || process.accountability_quote || [];
 
     // Fallback: If no quotes found, try to use supplier from financial entry
@@ -78,16 +84,128 @@ export const extractDocumentData = (rawProcess: DocumentProcess) => {
 export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boolean = false) => {
     return `<head>
     <meta charset="utf-8"/>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: black; }
+        /* Modern System Sans-Serif Stack (Offline & High-Quality) */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+        
         @media print {
             body { background: white !important; padding: 0 !important; margin: 0 !important; }
             .no-print { display: none !important; }
             @page { size: ${isLandscape ? 'A4 landscape' : 'A4'}; margin: ${isLandscape ? '1cm' : '0'}; }
         }
+
+        /* Native CSS Utilities replacing Tailwind CSS for absolute offline reliability */
+        .w-full { width: 100%; }
+        .w-1\\/2 { width: 50%; }
+        .w-1\\/3 { width: 33.333333%; }
+        .w-2\\/3 { width: 66.666667%; }
+        .w-1\\/4 { width: 25%; }
+        .w-3\\/4 { width: 75%; }
+        
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-row { flex-direction: row; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .justify-end { justify-content: flex-end; }
+        .items-center { align-items: center; }
+        .items-end { align-items: flex-end; }
+        .items-start { align-items: flex-start; }
+        
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        
+        .grid { display: grid; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .gap-x-20 { column-gap: 5rem; }
+        .gap-y-4 { row-gap: 1rem; }
+        
+        .text-left { text-align: left; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-justify { text-align: justify; }
         .text-justified { text-align: justify; text-justify: inter-word; }
+        
+        .font-bold { font-weight: bold; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        .font-light { font-weight: 300; }
+        
+        .uppercase { text-transform: uppercase; }
+        .underline { text-decoration: underline; }
+        .underline-offset-8 { text-underline-offset: 8px; }
+        .decoration-transparent { text-decoration-color: transparent; }
+        
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-base { font-size: 1rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        
+        .text-\\[8px\\] { font-size: 8px; }
+        .text-\\[9px\\] { font-size: 9px; }
+        .text-\\[10px\\] { font-size: 10px; }
+        .text-\\[12px\\] { font-size: 12px; }
+        .text-\\[14px\\] { font-size: 14px; }
+        
+        .mt-auto { margin-top: auto; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mb-10 { margin-bottom: 2.5rem; }
+        .mb-12 { margin-bottom: 3rem; }
+        .mb-16 { margin-bottom: 4rem; }
+        
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mt-10 { margin-top: 2.5rem; }
+        .mt-12 { margin-top: 3rem; }
+        .mt-16 { margin-top: 4rem; }
+        
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-12 { padding: 3rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .pb-1 { padding-bottom: 0.25rem; }
+        .pb-2 { padding-bottom: 0.5rem; }
+        .pb-4 { padding-bottom: 1rem; }
+        .pb-6 { padding-bottom: 1.5rem; }
+        .pt-1 { padding-top: 0.25rem; }
+        .pt-2 { padding-top: 0.5rem; }
+        .pt-4 { padding-top: 1rem; }
+        .pt-6 { padding-top: 1.5rem; }
+        .pt-10 { padding-top: 2.5rem; }
+        
+        .border-t { border-top: 1px solid #e2e8f0; }
+        .border-b { border-bottom: 1px solid #e2e8f0; }
+        .border { border: 1px solid #e2e8f0; }
+        .border-slate-100 { border-color: #f1f5f9; }
+        .border-gray-100 { border-color: #f3f4f6; }
+        .text-gray-300 { color: #d1d5db; }
+        .text-slate-400 { color: #94a3b8; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        
         ${customStyles}
     </style>
 </head>`;

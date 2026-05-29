@@ -150,4 +150,15 @@ describe('documentTemplates', () => {
         expect(html).toContain('TERMO ADITIVO DE PRORROGAÇÃO E REAJUSTE');
         expect(html).toContain('CONTRATO');
     });
+
+    it('deve lançar erro se o programa de recursos financeiros não estiver cadastrado', () => {
+        const invalidProcess = {
+            ...mockProcess,
+            financial_entries: {
+                ...mockProcess.financial_entries,
+                programs: null
+            }
+        };
+        expect(() => generateAtaHTML(invalidProcess)).toThrow('O programa de recursos financeiros');
+    });
 });
