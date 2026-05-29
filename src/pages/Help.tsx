@@ -46,6 +46,18 @@ const Help: React.FC<{ user: User }> = ({ user }) => {
             ]
         },
         {
+            title: 'Modelos e Seções de Relatório',
+            icon: 'description',
+            color: 'text-cyan-400',
+            items: [
+                { label: 'Modo Gerencial vs Livro Caixa', desc: 'O Modo Gerencial foca em análises e auditorias internas de conformidade (agrupando por programa, exibindo natureza de recursos e selos de status). O Modo Livro Caixa é o registro contábil oficial cronológico com colunas estritas de Entrada, Saída e Saldo Acumulado, ideal para homologações e assinaturas físicas pelo Diretor e Tesoureiro.' },
+                { label: 'Seção: Resumo Global', desc: 'Painel superior consolidado exibindo o saldo geral em conta, receitas acumuladas e o balanço líquido do período selecionado.' },
+                { label: 'Seção: Análise Visual', desc: 'Gráficos e barras dinâmicas que ilustram a divisão proporcional dos gastos ou repasses no período.' },
+                { label: 'Seção: Resumo Natureza', desc: 'Detalhamento dos recursos distribuídos estritamente entre Custeio (gastos cotidianos e consumo) e Capital (investimento em bens duráveis e estrutura).' },
+                { label: 'Seção: Status Detalhado', desc: 'Exibição de selos de auditoria (CONCIL / PEND) para comprovar instantaneamente quais lançamentos já foram conferidos com o extrato bancário.' }
+            ]
+        },
+        {
             title: 'Boas Práticas',
             icon: 'verified',
             color: 'text-orange-500',
