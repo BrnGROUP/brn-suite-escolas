@@ -313,8 +313,8 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                                 <td class="px-4 py-5">
                                                     <div class="flex items-center gap-2">
                                                         ${options.showStatusBadges ? `
-                                                            <span class="badge ${e.status === 'CONCILIADO' ? 'bg-emerald-50 text-emerald-600' : 'bg-yellow-50 text-yellow-600'}">
-                                                                ${e.status === 'CONCILIADO' ? 'CONCIL' : 'PEND'}
+                                                            <span class="badge ${(e.is_reconciled || e.status === 'Conciliado' || e.status === 'CONCILIADO') ? 'bg-emerald-50 text-emerald-600' : 'bg-yellow-50 text-yellow-600'}">
+                                                                ${(e.is_reconciled || e.status === 'Conciliado' || e.status === 'CONCILIADO') ? 'CONCIL' : 'PEND'}
                                                             </span>
                                                         ` : ''}
                                                         <span class="font-black text-slate-900 uppercase text-[11px] tracking-tight">${e.description}</span>
