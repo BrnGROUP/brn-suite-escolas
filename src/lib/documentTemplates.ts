@@ -662,22 +662,23 @@ export const generateContratoServicoHTML = (process: DocumentProcess) => {
     }
 
     const monthlyValue = contract?.monthly_value || (Math.abs(entry?.value || 0));
-    const contractTotalValue = contract?.total_value || (monthlyValue * 12);
-    const formattedMonthlyValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyValue);
-    const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contractTotalValue);
-
     const startDateStr = contract?.start_date || (entry?.date ? entry.date : new Date().toISOString().split('T')[0]);
     const endDateStr = contract?.end_date || new Date(new Date(startDateStr).setMonth(new Date(startDateStr).getMonth() + 12)).toISOString().split('T')[0];
+
+    const s = new Date(startDateStr + 'T12:00:00');
+    const e = new Date(endDateStr + 'T12:00:00');
+    let diffMonths = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+    if (diffMonths <= 0) diffMonths = 12;
+
+    const contractTotalValue = contract?.total_value || (monthlyValue * diffMonths);
+    const formattedMonthlyValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(monthlyValue);
+    const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contractTotalValue);
 
     const docDate = new Date(startDateStr + 'T12:00:00');
     const dateLong = docDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
     const startDate = new Date(startDateStr + 'T12:00:00').toLocaleDateString('pt-BR');
     const endDate = new Date(endDateStr + 'T12:00:00').toLocaleDateString('pt-BR');
 
-    const s = new Date(startDateStr + 'T12:00:00');
-    const e = new Date(endDateStr + 'T12:00:00');
-    let diffMonths = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
-    if (diffMonths <= 0) diffMonths = 12;
     const durationDisplay = `${diffMonths} (${numberToWordsPure(diffMonths)})`;
     const natureDisplay = entry?.nature || (contract as any)?.nature || 'Custeio';
 
