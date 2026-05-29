@@ -94,7 +94,8 @@ export const validateContractData = (process: DocumentProcess) => {
     const supplierRepCpf = contract?.representative_cpf || supplier?.rep_cpf;
 
     const rubricName = (entry as any)?.rubrics?.name || (process as any).contract?.rubrics?.name || (entry as any)?.rubric;
-    const natureDisplay = entry?.nature || (contract as any)?.nature;
+    const rubricObj = (entry as any)?.rubrics || (process as any).contract?.rubrics;
+    const natureDisplay = entry?.nature || (contract as any)?.nature || rubricObj?.default_nature || 'Custeio';
 
     const monthlyValue = contract?.monthly_value || (Math.abs(entry?.value || 0));
     const startDate = contract?.start_date;
