@@ -491,7 +491,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                         >
                                             <option value="">Rubrica...</option>
                                             {rubrics
-                                                .filter(r => r.program_id === programId)
+                                                .filter(r => r.program_id === programId && (!r.school_id || r.school_id === schoolId))
                                                 .map(r => <option key={r.id} value={r.id}>{r.name}</option>)
                                             }
                                         </select>
