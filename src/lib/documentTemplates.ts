@@ -683,16 +683,23 @@ export const generateContratoServicoHTML = (process: DocumentProcess) => {
 
     const customStyles = `
         body { 
-            line-height: 1.35; 
+            line-height: 1.5; 
             font-size: 11px;
             -webkit-print-color-adjust: exact;
         }
         .print-container { width: 210mm; margin: 0 auto; padding: 1.5cm 2.5cm; min-height: 297mm; }
+        .text-justified p { margin-bottom: 8px; text-align: justify; text-justify: inter-word; }
         h1 { font-size: 14px; font-weight: 700; text-align: center; text-transform: uppercase; margin-bottom: 20px; }
-        .clause { margin-top: 14px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid black; display: block; margin-bottom: 8px; font-size: 11px; break-after: avoid; page-break-after: avoid; }
-        .clause-block { break-inside: avoid; page-break-inside: avoid; }
+        .clause { margin-top: 18px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid black; display: block; margin-bottom: 10px; font-size: 11px; break-after: avoid; page-break-after: avoid; }
+        .clause-block { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
         @media print {
-            .print-container { padding: 0 !important; width: 100% !important; margin: 0 !important; }
+            .print-container { 
+                padding: 2.0cm 2.0cm 2.0cm 2.5cm !important; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                box-shadow: none !important;
+                border: none !important;
+            }
         }
         .header-box { border-bottom: 1.5px solid black; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
     `;
@@ -804,28 +811,26 @@ ${getDocumentBaseCSS(customStyles)}
                     ${school?.city?.toUpperCase() || 'ALAGOAS'}/AL, ${dateLong.toUpperCase()}
                 </div>
 
-                <div class="mt-10 grid grid-cols-2 gap-12 text-center">
-                    <div class="border-t border-black pt-1">
+                <div class="mt-14 grid grid-cols-2 gap-12 text-center">
+                    <div class="border-t border-black pt-2">
                         <p class="font-bold text-[11px]">${school?.director?.toUpperCase() || 'PRESIDENTE'}</p>
                         <p class="text-[9px]">CONTRATANTE</p>
                         <p class="text-[8px]">CPF: <strong>${school?.director_cpf || '___.___.___-__'}</strong></p>
                     </div>
-                    <div class="border-t border-black pt-1">
+                    <div class="border-t border-black pt-2">
                         <p class="font-bold text-[11px]">${(contract?.representative_name || supplier?.rep_name || 'REPRESENTANTE LEGAL').toUpperCase()}</p>
                         <p class="text-[9px]">CONTRATADA</p>
                         <p class="text-[8px]">CPF: <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___.___.___-__'}</strong></p>
                     </div>
                 </div>
 
-                <div class="mt-8 grid grid-cols-2 gap-12 text-center mb-6">
-                    <div class="border-t border-black pt-1 px-4">
-                        <p class="font-bold text-[9px] underline">____________________________________</p>
-                        <p class="text-[8px]">${(terms.witness_1_name || 'TESTEMUNHA 01').toUpperCase()}</p>
+                <div class="mt-12 grid grid-cols-2 gap-12 text-center mb-6">
+                    <div class="border-t border-black pt-2 px-4">
+                        <p class="font-bold text-[9px]">${(terms.witness_1_name || 'TESTEMUNHA 01').toUpperCase()}</p>
                         <p class="text-[7px]">CPF: <strong>${terms.witness_1_cpf || '___.___.___-__'}</strong></p>
                     </div>
-                    <div class="border-t border-black pt-1 px-4">
-                        <p class="font-bold text-[9px] underline">____________________________________</p>
-                        <p class="text-[8px]">${(terms.witness_2_name || 'TESTEMUNHA 02').toUpperCase()}</p>
+                    <div class="border-t border-black pt-2 px-4">
+                        <p class="font-bold text-[9px]">${(terms.witness_2_name || 'TESTEMUNHA 02').toUpperCase()}</p>
                         <p class="text-[7px]">CPF: <strong>${terms.witness_2_cpf || '___.___.___-__'}</strong></p>
                     </div>
                 </div>
@@ -857,14 +862,21 @@ export const generateContratoGasHTML = (process: DocumentProcess) => {
     const endDate = new Date(endDateStr + 'T12:00:00').toLocaleDateString('pt-BR');
 
     const customStyles = `
-        body { font-family: 'Inter', sans-serif; background: white; color: black; line-height: 1.35; font-size: 11px; }
+        body { font-family: 'Inter', sans-serif; background: white; color: black; line-height: 1.5; font-size: 11px; -webkit-print-color-adjust: exact; }
         .print-container { width: 210mm; margin: 0 auto; padding: 1.5cm 2.5cm; min-height: 297mm; }
         .text-justified { text-align: justify; text-justify: inter-word; }
+        .text-justified p { margin-bottom: 8px; text-align: justify; text-justify: inter-word; }
         h1 { font-size: 14px; font-weight: 700; text-align: center; text-transform: uppercase; margin-bottom: 20px; }
-        .clause { margin-top: 14px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid black; display: block; margin-bottom: 8px; font-size: 11px; break-after: avoid; page-break-after: avoid; }
-        .clause-block { break-inside: avoid; page-break-inside: avoid; }
+        .clause { margin-top: 18px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid black; display: block; margin-bottom: 10px; font-size: 11px; break-after: avoid; page-break-after: avoid; }
+        .clause-block { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
         @media print {
-            .print-container { padding: 0 !important; width: 100% !important; margin: 0 !important; }
+            .print-container { 
+                padding: 2.0cm 2.0cm 2.0cm 2.5cm !important; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                box-shadow: none !important;
+                border: none !important;
+            }
         }
         .header-box { border-bottom: 1.5px solid black; padding-bottom: 10px; margin-bottom: 20px; text-align: center; }
     `;
@@ -937,28 +949,26 @@ ${getDocumentBaseCSS(customStyles)}
                     ${school?.city?.toUpperCase() || 'ALAGOAS'}/AL, ${dateLong.toUpperCase()}
                 </div>
 
-                <div class="mt-10 grid grid-cols-2 gap-12 text-center">
-                    <div class="border-t border-black pt-1">
+                <div class="mt-14 grid grid-cols-2 gap-12 text-center">
+                    <div class="border-t border-black pt-2">
                         <p class="font-bold text-[11px]">${school?.director?.toUpperCase() || 'PRESIDENTE'}</p>
                         <p class="text-[9px]">CONTRATANTE</p>
                         <p class="text-[8px]">CPF: ${school?.director_cpf || '___.___.___-__'}</p>
                     </div>
-                    <div class="border-t border-black pt-1">
+                    <div class="border-t border-black pt-2">
                         <p class="font-bold text-[11px]">${(contract?.representative_name || supplier?.rep_name || 'REPRESENTANTE LEGAL').toUpperCase()}</p>
                         <p class="text-[9px]">CONTRATADA</p>
                         <p class="text-[8px]">CPF: ${contract?.representative_cpf || supplier?.rep_cpf || '___.___.___-__'}</p>
                     </div>
                 </div>
 
-                <div class="mt-8 grid grid-cols-2 gap-12 text-center mb-6">
-                    <div class="border-t border-black pt-1 px-4">
-                        <p class="font-bold text-[9px] underline">____________________________________</p>
-                        <p class="text-[8px]">${(terms.witness_1_name || 'TESTEMUNHA 01').toUpperCase()}</p>
+                <div class="mt-12 grid grid-cols-2 gap-12 text-center mb-6">
+                    <div class="border-t border-black pt-2 px-4">
+                        <p class="font-bold text-[9px]">${(terms.witness_1_name || 'TESTEMUNHA 01').toUpperCase()}</p>
                         <p class="text-[7px]">CPF: <strong>${terms.witness_1_cpf || '___.___.___-__'}</strong></p>
                     </div>
-                    <div class="border-t border-black pt-1 px-4">
-                        <p class="font-bold text-[9px] underline">____________________________________</p>
-                        <p class="text-[8px]">${(terms.witness_2_name || 'TESTEMUNHA 02').toUpperCase()}</p>
+                    <div class="border-t border-black pt-2 px-4">
+                        <p class="font-bold text-[9px]">${(terms.witness_2_name || 'TESTEMUNHA 02').toUpperCase()}</p>
                         <p class="text-[7px]">CPF: <strong>${terms.witness_2_cpf || '___.___.___-__'}</strong></p>
                     </div>
                 </div>
@@ -986,14 +996,24 @@ export const generateAditivoHTML = (process: DocumentProcess) => {
 
     const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((process as any).contract?.total_value || 0);
     const customStyles = `
-        body { line-height: 1.35; font-size: 11px; }
+        body { 
+            line-height: 1.5; 
+            font-size: 11px; 
+            -webkit-print-color-adjust: exact;
+        }
         .print-container { width: 210mm; margin: 0 auto; padding: 1.5cm 2.5cm; min-height: 297mm; }
+        .text-justified p { margin-bottom: 8px; text-align: justify; text-justify: inter-word; }
         h1 { text-transform: uppercase; font-weight: 700; text-align: center; font-size: 16px; margin-bottom: 30px; }
-        .clause { font-weight: 700; text-transform: uppercase; margin-top: 14px; margin-bottom: 10px; text-decoration: underline; break-after: avoid; page-break-after: avoid; }
-        .clause-block { break-inside: avoid; page-break-inside: avoid; }
+        .clause { font-weight: 700; text-transform: uppercase; margin-top: 18px; margin-bottom: 10px; text-decoration: underline; break-after: avoid; page-break-after: avoid; }
+        .clause-block { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
         @media print {
-            @page { size: A4; margin: 2cm 2cm; }
-            .print-container { padding: 0 !important; width: 100% !important; margin: 0 !important; }
+            .print-container { 
+                padding: 2.0cm 2.0cm 2.0cm 2.5cm !important; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                box-shadow: none !important;
+                border: none !important;
+            }
         }
     `;
 
@@ -1034,7 +1054,7 @@ ${getDocumentBaseCSS(customStyles)}
                     ${school?.city?.toUpperCase() || 'ALAGOAS'}/AL, ${dateLong.toUpperCase()}
                 </div>
 
-                <div class="mt-10 grid grid-cols-2 gap-12 text-center">
+                <div class="mt-14 grid grid-cols-2 gap-12 text-center">
                     <div class="border-t border-black pt-2">
                         <p class="text-[11px]">${school?.director?.toUpperCase() || 'PRESIDENTE'}</p>
                         <p class="text-[9px]">CONTRATANTE</p>
@@ -1051,17 +1071,17 @@ ${getDocumentBaseCSS(customStyles)}
 
                 <div class="mt-12 grid grid-cols-2 gap-12 text-center mb-10">
                     <div>
-                        <div class="border-t border-black pt-1">
-                            <p class="font-bold text-[9px]">${(process as any).contract?.terms_json?.witness_1_name?.toUpperCase() || '________________________________________'}</p>
-                            <p class="text-[9px]">TESTEMUNHA 01</p>
+                        <div class="border-t border-black pt-2">
+                            <p class="font-bold text-[9px]">${(process as any).contract?.terms_json?.witness_1_name ? (process as any).contract.terms_json.witness_1_name.toUpperCase() : 'TESTEMUNHA 01'}</p>
+                            ${(process as any).contract?.terms_json?.witness_1_name ? `<p class="text-[9px]">TESTEMUNHA 01</p>` : ''}
                             <p class="text-[8px]">CPF: ${(process as any).contract?.terms_json?.witness_1_cpf || '___.___.___-__'}</p>
                             <p class="text-[8px]">RG: ${(process as any).contract?.terms_json?.witness_1_rg || '___________'}</p>
                         </div>
                     </div>
                     <div>
-                        <div class="border-t border-black pt-1">
-                            <p class="font-bold text-[9px]">${(process as any).contract?.terms_json?.witness_2_name?.toUpperCase() || '________________________________________'}</p>
-                            <p class="text-[9px]">TESTEMUNHA 02</p>
+                        <div class="border-t border-black pt-2">
+                            <p class="font-bold text-[9px]">${(process as any).contract?.terms_json?.witness_2_name ? (process as any).contract.terms_json.witness_2_name.toUpperCase() : 'TESTEMUNHA 02'}</p>
+                            ${(process as any).contract?.terms_json?.witness_2_name ? `<p class="text-[9px]">TESTEMUNHA 02</p>` : ''}
                             <p class="text-[8px]">CPF: ${(process as any).contract?.terms_json?.witness_2_cpf || '___.___.___-__'}</p>
                             <p class="text-[8px]">RG: ${(process as any).contract?.terms_json?.witness_2_rg || '___________'}</p>
                         </div>
