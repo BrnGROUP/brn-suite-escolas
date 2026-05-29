@@ -398,7 +398,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
 
                 <div class="w-1/3 text-right">
                     <div class="mb-4 h-px bg-slate-200"></div>
-                    <p class="text-[10px] font-black uppercase text-slate-900">Responsável Financeiro</p>
+                    <p class="text-[10px] font-black uppercase text-slate-900">Tesoureiro</p>
                     <p class="text-[8px] text-slate-400 uppercase tracking-widest mb-4">Assinatura / Carimbo</p>
                     <p class="text-[8px] text-slate-400 font-bold uppercase tracking-[0.4em]">BRN Suite • v5.0</p>
                 </div>
