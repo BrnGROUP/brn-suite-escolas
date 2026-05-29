@@ -772,7 +772,7 @@ ${getDocumentBaseCSS(customStyles)}
             </div>
 
             <div class="clause-block">
-                <div class="clause">CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA CONTRANTE</div>
+                <div class="clause">CLÁUSULA QUARTA – DAS OBRIGAÇÕES DA CONTRATANTE</div>
                 <p>4.1. Proporcionar as condições necessárias para que a CONTRATADA possa cumprir o objeto contratado, garantindo acesso às dependências da escola quando necessário.</p>
                 <p>4.2. Efetuar o pagamento nos prazos e condições pactuados, após o atesto da efetiva prestação dos serviços.</p>
             </div>
@@ -850,10 +850,12 @@ ${getDocumentBaseCSS(customStyles)}
                 <div class="mt-12 grid grid-cols-2 gap-12 text-center mb-6">
                     <div class="border-t border-black pt-2 px-4">
                         <p class="font-bold text-[9px]">${(terms.witness_1_name || 'TESTEMUNHA 01').toUpperCase()}</p>
+                        ${terms.witness_1_name ? `<p class="text-[8px] uppercase">TESTEMUNHA 01</p>` : ''}
                         <p class="text-[7px]">CPF: <strong>${terms.witness_1_cpf || '___.___.___-__'}</strong></p>
                     </div>
                     <div class="border-t border-black pt-2 px-4">
                         <p class="font-bold text-[9px]">${(terms.witness_2_name || 'TESTEMUNHA 02').toUpperCase()}</p>
+                        ${terms.witness_2_name ? `<p class="text-[8px] uppercase">TESTEMUNHA 02</p>` : ''}
                         <p class="text-[7px]">CPF: <strong>${terms.witness_2_cpf || '___.___.___-__'}</strong></p>
                     </div>
                 </div>
@@ -996,10 +998,12 @@ ${getDocumentBaseCSS(customStyles)}
                 <div class="mt-12 grid grid-cols-2 gap-12 text-center mb-6">
                     <div class="border-t border-black pt-2 px-4">
                         <p class="font-bold text-[9px]">${(terms.witness_1_name || 'TESTEMUNHA 01').toUpperCase()}</p>
+                        ${terms.witness_1_name ? `<p class="text-[8px] uppercase">TESTEMUNHA 01</p>` : ''}
                         <p class="text-[7px]">CPF: <strong>${terms.witness_1_cpf || '___.___.___-__'}</strong></p>
                     </div>
                     <div class="border-t border-black pt-2 px-4">
                         <p class="font-bold text-[9px]">${(terms.witness_2_name || 'TESTEMUNHA 02').toUpperCase()}</p>
+                        ${terms.witness_2_name ? `<p class="text-[8px] uppercase">TESTEMUNHA 02</p>` : ''}
                         <p class="text-[7px]">CPF: <strong>${terms.witness_2_cpf || '___.___.___-__'}</strong></p>
                     </div>
                 </div>
