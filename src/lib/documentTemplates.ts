@@ -681,6 +681,21 @@ export const generateContratoServicoHTML = (process: DocumentProcess) => {
     const durationDisplay = `${diffMonths} (${numberToWords(diffMonths)})`;
     const natureDisplay = entry?.nature || (contract as any)?.nature || 'Custeio';
 
+    const internetSpeed = terms.internet_speed || '200 Mbps';
+    const getSpeedText = (speed: string = '') => {
+        const clean = speed.toUpperCase().replace(/\s+/g, '');
+        if (clean.includes('100MB')) return 'cem megabits por segundo';
+        if (clean.includes('200MB')) return 'duzentos megabits por segundo';
+        if (clean.includes('300MB')) return 'trezentos megabits por segundo';
+        if (clean.includes('400MB')) return 'quatrocentos megabits por segundo';
+        if (clean.includes('500MB')) return 'quinhentos megabits por segundo';
+        if (clean.includes('600MB')) return 'seiscentos megabits por segundo';
+        if (clean.includes('1GB') || clean.includes('1000MB')) return 'um gigabit por segundo';
+        return '';
+    };
+    const speedText = getSpeedText(internetSpeed);
+    const speedDisplay = speedText ? `${internetSpeed} (${speedText})` : internetSpeed;
+
     const customStyles = `
         body { 
             line-height: 1.5; 
@@ -727,7 +742,7 @@ ${getDocumentBaseCSS(customStyles)}
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA PRIMEIRA – DO OBJETO E ESPECIFICAÇÕES</div>
-                <p>1.1. O objeto do presente contrato consiste na prestação de serviço contínuo de <strong>CONEXÃO À INTERNET BANDA LARGA</strong>, via tecnologia de fibra óptica, com velocidade nominal de <strong>200 Mbps</strong> (duzentos megabits por segundo), sem limite de franquia de dados (ilimitado).</p>
+                <p>1.1. O objeto do presente contrato consiste na prestação de serviço contínuo de <strong>CONEXÃO À INTERNET BANDA LARGA</strong>, via tecnologia de fibra óptica, com velocidade nominal de <strong>${speedDisplay}</strong>, sem limite de franquia de dados (ilimitado).</p>
                 <p>1.2. O serviço compreende o fornecimento de link compartilhado com garantia mínima de estabilidade, suporte técnico preventivo e corretivo, manutenção de infraestrutura e garantia de disponibilidade.</p>
             </div>
 

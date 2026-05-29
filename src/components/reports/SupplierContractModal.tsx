@@ -58,6 +58,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     const [supplierSearch, setSupplierSearch] = useState('');
     const [schoolSearch, setSchoolSearch] = useState('');
     const [foroCity, setForoCity] = useState('');
+    const [internetSpeed, setInternetSpeed] = useState('200 Mbps');
 
 
 
@@ -107,6 +108,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setW2Name(terms.witness_2_name || '');
             setW2Cpf(terms.witness_2_cpf || '');
             setW2Rg(terms.witness_2_rg || '');
+            setInternetSpeed(terms.internet_speed || '200 Mbps');
         }
     };
 
@@ -139,6 +141,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setW2Cpf(terms.witness_2_cpf || '');
             setW2Rg(terms.witness_2_rg || '');
             setForoCity(terms.foro_city || '');
+            setInternetSpeed(terms.internet_speed || '200 Mbps');
         }
     };
 
@@ -190,6 +193,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                 terms_json: {
                     is_aditivo: creationMode === 'ADITIVO',
                     parent_contract_id: parentContractId || null,
+                    internet_speed: category === 'INTERNET' ? internetSpeed : null,
                     witness_1_name: w1Name,
                     witness_1_cpf: w1Cpf,
                     witness_1_rg: w1Rg,
@@ -271,6 +275,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
         setW2Cpf('');
         setW2Rg('');
         setForoCity('');
+        setInternetSpeed('200 Mbps');
     };
 
     if (!isOpen) return null;
@@ -427,7 +432,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className={`grid ${category === 'INTERNET' ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
                                     <div>
                                         <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Tipo de Contrato</label>
                                         <select
@@ -442,6 +447,26 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                             <option value="OUTROS">OUTROS</option>
                                         </select>
                                     </div>
+                                    {category === 'INTERNET' && (
+                                        <div className="animate-in fade-in zoom-in-95 duration-200">
+                                            <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Velocidade</label>
+                                            <select
+                                                title="Velocidade da Internet"
+                                                value={internetSpeed}
+                                                onChange={e => setInternetSpeed(e.target.value)}
+                                                aria-label="Velocidade da Internet"
+                                                className="w-full bg-black/40 border border-white/10 rounded-2xl h-14 px-5 text-white outline-none focus:border-primary transition-all appearance-none font-bold"
+                                            >
+                                                <option value="100 Mbps">100 Mbps</option>
+                                                <option value="200 Mbps">200 Mbps</option>
+                                                <option value="300 Mbps">300 Mbps</option>
+                                                <option value="400 Mbps">400 Mbps</option>
+                                                <option value="500 Mbps">500 Mbps</option>
+                                                <option value="600 Mbps">600 Mbps</option>
+                                                <option value="1 Gbps">1 Gbps</option>
+                                            </select>
+                                        </div>
+                                    )}
                                     <div>
                                         <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Nº Contrato</label>
                                         <input
