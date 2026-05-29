@@ -178,6 +178,7 @@ export const useReports = (user: User, filters: ReportsFilters) => {
 
     const { schools, programs, templateUrl } = auxData;
     const stats = useMemo(() => {
+        // Prestações stats
         const pendingProcesses = processes.filter(p => p.status !== 'Concluído').length;
         const completedProcesses = processes.filter(p => p.status === 'Concluído').length;
         // The join result in the query is named 'financial_entries'
@@ -185,8 +186,23 @@ export const useReports = (user: User, filters: ReportsFilters) => {
         // The join result in the query is named 'accountability_quotes'
         const totalQuotes = processes.reduce((acc, p) => acc + ((p as any).accountability_quotes?.length || 0), 0);
 
-        return { pendingProcesses, completedProcesses, totalNotesValue, totalQuotes };
-    }, [processes]);
+        // Contratos stats
+        const activeContracts = contracts.filter(c => c.status === 'Ativo').length;
+        const totalContracted = contracts.reduce((acc, c) => acc + (c.total_value || 0), 0);
+        const totalExecuted = contracts.reduce((acc, c) => acc + (c.executed_value || 0), 0);
+        const remainingBalance = totalContracted - totalExecuted;
+
+        return { 
+            pendingProcesses, 
+            completedProcesses, 
+            totalNotesValue, 
+            totalQuotes,
+            activeContracts,
+            totalContracted,
+            totalExecuted,
+            remainingBalance
+        };
+    }, [processes, contracts]);
 
     return {
         loading: loadingProcesses || loadingEntries || loadingContracts,

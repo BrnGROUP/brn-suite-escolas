@@ -228,12 +228,17 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
+        {(view === 'contracts' ? [
+          { label: 'Contratos Ativos', val: stats.activeContracts || 0, icon: 'history_edu', color: 'amber' },
+          { label: 'Total Contratado', val: formatCurrency(stats.totalContracted || 0), icon: 'account_balance_wallet', color: 'emerald' },
+          { label: 'Total Executado', val: formatCurrency(stats.totalExecuted || 0), icon: 'payments', color: 'blue' },
+          { label: 'Saldo Restante', val: formatCurrency(stats.remainingBalance || 0), icon: 'savings', color: 'cyan' },
+        ] : [
           { label: 'Processos em Aberto', val: stats.pendingProcesses, icon: 'pending_actions', color: 'amber' },
           { label: 'Processos Concluídos', val: stats.completedProcesses, icon: 'verified', color: 'emerald' },
           { label: 'Total em Notas', val: formatCurrency(stats.totalNotesValue), icon: 'receipt', color: 'blue' },
           { label: 'Cotações Realizadas', val: stats.totalQuotes, icon: 'request_quote', color: 'cyan' },
-        ].map((s, idx) => {
+        ]).map((s, idx) => {
           const colorClasses = {
             amber: { bg: 'bg-amber-500/10', text: 'text-amber-500' },
             emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-500' },
