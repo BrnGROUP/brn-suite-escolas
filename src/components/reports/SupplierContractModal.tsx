@@ -59,6 +59,10 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     const [schoolSearch, setSchoolSearch] = useState('');
     const [foroCity, setForoCity] = useState('');
     const [internetSpeed, setInternetSpeed] = useState('200 Mbps');
+    const [customDirectorName, setCustomDirectorName] = useState('');
+    const [customDirectorCpf, setCustomDirectorCpf] = useState('');
+    const [customDirectorRg, setCustomDirectorRg] = useState('');
+    const [customDirectorAddress, setCustomDirectorAddress] = useState('');
 
 
 
@@ -109,6 +113,10 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setW2Cpf(terms.witness_2_cpf || '');
             setW2Rg(terms.witness_2_rg || '');
             setInternetSpeed(terms.internet_speed || '200 Mbps');
+            setCustomDirectorName(terms.custom_director_name || '');
+            setCustomDirectorCpf(terms.custom_director_cpf || '');
+            setCustomDirectorRg(terms.custom_director_rg || '');
+            setCustomDirectorAddress(terms.custom_director_address || '');
         }
     };
 
@@ -142,6 +150,10 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setW2Rg(terms.witness_2_rg || '');
             setForoCity(terms.foro_city || '');
             setInternetSpeed(terms.internet_speed || '200 Mbps');
+            setCustomDirectorName(terms.custom_director_name || '');
+            setCustomDirectorCpf(terms.custom_director_cpf || '');
+            setCustomDirectorRg(terms.custom_director_rg || '');
+            setCustomDirectorAddress(terms.custom_director_address || '');
         }
     };
 
@@ -194,6 +206,10 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                     is_aditivo: creationMode === 'ADITIVO',
                     parent_contract_id: parentContractId || null,
                     internet_speed: category === 'INTERNET' ? internetSpeed : null,
+                    custom_director_name: customDirectorName,
+                    custom_director_cpf: customDirectorCpf,
+                    custom_director_rg: customDirectorRg,
+                    custom_director_address: customDirectorAddress,
                     witness_1_name: w1Name,
                     witness_1_cpf: w1Cpf,
                     witness_1_rg: w1Rg,
@@ -276,6 +292,10 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
         setW2Rg('');
         setForoCity('');
         setInternetSpeed('200 Mbps');
+        setCustomDirectorName('');
+        setCustomDirectorCpf('');
+        setCustomDirectorRg('');
+        setCustomDirectorAddress('');
     };
 
     if (!isOpen) return null;
@@ -606,13 +626,50 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                             </div>
                         </section>
 
-                        {/* Seção 2: Testemunhas */}
+                        {/* Seção 2: Representantes e Testemunhas */}
                         <section className="space-y-8">
                             <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/10 pb-3 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-sm">groups</span> 2. Testemunhas e Assinaturas
+                                <span className="material-symbols-outlined text-sm">groups</span> 2. Representantes e Testemunhas
                             </h4>
 
                             <div className="p-8 bg-white/[0.02] border border-white/5 rounded-[32px] space-y-8 shadow-inner">
+                                {/* Representante da Escola (Gestor Retroativo) */}
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-xs font-black">
+                                            <span className="material-symbols-outlined text-sm">assignment_ind</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-white uppercase tracking-widest leading-none">Representante da Escola (Presidente/Diretor)</p>
+                                            <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mt-1">Preencha apenas se for diferente do atual (retroativo)</p>
+                                        </div>
+                                    </div>
+                                    <input
+                                        placeholder="Nome do Diretor/Presidente do Contrato"
+                                        aria-label="Nome do Representante da Escola"
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl h-12 px-5 text-xs text-white outline-none focus:border-primary transition-all"
+                                        value={customDirectorName}
+                                        onChange={e => setCustomDirectorName(e.target.value)}
+                                    />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="flex flex-col gap-1.5">
+                                            <input placeholder="CPF do Representante" aria-label="CPF do Representante" className="bg-black/40 border border-white/10 rounded-xl h-12 px-5 text-xs text-white outline-none focus:border-primary transition-all" value={customDirectorCpf} onChange={e => setCustomDirectorCpf(e.target.value)} />
+                                        </div>
+                                        <div className="flex flex-col gap-1.5">
+                                            <input placeholder="RG do Representante" aria-label="RG do Representante" className="bg-black/40 border border-white/10 rounded-xl h-12 px-5 text-xs text-white outline-none focus:border-primary transition-all" value={customDirectorRg} onChange={e => setCustomDirectorRg(e.target.value)} />
+                                        </div>
+                                    </div>
+                                    <input
+                                        placeholder="Endereço Residencial do Representante"
+                                        aria-label="Endereço Residencial do Representante"
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl h-12 px-5 text-xs text-white outline-none focus:border-primary transition-all"
+                                        value={customDirectorAddress}
+                                        onChange={e => setCustomDirectorAddress(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="w-full h-px bg-white/5"></div>
+
                                 <div className="space-y-5">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-xs font-black">01</div>

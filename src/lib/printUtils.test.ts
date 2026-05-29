@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, formatCNPJ, numberToWords, subtractBusinessDays } from './printUtils';
+import { formatCurrency, formatCNPJ, numberToWords, subtractBusinessDays, getSchoolInitials, getContractPrintTitle } from './printUtils';
 
 describe('printUtils', () => {
     describe('formatCurrency', () => {
@@ -86,6 +86,63 @@ describe('printUtils', () => {
             const result = subtractBusinessDays(date, 1);
             expect(result.getDate()).toBe(30);
             expect(result.getMonth()).toBe(3); // 3 = Abril (0-indexed)
+        });
+    });
+
+    describe('getSchoolInitials', () => {
+        it('deve extrair as iniciais do nome de uma escola pulando preposicoes', () => {
+            expect(getSchoolInitials('Escola Estadual Dr. Carlos Gomes de Barros')).toBe('EEDCGB');
+            expect(getSchoolInitials('Escola Estadual Branquinha')).toBe('EEB');
+            expect(getSchoolInitials('U.E. Conselheiro Manoel de Souza')).toBe('UCMS');
+            expect(getSchoolInitials('')).toBe('');
+        });
+    });
+
+    describe('getContractPrintTitle', () => {
+        it('deve gerar o titulo do arquivo PDF de contrato no padrao solicitado', () => {
+            const pseudoProcess = {
+                id: '123',
+                contract: {
+                    id: 'c123',
+                    contract_number: '01/2026',
+                    category: 'INTERNET',
+                    start_date: '2026-02-11',
+                    terms_json: {
+                        is_aditivo: false
+                    }
+                },
+                financial_entries: [{
+                    school: {
+                        name: 'Escola Estadual Dr. Carlos Gomes de Barros'
+                    }
+                }]
+            };
+
+            const title = getContractPrintTitle(pseudoProcess);
+            expect(title).toBe('CONTRATO - INTERNET - 01_2026 - 11.02.2026 - EEDCGB');
+        });
+
+        it('deve gerar titulo de termo aditivo corretamente', () => {
+            const pseudoProcess = {
+                id: '123',
+                contract: {
+                    id: 'c123',
+                    contract_number: '05/2025/ADITIVO',
+                    category: 'GÁS',
+                    start_date: '2026-05-29',
+                    terms_json: {
+                        is_aditivo: true
+                    }
+                },
+                financial_entries: [{
+                    school: {
+                        name: 'Escola Estadual Branquinha'
+                    }
+                }]
+            };
+
+            const title = getContractPrintTitle(pseudoProcess);
+            expect(title).toBe('ADITIVO - GÁS - 05_2025_ADITIVO - 29.05.2026 - EEB');
         });
     });
 });

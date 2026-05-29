@@ -696,6 +696,10 @@ export const generateContratoServicoHTML = (process: DocumentProcess) => {
     const speedText = getSpeedText(internetSpeed);
     const speedDisplay = speedText ? `${internetSpeed} (${speedText})` : internetSpeed;
 
+    const directorName = (terms.custom_director_name || school?.director || '____________________').toUpperCase();
+    const directorCpf = terms.custom_director_cpf || school?.director_cpf || '___.___.___-__';
+    const directorRg = terms.custom_director_rg || school?.director_rg || '___________';
+
     const customStyles = `
         body { 
             line-height: 1.5; 
@@ -708,8 +712,12 @@ export const generateContratoServicoHTML = (process: DocumentProcess) => {
         .clause { margin-top: 18px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid black; display: block; margin-bottom: 10px; font-size: 11px; break-after: avoid; page-break-after: avoid; }
         .clause-block { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
         @media print {
+            @page {
+                size: A4;
+                margin: 2.0cm 2.0cm 2.0cm 2.5cm !important;
+            }
             .print-container { 
-                padding: 2.0cm 2.0cm 2.0cm 2.5cm !important; 
+                padding: 0 !important; 
                 width: 100% !important; 
                 margin: 0 !important; 
                 box-shadow: none !important;
@@ -734,7 +742,7 @@ ${getDocumentBaseCSS(customStyles)}
         <h1>CONTRATO DE PRESTAÇÃO DE SERVIÇOS CONTÍNUOS Nº ${contract?.contract_number || '___/2025'}</h1>
 
         <div class="text-justified">
-            <p>Pelo presente instrumento particular jurídico, de um lado, o <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</strong>, Unidade Executora (UEx) devidamente constituída, com sede na ${school?.address || '____________________'}, inscrito no CNPJ sob o nº <strong>${formatCNPJ(school?.cnpj)}</strong>, neste ato representado por seu Presidente, o(a) Sr(a). <strong>${school?.director?.toUpperCase() || '____________________'}</strong>, portador(a) do RG nº <strong>${school?.director_rg || '___________'}</strong> e CPF nº <strong>${school?.director_cpf || '___________'}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.</p>
+            <p>Pelo presente instrumento particular jurídico, de um lado, o <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</strong>, Unidade Executora (UEx) devidamente constituída, com sede na ${school?.address || '____________________'}, inscrito no CNPJ sob o nº <strong>${formatCNPJ(school?.cnpj)}</strong>, neste ato representado por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.</p>
             
             <p>E, de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || '____________________'}</strong>, inscrita no CNPJ sob o nº <strong>${formatCNPJ(supplier?.cnpj)}</strong>, com sede estabelecida na ${supplier?.address?.toUpperCase() || '____________________'}, neste ato representada por <strong>${contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, doravante denominada simplesmente <strong>CONTRATADA</strong>.</p>
 
@@ -828,9 +836,9 @@ ${getDocumentBaseCSS(customStyles)}
 
                 <div class="mt-14 grid grid-cols-2 gap-12 text-center">
                     <div class="border-t border-black pt-2">
-                        <p class="font-bold text-[11px]">${school?.director?.toUpperCase() || 'PRESIDENTE'}</p>
+                        <p class="font-bold text-[11px]">${directorName}</p>
                         <p class="text-[9px]">CONTRATANTE</p>
-                        <p class="text-[8px]">CPF: <strong>${school?.director_cpf || '___.___.___-__'}</strong></p>
+                        <p class="text-[8px]">CPF: <strong>${directorCpf}</strong></p>
                     </div>
                     <div class="border-t border-black pt-2">
                         <p class="font-bold text-[11px]">${(contract?.representative_name || supplier?.rep_name || 'REPRESENTANTE LEGAL').toUpperCase()}</p>
@@ -865,6 +873,10 @@ export const generateContratoGasHTML = (process: DocumentProcess) => {
     const contract = process.contract;
     const terms = contract?.terms_json || {};
 
+    const directorName = (terms.custom_director_name || school?.director || '____________________').toUpperCase();
+    const directorCpf = terms.custom_director_cpf || school?.director_cpf || '___.___.___-__';
+    const directorRg = terms.custom_director_rg || school?.director_rg || '___________';
+
     const totalValue = contract?.total_value || (Math.abs(entry?.value || 0));
     const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue);
 
@@ -885,8 +897,12 @@ export const generateContratoGasHTML = (process: DocumentProcess) => {
         .clause { margin-top: 18px; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid black; display: block; margin-bottom: 10px; font-size: 11px; break-after: avoid; page-break-after: avoid; }
         .clause-block { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
         @media print {
+            @page {
+                size: A4;
+                margin: 2.0cm 2.0cm 2.0cm 2.5cm !important;
+            }
             .print-container { 
-                padding: 2.0cm 2.0cm 2.0cm 2.5cm !important; 
+                padding: 0 !important; 
                 width: 100% !important; 
                 margin: 0 !important; 
                 box-shadow: none !important;
@@ -911,7 +927,7 @@ ${getDocumentBaseCSS(customStyles)}
         <h1>CONTRATO DE FORNECIMENTO CONTÍNUO DE PRODUTOS Nº ${contract?.contract_number || '___/2025'}</h1>
 
         <div class="text-justified">
-            <p>Pelo presente instrumento o <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</strong>, estabelecido na ${school?.address || '____________________'}, inscrito no CNPJ sob o nº <strong>${formatCNPJ(school?.cnpj)}</strong>, neste ato representado por seu Presidente, o(a) Sr(a). <strong>${school?.director?.toUpperCase() || '____________________'}</strong>, portador(a) do RG nº <strong>${school?.director_rg || '___________'}</strong> e CPF nº <strong>${school?.director_cpf || '___________'}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.</p>
+            <p>Pelo presente instrumento o <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</strong>, estabelecido na ${school?.address || '____________________'}, inscrito no CNPJ sob o nº <strong>${formatCNPJ(school?.cnpj)}</strong>, neste ato representado por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.</p>
             
             <p>E, de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || '____________________'}</strong>, inscrita no CNPJ sob o nº <strong>${formatCNPJ(supplier?.cnpj)}</strong>, com sede estabelecida na ${supplier?.address?.toUpperCase() || '____________________'}, neste ato representada por <strong>${contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, doravante denominada simplesmente <strong>CONTRATADA</strong>.</p>
 
@@ -966,9 +982,9 @@ ${getDocumentBaseCSS(customStyles)}
 
                 <div class="mt-14 grid grid-cols-2 gap-12 text-center">
                     <div class="border-t border-black pt-2">
-                        <p class="font-bold text-[11px]">${school?.director?.toUpperCase() || 'PRESIDENTE'}</p>
+                        <p class="font-bold text-[11px]">${directorName}</p>
                         <p class="text-[9px]">CONTRATANTE</p>
-                        <p class="text-[8px]">CPF: ${school?.director_cpf || '___.___.___-__'}</p>
+                        <p class="text-[8px]">CPF: ${directorCpf}</p>
                     </div>
                     <div class="border-t border-black pt-2">
                         <p class="font-bold text-[11px]">${(contract?.representative_name || supplier?.rep_name || 'REPRESENTANTE LEGAL').toUpperCase()}</p>
@@ -1000,8 +1016,15 @@ ${getDocumentBaseCSS(customStyles)}
 
 export const generateAditivoHTML = (process: DocumentProcess) => {
     const { school, supplier } = extractDocumentData(process);
+    const contract = (process as any).contract;
+    const terms = contract?.terms_json || {};
 
-    const docDate = (process as any).contract?.start_date ? new Date((process as any).contract.start_date + 'T12:00:00') : new Date();
+    const directorName = (terms.custom_director_name || school?.director || '____________________').toUpperCase();
+    const directorCpf = terms.custom_director_cpf || school?.director_cpf || '___.___.___-__';
+    const directorRg = terms.custom_director_rg || school?.director_rg || '___________';
+    const directorAddress = (terms.custom_director_address || school?.director_address || 'ENDEREÇO NÃO INFORMADO').toUpperCase();
+
+    const docDate = contract?.start_date ? new Date(contract.start_date + 'T12:00:00') : new Date();
     const dateLong = docDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
 
     const contractNumber = (process as any).contract?.contract_number || '___/2025';
@@ -1022,8 +1045,12 @@ export const generateAditivoHTML = (process: DocumentProcess) => {
         .clause { font-weight: 700; text-transform: uppercase; margin-top: 18px; margin-bottom: 10px; text-decoration: underline; break-after: avoid; page-break-after: avoid; }
         .clause-block { break-inside: avoid; page-break-inside: avoid; margin-bottom: 14px; }
         @media print {
+            @page {
+                size: A4;
+                margin: 2.0cm 2.0cm 2.0cm 2.5cm !important;
+            }
             .print-container { 
-                padding: 2.0cm 2.0cm 2.0cm 2.5cm !important; 
+                padding: 0 !important; 
                 width: 100% !important; 
                 margin: 0 !important; 
                 box-shadow: none !important;
@@ -1040,7 +1067,7 @@ ${getDocumentBaseCSS(customStyles)}
         <h1>TERMO ADITIVO DE PRORROGAÇÃO E REAJUSTE DE CONTRATO</h1>
 
         <div class="text-justified">
-            <p>Pelo presente instrumento particular, de um lado a <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || 'UNIDADE EXECUTORA'}`).toUpperCase()}</strong>, inscrita no CNPJ sob o nº <strong>${school?.cnpj || '___.___.___/____-__'}</strong>, com sede na ${school?.address || 'ENDEREÇO NÃO CADASTRADO'}, doravante denominada <strong>CONTRATANTE</strong>, representada neste ato por seu Presidente, o(a) Sr(a). <strong>${school?.director?.toUpperCase() || 'DIRETOR(A)'}</strong>, portador(a) do RG nº <strong>${school?.director_rg || '___________'}</strong> e CPF nº <strong>${school?.director_cpf || '___________'}</strong>, residente e domiciliado(a) na ${school?.director_address?.toUpperCase() || 'ENDEREÇO NÃO INFORMADO'}.</p>
+            <p>Pelo presente instrumento particular, de um lado a <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || 'UNIDADE EXECUTORA'}`).toUpperCase()}</strong>, inscrita no CNPJ sob o nº <strong>${school?.cnpj || '___.___.___/____-__'}</strong>, com sede na ${school?.address || 'ENDEREÇO NÃO CADASTRADO'}, doravante denominada <strong>CONTRATANTE</strong>, representada neste ato por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, residente e domiciliado(a) na ${directorAddress}.</p>
 
             <p class="mt-4">E de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || 'RAZÃO SOCIAL DO FORNECEDOR'}</strong>, inscrita no CNPJ sob o nº <strong>${supplier?.cnpj || '___.___.___/____-__'}</strong>, com sede na ${supplier?.address || 'ENDEREÇO DO FORNECEDOR'}, doravante denominada <strong>CONTRATADA</strong>, neste ato representada por <strong>${(process as any).contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${(process as any).contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${(process as any).contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, residente e domiciliado(a) na ${(process as any).contract?.representative_address || supplier?.rep_address?.toUpperCase() || '____________________'}.</p>
 
@@ -1071,10 +1098,10 @@ ${getDocumentBaseCSS(customStyles)}
 
                 <div class="mt-14 grid grid-cols-2 gap-12 text-center">
                     <div class="border-t border-black pt-2">
-                        <p class="text-[11px]">${school?.director?.toUpperCase() || 'PRESIDENTE'}</p>
+                        <p class="text-[11px]">${directorName}</p>
                         <p class="text-[9px]">CONTRATANTE</p>
-                        <p class="text-[8px]">CPF: <strong>${school?.director_cpf || '___.___.___---'}</strong></p>
-                        <p class="text-[8px]">RG: <strong>${school?.director_rg || '___________'}</strong></p>
+                        <p class="text-[8px]">CPF: <strong>${directorCpf}</strong></p>
+                        <p class="text-[8px]">RG: <strong>${directorRg}</strong></p>
                     </div>
                     <div class="border-t border-black pt-2">
                         <p class="text-[11px]">${supplier?.name?.toUpperCase()}</p>

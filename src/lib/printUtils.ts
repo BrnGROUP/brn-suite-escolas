@@ -94,10 +94,13 @@ export const numberToWords = (value: number) => {
     return result.toLowerCase();
 };
 
-export const printDocument = (html: string) => {
+export const printDocument = (html: string, title?: string) => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
         printWindow.document.write(html);
+        if (title) {
+            printWindow.document.title = title;
+        }
         printWindow.document.close();
         setTimeout(() => {
             printWindow.focus();
@@ -129,5 +132,61 @@ export const subtractBusinessDays = (date: Date, days: number): Date => {
 
 export const getSchoolDayBefore = (date: Date, daysToSubtract: number = 2): Date => {
     return subtractBusinessDays(date, daysToSubtract);
+};
+
+export const getSchoolInitials = (schoolName: string = '') => {
+    if (!schoolName) return '';
+    return schoolName
+        .split(' ')
+        .map(word => word.trim())
+        .filter(word => {
+            const clean = word.replace(/[^a-zA-Z]/g, '');
+            const lower = clean.toLowerCase();
+            if (lower === 'de' || lower === 'da' || lower === 'do' || lower === 'e' || lower === 'para') {
+                return false;
+            }
+            return word.length > 0;
+        })
+        .map(word => word.charAt(0).toUpperCase())
+        .join('');
+};
+
+export const getContractPrintTitle = (process: any) => {
+    let entry = process.financial_entries || process.financial_entry;
+    if (Array.isArray(entry)) entry = entry[0];
+    const school = entry?.schools || entry?.school;
+    const contract = process.contract;
+
+    if (!contract && !entry) return 'CONTRATO';
+
+    const isAditivo = contract?.terms_json?.is_aditivo || entry?.terms_json?.is_aditivo;
+    const baseType = isAditivo ? 'ADITIVO' : 'CONTRATO';
+
+    const category = (contract?.category || entry?.category || 'SERVIÇOS').toUpperCase();
+
+    const rawNumber = contract?.contract_number || 'SEM_NUMERO';
+    const contractNum = rawNumber.replace(/[\/\\?%*:|"<>. ]/g, '_');
+
+    const startDateStr = contract?.start_date || entry?.date || new Date().toISOString().split('T')[0];
+    let dateText = '00.00.0000';
+    try {
+        const parts = startDateStr.split('-');
+        if (parts.length === 3) {
+            dateText = `${parts[2]}.${parts[1]}.${parts[0]}`;
+        } else {
+            const d = new Date(startDateStr);
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            dateText = `${dd}.${mm}.${yyyy}`;
+        }
+    } catch (e) {
+        // Fallback
+    }
+
+    const schoolName = school?.name || '';
+    const initials = getSchoolInitials(schoolName);
+
+    return `${baseType} - ${category} - ${contractNum} - ${dateText} - ${initials}`;
 };
 

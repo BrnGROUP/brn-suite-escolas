@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { User, AccountabilityProcess, UserRole } from '../types';
-import { printDocument } from '../lib/printUtils';
+import { printDocument, getContractPrintTitle } from '../lib/printUtils';
 import { 
   generateAtaHTML, 
   generateConsolidacaoHTML, 
@@ -94,7 +94,8 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
       default:
         return;
     }
-    printDocument(html);
+    const printTitle = type === 'contrato' ? getContractPrintTitle(process) : undefined;
+    printDocument(html, printTitle);
   };
 
   const handlePrintContract = (contract: any) => {
@@ -122,7 +123,7 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
       html = generateContratoServicoHTML(pseudoProcess);
     }
     
-    printDocument(html);
+    printDocument(html, getContractPrintTitle(pseudoProcess));
   };
 
   const handleDelete = async (id: string) => {

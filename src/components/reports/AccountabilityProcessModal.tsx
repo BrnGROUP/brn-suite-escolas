@@ -1,8 +1,7 @@
 import React from 'react';
 import { User, Supplier } from '../../types';
-import { formatCurrency } from '../../lib/printUtils';
+import { formatCurrency, printDocument, getContractPrintTitle } from '../../lib/printUtils';
 import { generateContratoServicoHTML, generateAditivoHTML } from '../../lib/documentTemplates';
-import { printDocument } from '../../lib/printUtils';
 import { useAccountabilityProcess } from '../../hooks/useAccountabilityProcess';
 import { ProcessChecklist } from './ProcessChecklist';
 import { ImportModal } from './ImportModal';
@@ -267,7 +266,7 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
                           contract: linkedContract,
                           discount: discount
                         };
-                        printDocument(generateContratoServicoHTML(printData));
+                        printDocument(generateContratoServicoHTML(printData), getContractPrintTitle(printData));
                       }}
                       className="w-full flex items-center justify-center gap-2 p-4 bg-white/5 border border-primary/20 hover:bg-primary/10 hover:border-primary/50 text-primary rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest"
                     >
@@ -282,7 +281,7 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
                           contract: linkedContract,
                           discount: discount
                         };
-                        printDocument(generateAditivoHTML(printData));
+                        printDocument(generateAditivoHTML(printData), getContractPrintTitle(printData));
                       }}
                       className="w-full flex items-center justify-center gap-2 p-4 bg-white/5 border border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/50 text-amber-500 rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest"
                     >
