@@ -47,21 +47,21 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
 
                 return (
                     <div key={contract.id} className={`bg-[#111a22] border border-white/5 rounded-[32px] p-6 md:p-8 hover:border-primary/30 transition-all group shadow-xl transition-all duration-300 ${isExpanded ? 'md:col-span-2' : ''}`}>
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${contract.category === 'INTERNET' ? 'bg-blue-500/20 text-blue-400' :
+                        <div className="flex justify-between items-start mb-6 gap-4">
+                            <div className="flex items-center gap-4 min-w-0">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0 ${contract.category === 'INTERNET' ? 'bg-blue-500/20 text-blue-400' :
                                     contract.category === 'GÁS' ? 'bg-orange-500/20 text-orange-400' : 'bg-primary/20 text-primary'
                                     }`}>
                                     <span className="material-symbols-outlined">
                                         {contract.category === 'INTERNET' ? 'wifi' : contract.category === 'GÁS' ? 'propane_tank' : 'description'}
                                     </span>
                                 </div>
-                                <div>
+                                <div className="min-w-0">
                                     <h4 className="font-black text-white uppercase tracking-tight line-clamp-1">{contract.suppliers?.name}</h4>
                                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{contract.contract_number || 'Sem Número'}</p>
                                 </div>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${contract.status === 'Ativo' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                            <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 ${contract.status === 'Ativo' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
                                 }`}>
                                 {contract.status}
                             </div>
@@ -132,14 +132,14 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
                                 </div>
                             )}
 
-                            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
+                            <div className="pt-4 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+                                <div className="flex items-center gap-2 shrink-0">
                                     <span className="material-symbols-outlined text-slate-500 text-sm">calendar_month</span>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight whitespace-nowrap">
                                         {new Date(contract.start_date).toLocaleDateString()} — {new Date(contract.end_date).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <div className="flex gap-1 md:gap-2">
+                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
                                     <button
                                         onClick={() => setExpandedContractId(isExpanded ? null : contract.id)}
                                         className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${isExpanded ? 'bg-primary text-white' : 'bg-white/5 text-slate-500 hover:text-white hover:bg-white/10'}`}
