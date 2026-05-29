@@ -81,6 +81,68 @@ export const extractDocumentData = (rawProcess: DocumentProcess) => {
     };
 };
 
+export const validateContractData = (process: DocumentProcess) => {
+    const { entry, school, program, supplier } = extractDocumentData(process);
+    const contract = process.contract;
+    const terms = contract?.terms_json || {};
+
+    const legalRepresentativeName = terms.custom_director_name || school?.director;
+    const legalRepresentativeCpf = terms.custom_director_cpf || school?.director_cpf;
+    const legalRepresentativeRg = terms.custom_director_rg || school?.director_rg;
+
+    const supplierRepName = contract?.representative_name || supplier?.rep_name;
+    const supplierRepCpf = contract?.representative_cpf || supplier?.rep_cpf;
+
+    const rubricName = (entry as any)?.rubrics?.name || (process as any).contract?.rubrics?.name || (entry as any)?.rubric;
+    const natureDisplay = entry?.nature || (contract as any)?.nature;
+
+    const monthlyValue = contract?.monthly_value || (Math.abs(entry?.value || 0));
+    const startDate = contract?.start_date;
+    const endDate = contract?.end_date;
+
+    const checks = [
+        { value: school?.conselho_escolar, label: 'Conselho Escolar da Escola (UEx)' },
+        { value: school?.cnpj, label: 'CNPJ do Conselho Escolar' },
+        { value: school?.address, label: 'Endereço da Escola' },
+        { value: legalRepresentativeName, label: 'Nome do Presidente/Diretor do Conselho' },
+        { value: legalRepresentativeCpf, label: 'CPF do Presidente/Diretor do Conselho' },
+        { value: legalRepresentativeRg, label: 'RG do Presidente/Diretor do Conselho' },
+        { value: supplier?.name, label: 'Nome/Razão Social do Fornecedor' },
+        { value: supplier?.cnpj, label: 'CNPJ do Fornecedor' },
+        { value: supplier?.address, label: 'Endereço do Fornecedor' },
+        { value: supplierRepName, label: 'Nome do Representante Legal do Fornecedor' },
+        { value: supplierRepCpf, label: 'CPF do Representante Legal do Fornecedor' },
+        { value: startDate, label: 'Data de Início da Vigência' },
+        { value: endDate, label: 'Data de Fim da Vigência' },
+        { value: monthlyValue, label: 'Valor Mensal do Contrato' },
+        { value: program?.name, label: 'Programa de Recursos (FNDE/SEDUC)' },
+        { value: rubricName, label: 'Rubrica Financeira (Custeio/Capital)' },
+        { value: natureDisplay, label: 'Natureza da Despesa' }
+    ];
+
+    const missing: string[] = [];
+    const isPlaceholder = (val: any) => {
+        if (val === null || val === undefined) return true;
+        const s = String(val).trim();
+        return (
+            s === '' ||
+            s.startsWith('___') ||
+            s.includes('_____') ||
+            s.toLowerCase().includes('preencher')
+        );
+    };
+
+    checks.forEach(item => {
+        if (isPlaceholder(item.value)) {
+            missing.push(item.label);
+        }
+    });
+
+    if (missing.length > 0) {
+        throw new Error(`Não foi possível gerar o contrato. Corrija os seguintes dados no cadastro do processo ou contrato:\n\n• ${missing.join('\n• ')}`);
+    }
+};
+
 export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boolean = false) => {
     return `<head>
     <meta charset="utf-8"/>
@@ -771,6 +833,9 @@ ${getDocumentBaseCSS(customStyles)}
 };
 
 export const generateContratoServicoHTML = (process: DocumentProcess) => {
+    // Perform thorough contract validation first
+    validateContractData(process);
+
     const { entry, school, program, supplier } = extractDocumentData(process);
     const contract = process.contract;
     const terms = contract?.terms_json || {};
@@ -991,6 +1056,9 @@ ${getDocumentBaseCSS(customStyles)}
 };
 
 export const generateContratoGasHTML = (process: DocumentProcess) => {
+    // Perform thorough contract validation first
+    validateContractData(process);
+
     const { entry, school, program, supplier } = extractDocumentData(process);
     const contract = process.contract;
     const terms = contract?.terms_json || {};

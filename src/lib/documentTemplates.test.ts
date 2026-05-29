@@ -37,6 +37,10 @@ const mockProcess = {
         programs: {
             name: 'PNAE'
         },
+        rubrics: {
+            name: 'CUSTEIO'
+        },
+        nature: 'Custeio',
         suppliers: {
             name: 'Fornecedor A Ltda',
             cnpj: '98765432000110',
@@ -160,5 +164,19 @@ describe('documentTemplates', () => {
             }
         };
         expect(() => generateAtaHTML(invalidProcess)).toThrow('O programa de recursos financeiros');
+    });
+
+    it('deve lançar erro se faltar qualquer campo obrigatorio na validação de contrato', () => {
+        const invalidContractProcess = {
+            ...mockProcess,
+            financial_entries: {
+                ...mockProcess.financial_entries,
+                schools: {
+                    ...mockProcess.financial_entries.schools,
+                    address: undefined
+                }
+            }
+        };
+        expect(() => generateContratoServicoHTML(invalidContractProcess)).toThrow('Não foi possível gerar o contrato. Corrija os seguintes dados');
     });
 });
