@@ -1,4 +1,4 @@
-import { formatCurrency, numberToWords, numberToWordsPure, getSchoolDayBefore, formatCNPJ } from './printUtils';
+import { formatCurrency, numberToWords, numberToWordsPure, getSchoolDayBefore, formatCNPJ, escapeHtmlDeep } from './printUtils';
 
 export interface DocumentProcess {
     id: string;
@@ -28,7 +28,8 @@ const getForoByCity = (city: string = '') => {
     return mapping[cityUpper] || cityUpper;
 };
 
-export const extractDocumentData = (process: DocumentProcess) => {
+export const extractDocumentData = (rawProcess: DocumentProcess) => {
+    const process = escapeHtmlDeep(rawProcess);
     let entry = process.financial_entries || process.financial_entry;
     if (Array.isArray(entry)) entry = entry[0];
 

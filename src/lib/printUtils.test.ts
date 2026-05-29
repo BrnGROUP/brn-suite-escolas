@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, formatCNPJ, numberToWords, subtractBusinessDays, getSchoolInitials, getContractPrintTitle, numberToWordsPure } from './printUtils';
+import { formatCurrency, formatCNPJ, numberToWords, subtractBusinessDays, getSchoolInitials, getContractPrintTitle, numberToWordsPure, escapeHtml, escapeHtmlDeep } from './printUtils';
 
 describe('printUtils', () => {
     describe('formatCurrency', () => {
@@ -154,6 +154,68 @@ describe('printUtils', () => {
 
             const title = getContractPrintTitle(pseudoProcess);
             expect(title).toBe('ADITIVO - GÁS - 05_2025_ADITIVO - 29.05.2026 - EEB');
+        });
+    });
+
+    describe('escapeHtml', () => {
+        it('deve escapar caracteres HTML especiais', () => {
+            expect(escapeHtml('&')).toBe('&amp;');
+            expect(escapeHtml('<')).toBe('&lt;');
+            expect(escapeHtml('>')).toBe('&gt;');
+            expect(escapeHtml('"')).toBe('&quot;');
+            expect(escapeHtml("'")).toBe('&#039;');
+            expect(escapeHtml('foo & bar <baz> "qux"\'s')).toBe('foo &amp; bar &lt;baz&gt; &quot;qux&quot;&#039;s');
+        });
+
+        it('deve retornar string vazia para null ou undefined', () => {
+            expect(escapeHtml(null)).toBe('');
+            expect(escapeHtml(undefined)).toBe('');
+        });
+
+        it('deve converter outros tipos para string e escapar se aplicavel', () => {
+            expect(escapeHtml(123)).toBe('123');
+            expect(escapeHtml(true)).toBe('true');
+        });
+    });
+
+    describe('escapeHtmlDeep', () => {
+        it('deve escapar recursivamente strings dentro de objetos e arrays', () => {
+            const input = {
+                name: 'Escola <Estadual> & Cia',
+                address: null,
+                active: true,
+                count: 42,
+                items: [
+                    'item <1>',
+                    { desc: 'desc & details' }
+                ],
+                nested: {
+                    value: 'nested "value"'
+                }
+            };
+
+            const expected = {
+                name: 'Escola &lt;Estadual&gt; &amp; Cia',
+                address: null,
+                active: true,
+                count: 42,
+                items: [
+                    'item &lt;1&gt;',
+                    { desc: 'desc &amp; details' }
+                ],
+                nested: {
+                    value: 'nested &quot;value&quot;'
+                }
+            };
+
+            expect(escapeHtmlDeep(input)).toEqual(expected);
+        });
+
+        it('deve lidar com null, undefined e tipos primitivos de forma transparente', () => {
+            expect(escapeHtmlDeep(null)).toBeNull();
+            expect(escapeHtmlDeep(undefined)).toBeUndefined();
+            expect(escapeHtmlDeep('simple <string>')).toBe('simple &lt;string&gt;');
+            expect(escapeHtmlDeep(123)).toBe(123);
         });
     });
 });

@@ -225,3 +225,39 @@ export const numberToWordsPure = (value: number): string => {
     return res.toLowerCase();
 };
 
+export const escapeHtml = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+
+export const escapeHtmlDeep = (obj: any): any => {
+    if (obj === null || obj === undefined) {
+        return obj;
+    }
+    
+    if (typeof obj === 'string') {
+        return escapeHtml(obj);
+    }
+    
+    if (Array.isArray(obj)) {
+        return obj.map(item => escapeHtmlDeep(item));
+    }
+    
+    if (typeof obj === 'object') {
+        const result: any = {};
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                result[key] = escapeHtmlDeep(obj[key]);
+            }
+        }
+        return result;
+    }
+    
+    return obj;
+};
+
