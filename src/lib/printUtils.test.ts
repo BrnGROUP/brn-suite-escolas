@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, formatCNPJ, numberToWords, subtractBusinessDays, getSchoolInitials, getContractPrintTitle } from './printUtils';
+import { formatCurrency, formatCNPJ, numberToWords, subtractBusinessDays, getSchoolInitials, getContractPrintTitle, numberToWordsPure } from './printUtils';
 
 describe('printUtils', () => {
     describe('formatCurrency', () => {
@@ -95,6 +95,17 @@ describe('printUtils', () => {
             expect(getSchoolInitials('Escola Estadual Branquinha')).toBe('EEB');
             expect(getSchoolInitials('U.E. Conselheiro Manoel de Souza')).toBe('UCMS');
             expect(getSchoolInitials('')).toBe('');
+        });
+    });
+
+    describe('numberToWordsPure', () => {
+        it('deve converter numeros inteiros simples para palavras em portugues sem sufixo de moeda', () => {
+            expect(numberToWordsPure(1)).toBe('um');
+            expect(numberToWordsPure(5)).toBe('cinco');
+            expect(numberToWordsPure(12)).toBe('doze');
+            expect(numberToWordsPure(24)).toBe('vinte e quatro');
+            expect(numberToWordsPure(100)).toBe('cem');
+            expect(numberToWordsPure(0)).toBe('zero');
         });
     });
 

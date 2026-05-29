@@ -1,4 +1,4 @@
-import { formatCurrency, numberToWords, getSchoolDayBefore, formatCNPJ } from './printUtils';
+import { formatCurrency, numberToWords, numberToWordsPure, getSchoolDayBefore, formatCNPJ } from './printUtils';
 
 export interface DocumentProcess {
     id: string;
@@ -678,7 +678,7 @@ export const generateContratoServicoHTML = (process: DocumentProcess) => {
     const e = new Date(endDateStr + 'T12:00:00');
     let diffMonths = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
     if (diffMonths <= 0) diffMonths = 12;
-    const durationDisplay = `${diffMonths} (${numberToWords(diffMonths)})`;
+    const durationDisplay = `${diffMonths} (${numberToWordsPure(diffMonths)})`;
     const natureDisplay = entry?.nature || (contract as any)?.nature || 'Custeio';
 
     const internetSpeed = terms.internet_speed || '200 Mbps';

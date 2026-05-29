@@ -190,3 +190,38 @@ export const getContractPrintTitle = (process: any) => {
     return `${baseType} - ${category} - ${contractNum} - ${dateText} - ${initials}`;
 };
 
+export const numberToWordsPure = (value: number): string => {
+    const unidades = ["", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"];
+    const dezena_10 = ["dez", "onze", "doze", "treze", "quatorze", "quinze", "dezesseis", "dezessete", "dezoito", "dezenove"];
+    const dezenas = ["", "", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"];
+    const centenas = ["", "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"];
+
+    if (value === 0) return "zero";
+    if (value === 100) return "cem";
+
+    let res = "";
+    const c = Math.floor(value / 100);
+    const d = Math.floor((value % 100) / 10);
+    const u = value % 10;
+
+    if (c > 0) res += centenas[c];
+    
+    if (d === 1) {
+        if (res) res += " e ";
+        res += dezena_10[u];
+        return res.toLowerCase();
+    }
+
+    if (d > 1) {
+        if (res) res += " e ";
+        res += dezenas[d];
+    }
+
+    if (u > 0) {
+        if (res) res += " e ";
+        res += unidades[u];
+    }
+
+    return res.toLowerCase();
+};
+
