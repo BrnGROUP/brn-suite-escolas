@@ -98,6 +98,13 @@ export const EntryFormFields: React.FC<EntryFormFieldsProps> = ({
 }) => {
     const { bankAccounts, paymentMethods } = auxData;
 
+    const isPnae = React.useMemo(() => {
+        if (!selectedProgramId || !filteredPrograms) return false;
+        const prog = filteredPrograms.find((p: any) => p.id === selectedProgramId);
+        if (!prog) return false;
+        return (prog.name || '').toUpperCase().includes('PNAE');
+    }, [selectedProgramId, filteredPrograms]);
+
     const schoolOptions = React.useMemo(() => 
         filteredSchools.map(s => <option key={s.id} value={s.id}>{s.name}</option>), 
         [filteredSchools]
@@ -290,21 +297,23 @@ export const EntryFormFields: React.FC<EntryFormFieldsProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                    <label htmlFor="entry_bank_account_id" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Conta Bancária</label>
-                    <select
-                        title="Selecione a Conta Bancária"
-                        aria-label="Selecione a Conta Bancária"
-                        id="entry_bank_account_id"
-                        value={selectedBankAccountId}
-                        onChange={e => setSelectedBankAccountId(e.target.value)}
-                        className="bg-[#1e293b] rounded-xl h-12 px-4 text-white outline-none border border-white/5 focus:border-cyan-500"
-                    >
-                        <option value="">Selecione...</option>
-                        {bankAccountOptions}
-                    </select>
-                </div>
-                <div className="flex flex-col gap-2">
+                {!isPnae && (
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="entry_bank_account_id" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Conta Bancária</label>
+                        <select
+                            title="Selecione a Conta Bancária"
+                            aria-label="Selecione a Conta Bancária"
+                            id="entry_bank_account_id"
+                            value={selectedBankAccountId}
+                            onChange={e => setSelectedBankAccountId(e.target.value)}
+                            className="bg-[#1e293b] rounded-xl h-12 px-4 text-white outline-none border border-white/5 focus:border-cyan-500"
+                        >
+                            <option value="">Selecione...</option>
+                            {bankAccountOptions}
+                        </select>
+                    </div>
+                )}
+                <div className={`flex flex-col gap-2 ${isPnae ? 'md:col-span-2' : ''}`}>
                     <label htmlFor="entry_payment_method_id" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Forma de Pagamento</label>
                     <select
                         title="Selecione a Forma de Pagamento"

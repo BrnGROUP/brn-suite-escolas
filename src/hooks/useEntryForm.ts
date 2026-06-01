@@ -63,6 +63,7 @@ export const useEntryForm = ({
     const [technicalProcess, setTechnicalProcess] = React.useState<any>(null);
     const [entryLogs, setEntryLogs] = React.useState<any[]>([]);
     const [linkedStatements, setLinkedStatements] = React.useState<any[]>([]);
+    const lastFetchRef = React.useRef<{ accId: string; date: string } | null>(null);
     const [selectedContractId, setSelectedContractId] = React.useState('');
     const [schoolContracts, setSchoolContracts] = React.useState<any[]>([]);
     const [auditInfo, setAuditInfo] = React.useState<{ created_by?: string; updated_by?: string; created_at?: string } | null>(null);
@@ -72,7 +73,7 @@ export const useEntryForm = ({
     const [singleRubricId, setSingleRubricId] = React.useState('');
     const [singleNature, setSingleNature] = React.useState<TransactionNature>(TransactionNature.CUSTEIO);
 
-    const { programs, rubrics: allRubrics, suppliers } = auxData;
+    const { programs, rubrics: allRubrics, suppliers, paymentMethods } = auxData;
 
     // Memoized filters and properties
     const filteredRubrics = React.useMemo(() => {
@@ -142,9 +143,13 @@ export const useEntryForm = ({
         const targetDate = entryDateStr || paymentDate || date;
 
         if (!targetAccId || !targetDate) {
+            lastFetchRef.current = null;
             setLinkedStatements([]);
             return;
         }
+
+        const currentFetch = { accId: targetAccId, date: targetDate };
+        lastFetchRef.current = currentFetch;
 
         try {
             const parts = targetDate.split('-');
@@ -161,7 +166,9 @@ export const useEntryForm = ({
                 .eq('year', year);
 
             if (error) throw error;
-            setLinkedStatements(data || []);
+            if (lastFetchRef.current === currentFetch) {
+                setLinkedStatements(data || []);
+            }
         } catch (error) {
             console.error('Erro ao buscar extrato vinculado:', error);
         }
@@ -384,7 +391,7 @@ export const useEntryForm = ({
         }
 
         try {
-            const batchId = editingBatchId || (isSplitMode ? Math.random().toString(36).substring(7) : null);
+            const batchId = editingBatchId || (isSplitMode ? (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })) : null);
             let originalData: any = null;
             if (editingId) {
                 const { data } = await supabase.from('financial_entries').select('*').eq('id', editingId).single();
@@ -510,7 +517,7 @@ export const useEntryForm = ({
         }
     }, [type, isOpen, category]);
 
-    // Force Custeio nature for PNAE and Mais Merenda programs, and force default empty rubric for PNAE inflow
+    // Force Custeio nature for PNAE and Mais Merenda programs, force default empty rubric for PNAE inflow, and reset bank account for PNAE
     React.useEffect(() => {
         if (!isOpen || !selectedProgramId || !programs) return;
         const prog = programs.find((p: any) => p.id === selectedProgramId);
@@ -534,7 +541,20 @@ export const useEntryForm = ({
             setSingleRubricId('');
             setIsSplitMode(false);
         }
-    }, [selectedProgramId, programs, isOpen, type]);
+
+        if (isPnae) {
+            setSelectedBankAccountId('');
+            if (paymentMethods && paymentMethods.length > 0) {
+                const debitCard = paymentMethods.find((pm: any) => {
+                    const nameUpper = (pm.name || '').toUpperCase().trim();
+                    return nameUpper.includes('DÉBITO') || nameUpper.includes('DEBITO') || nameUpper.includes('CARTÃO DE DÉBITO');
+                });
+                if (debitCard) {
+                    setSelectedPaymentMethodId(debitCard.id);
+                }
+            }
+        }
+    }, [selectedProgramId, programs, isOpen, type, paymentMethods]);
 
     // Contracts loader
     React.useEffect(() => {
@@ -561,8 +581,12 @@ export const useEntryForm = ({
 
     // Statement automatic loader
     React.useEffect(() => {
-        if (isOpen && selectedBankAccountId && (paymentDate || date)) {
-            fetchLinkedStatement();
+        if (isOpen) {
+            if (selectedBankAccountId && (paymentDate || date)) {
+                fetchLinkedStatement();
+            } else {
+                setLinkedStatements([]);
+            }
         }
     }, [selectedBankAccountId, date, paymentDate, fetchLinkedStatement, isOpen]);
 
