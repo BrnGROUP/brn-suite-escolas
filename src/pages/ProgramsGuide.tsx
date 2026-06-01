@@ -2146,7 +2146,7 @@ const ProgramsGuide: React.FC<ProgramsGuideProps> = ({ onBack }) => {
                                                 <ul className="text-[10.5px] text-slate-300 space-y-1">
                                                     <li className="text-amber-450 font-bold">• NÃO exige nova Ata de Compra a cada pagamento.</li>
                                                     <li className="text-amber-450 font-bold">• NÃO exige nova Consolidação de Pesquisa a cada mês.</li>
-                                                    <p className="text-[9.5px] text-slate-400 leading-tight italic py-1 border-b border-white/5">*Nota: Ata e Consolidação só são exigidas uma única vez na formalização/assinatura inicial do contrato principal.</p>
+                                                    <li className="text-[9.5px] text-slate-400 leading-tight italic py-1 border-b border-white/5 list-none">*Nota: Ata e Consolidação só são exigidas uma única vez na formalização/assinatura inicial do contrato principal.</li>
                                                     <li>• Nota Fiscal correspondente ao mês</li>
                                                     <li>• Atesto de Execução do Serviço do mês</li>
                                                     <li>• Certidões de Regularidade Válidas do mês</li>
