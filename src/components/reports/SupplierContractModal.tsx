@@ -141,6 +141,16 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setCategory(data.category);
             setStatus(data.status);
 
+            if (data.start_date && data.end_date) {
+                const start = new Date(data.start_date + 'T12:00:00');
+                const end = new Date(data.end_date + 'T12:00:00');
+                const yearsDiff = end.getFullYear() - start.getFullYear();
+                const monthsDiff = end.getMonth() - start.getMonth();
+                const daysDiff = (end.getDate() - start.getDate()) / 30;
+                const diff = Math.max(1, Math.round(yearsDiff * 12 + monthsDiff + daysDiff));
+                setDurationMonths(diff.toString());
+            }
+
             const terms = data.terms_json || {};
             setW1Name(terms.witness_1_name || '');
             setW1Cpf(terms.witness_1_cpf || '');
@@ -284,6 +294,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
         setTotalValue('');
         setStartDate('');
         setEndDate('');
+        setDurationMonths('12');
         setW1Name('');
         setW1Cpf('');
         setW1Rg('');
