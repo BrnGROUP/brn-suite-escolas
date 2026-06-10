@@ -58,10 +58,16 @@ describe('useEntryForm', () => {
     };
 
     const mockAuxData = {
-        programs: [{ id: 'p1', name: 'Programa FNDE' }],
+        programs: [
+            { id: 'p1', name: 'Programa FNDE' },
+            { id: 'p_mais_merenda', name: 'MAIS MERENDA' },
+            { id: 'p_pnae', name: 'PNAE' }
+        ],
         rubrics: [
             { id: 'r1', name: 'Rubrica Alimentação', program_id: 'p1', default_nature: TransactionNature.CUSTEIO },
-            { id: 'r2', name: 'Rubrica Infraestrutura', program_id: 'p1', default_nature: TransactionNature.CAPITAL }
+            { id: 'r2', name: 'Rubrica Infraestrutura', program_id: 'p1', default_nature: TransactionNature.CAPITAL },
+            { id: 'r_mm_global', name: 'Rubrica MM Global', program_id: 'p_mais_merenda', default_nature: TransactionNature.CUSTEIO },
+            { id: 'r_mm_specific', name: 'Rubrica MM Específica', program_id: 'p_mais_merenda', school_id: 'esc1', default_nature: TransactionNature.CUSTEIO }
         ],
         suppliers: [{ id: 's1', name: 'Fornecedor A', cnpj: '12.345.678/0001-90' }],
         bankAccounts: [{ id: 'b1', name: 'Conta Caixa', program_id: 'p1', school_id: 'esc1', account_number: '12345' }],
@@ -176,5 +182,43 @@ describe('useEntryForm', () => {
 
         expect(result.current.filteredRubrics.length).toBe(2);
         expect(result.current.filteredRubrics[0].id).toBe('r1');
+    });
+
+    it('deve redefinir singleRubricId e isSplitMode para MAIS MERENDA se a escola NAO tiver rubricas especificas', () => {
+        const { result } = renderHook(() => useEntryForm({
+            ...defaultProps,
+            user: { ...mockUser, schoolId: 'esc_other' }
+        }));
+
+        act(() => {
+            result.current.setSingleRubricId('r1');
+            result.current.setIsSplitMode(true);
+        });
+
+        act(() => {
+            result.current.setSelectedProgramId('p_mais_merenda');
+        });
+
+        expect(result.current.singleRubricId).toBe('');
+        expect(result.current.isSplitMode).toBe(false);
+    });
+
+    it('NAO deve redefinir singleRubricId e isSplitMode para MAIS MERENDA se a escola tiver rubricas especificas', () => {
+        const { result } = renderHook(() => useEntryForm({
+            ...defaultProps,
+            user: { ...mockUser, schoolId: 'esc1' }
+        }));
+
+        act(() => {
+            result.current.setSingleRubricId('r_mm_specific');
+            result.current.setIsSplitMode(true);
+        });
+
+        act(() => {
+            result.current.setSelectedProgramId('p_mais_merenda');
+        });
+
+        expect(result.current.singleRubricId).toBe('r_mm_specific');
+        expect(result.current.isSplitMode).toBe(true);
     });
 });

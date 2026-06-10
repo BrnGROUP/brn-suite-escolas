@@ -16,6 +16,7 @@ interface SplitModeSectionProps {
     selectedProgramId?: string;
     programs?: any[];
     type?: 'Entrada' | 'Saída';
+    selectedSchoolId?: string;
 }
 
 export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
@@ -31,7 +32,8 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
     allRubrics,
     selectedProgramId,
     programs,
-    type
+    type,
+    selectedSchoolId
 }) => {
     const isClassificationHidden = React.useMemo(() => {
         if (!selectedProgramId || !programs) return false;
@@ -40,8 +42,17 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
         const nameUpper = (prog.name || '').toUpperCase().trim();
         const isPnae = nameUpper.includes('PNAE');
         const isMaisMerenda = nameUpper.includes('MAIS MERENDA');
-        return isMaisMerenda || (isPnae && type === 'Entrada');
-    }, [type, selectedProgramId, programs]);
+        const isSpecialProgram = isMaisMerenda || (isPnae && type === 'Entrada');
+
+        if (isSpecialProgram) {
+            const hasSchoolSpecificRubrics = allRubrics?.some((r: any) => 
+                r.program_id === selectedProgramId && 
+                r.school_id === selectedSchoolId
+            );
+            return !hasSchoolSpecificRubrics;
+        }
+        return false;
+    }, [type, selectedProgramId, programs, allRubrics, selectedSchoolId]);
 
     const isCusteioOnly = React.useMemo(() => {
         if (!selectedProgramId || !programs) return false;

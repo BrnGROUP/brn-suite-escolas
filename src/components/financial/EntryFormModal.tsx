@@ -205,6 +205,7 @@ const EntryFormModal: React.FC<EntryFormModalProps> = (props) => {
                             selectedProgramId={selectedProgramId}
                             programs={props.auxData.programs}
                             type={type}
+                            selectedSchoolId={selectedSchoolId}
                         />
 
                         <AttachmentSection

@@ -537,7 +537,12 @@ export const useEntryForm = ({
             });
         }
 
-        if ((isPnae && type === 'Entrada') || isMaisMerenda) {
+        const hasSchoolSpecificRubrics = allRubrics?.some((r: any) => 
+            r.program_id === selectedProgramId && 
+            r.school_id === selectedSchoolId
+        );
+
+        if (((isPnae && type === 'Entrada') || isMaisMerenda) && !hasSchoolSpecificRubrics) {
             setSingleRubricId('');
             setIsSplitMode(false);
         }
@@ -554,7 +559,7 @@ export const useEntryForm = ({
                 }
             }
         }
-    }, [selectedProgramId, programs, isOpen, type, paymentMethods]);
+    }, [selectedProgramId, programs, isOpen, type, paymentMethods, allRubrics, selectedSchoolId]);
 
     // Contracts loader
     React.useEffect(() => {
