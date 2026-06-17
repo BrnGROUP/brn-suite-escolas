@@ -698,8 +698,8 @@ ${getDocumentBaseCSS(customStyles)}
 
         <div class="flex flex-col items-center relative">
             ${supplier?.stamp_url ? `
-                <div class="absolute -top-16 opacity-80 mix-blend-multiply pointer-events-none" style="z-index: 10;">
-                    <img src="${supplier.stamp_url}" class="rotate-[-5deg]" style="width: 140px; height: auto; display: block;" />
+                <div class="absolute -top-24 opacity-80 mix-blend-multiply pointer-events-none" style="z-index: 10;">
+                    <img src="${supplier.stamp_url}" class="rotate-[-5deg]" style="width: 200px; height: auto; display: block;" />
                 </div>
             ` : ''}
             <div class="w-2/3 border-t border-black mb-2"></div>
@@ -831,7 +831,7 @@ ${getDocumentBaseCSS(customStyles)}
             </div>
             ${supplier?.stamp_url ? `
             <div class="flex items-center justify-center min-w-[140px] h-[80px] mr-4 relative" style="z-index: 10;">
-                <img src="${supplier.stamp_url}" class="rotate-[-3deg]" style="width: 110px; height: auto; display: block; pointer-events: none;" />
+                <img src="${supplier.stamp_url}" class="rotate-[-3deg]" style="width: 170px; height: auto; display: block; pointer-events: none;" />
             </div>
             ` : ''}
         </div>
