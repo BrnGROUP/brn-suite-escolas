@@ -1,4 +1,4 @@
-import { formatCurrency, numberToWords, numberToWordsPure, getSchoolDayBefore, formatCNPJ, escapeHtmlDeep } from './printUtils';
+import { formatCurrency, numberToWords, numberToWordsPure, getSchoolDayBefore, getQuoteDate, formatCNPJ, escapeHtmlDeep } from './printUtils';
 
 export interface DocumentProcess {
     id: string;
@@ -63,8 +63,12 @@ export const extractDocumentData = (rawProcess: DocumentProcess) => {
     const winner = winnerQuote;
     const supplier = winnerQuote?.suppliers || winnerQuote?.supplier || entry?.suppliers || entry?.supplier;
 
-    const invoiceDate = entry?.date ? new Date(entry.date) : new Date();
-    const paymentDate = entry?.payment_date ? new Date(entry.payment_date) : null;
+    const invoiceDate = entry?.date 
+        ? new Date(entry.date + 'T12:00:00') 
+        : (process.contract?.start_date 
+            ? new Date(process.contract.start_date + 'T12:00:00') 
+            : new Date());
+    const paymentDate = entry?.payment_date ? new Date(entry.payment_date + 'T12:00:00') : null;
 
     return {
         entry,
@@ -719,7 +723,7 @@ export const generateCotacaoHTML = (process: DocumentProcess, supplierIdx: numbe
 
     const supplier = (quote as any).suppliers || (quote as any).supplier;
     const items = (process.items || process.accountability_items || []).slice(0, 27);
-    const quoteDate = getSchoolDayBefore(invoiceDate, 15);
+    const quoteDate = getQuoteDate(invoiceDate);
     const dateText = quoteDate.toLocaleDateString('pt-BR');
 
     const rows = [...items];

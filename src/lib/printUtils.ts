@@ -134,6 +134,42 @@ export const getSchoolDayBefore = (date: Date, daysToSubtract: number = 2): Date
     return subtractBusinessDays(date, daysToSubtract);
 };
 
+export const getQuoteDate = (date: Date): Date => {
+    const target = new Date(date);
+    target.setDate(target.getDate() - 20); // 20 days before
+    
+    const isValidDay = (d: Date): boolean => {
+        const dayOfWeek = d.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) return false; // Sunday or Saturday
+        
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dateString = `${month}-${day}`;
+        if (HOLIDAYS.includes(dateString)) return false; // Holiday
+        
+        return true;
+    };
+
+    if (isValidDay(target)) return target;
+
+    // Search closest valid day: checking offsets like -1, +1, -2, +2, etc.
+    let offset = 1;
+    while (offset < 30) {
+        // Check days before first (prioritized because quote should be before)
+        const dayBefore = new Date(target);
+        dayBefore.setDate(dayBefore.getDate() - offset);
+        if (isValidDay(dayBefore)) return dayBefore;
+
+        const dayAfter = new Date(target);
+        dayAfter.setDate(dayAfter.getDate() + offset);
+        if (isValidDay(dayAfter)) return dayAfter;
+
+        offset++;
+    }
+    return target; // fallback
+};
+
+
 export const getSchoolInitials = (schoolName: string = '') => {
     if (!schoolName) return '';
     return schoolName
