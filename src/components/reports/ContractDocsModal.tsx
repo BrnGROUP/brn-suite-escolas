@@ -44,20 +44,6 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
 
   const [competitorSearch, setCompetitorSearch] = useState<string[]>(['', '']);
 
-  const handleQuantityChange = (itemIdx: number, val: number) => {
-    const updatedItems = [...items];
-    updatedItems[itemIdx].quantity = val;
-    setItems(updatedItems);
-
-    // Sync to competitors
-    const updatedCompetitors = competitors.map(comp => ({
-      ...comp,
-      items: comp.items.map((it: any, idx: number) => 
-        idx === itemIdx ? { ...it, quantity: val } : it
-      )
-    }));
-    setCompetitors(updatedCompetitors);
-  };
 
   useEffect(() => {
     if (isOpen && processId) {
@@ -84,14 +70,28 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
       if (process) {
         setAttachments(process.attachments || []);
 
+        // Calculate contract duration in months
+        const sDate = new Date(contract.start_date + 'T12:00:00');
+        const eDate = new Date(contract.end_date + 'T12:00:00');
+        let contractMonths = (eDate.getFullYear() - sDate.getFullYear()) * 12 + (eDate.getMonth() - sDate.getMonth());
+        if (contractMonths <= 0) contractMonths = 12;
+
         // Load items or set default
-        const docItems = process.accountability_items || [];
+        let docItems = process.accountability_items || [];
         if (docItems.length === 0) {
           docItems.push({
             description: contract.description,
-            quantity: 12,
+            quantity: contractMonths,
             unit: 'Mês',
             winner_unit_price: contract.monthly_value
+          });
+        } else {
+          // Force items with unit === 'Mês' to have contractMonths quantity
+          docItems = docItems.map((it: any) => {
+            if (it.unit === 'Mês') {
+              return { ...it, quantity: contractMonths };
+            }
+            return it;
           });
         }
         setItems(docItems);
@@ -447,17 +447,9 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
                       <tr key={itemIdx} className="hover:bg-white/[0.01]">
                         <td className="p-4 font-bold text-slate-200 uppercase">{it.description}</td>
                         <td className="p-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <input
-                              type="number"
-                              min="1"
-                              value={it.quantity || 1}
-                              onChange={(e) => handleQuantityChange(itemIdx, parseFloat(e.target.value) || 1)}
-                              className="bg-black/40 border border-white/10 rounded-lg h-9 w-16 px-2 text-center text-xs text-white outline-none focus:border-primary"
-                              aria-label="Quantidade de meses"
-                            />
-                            <span className="text-slate-400 text-xs">{it.unit}</span>
-                          </div>
+                          <span className="text-xs font-bold text-slate-300">
+                            {it.quantity} {it.unit}
+                          </span>
                         </td>
                         <td className="p-4 text-right font-black text-primary">
                           {formatCurrency(it.winner_unit_price)}
