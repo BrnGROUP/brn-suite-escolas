@@ -170,6 +170,12 @@ export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boole
         .w-2\\/3 { width: 66.666667%; }
         .w-1\\/4 { width: 25%; }
         .w-3\\/4 { width: 75%; }
+        .w-24 { width: 6rem; }
+        .w-28 { width: 7rem; }
+        .w-32 { width: 8rem; }
+        .w-36 { width: 9rem; }
+        .w-40 { width: 10rem; }
+        .w-48 { width: 12rem; }
         
         .flex { display: flex; }
         .flex-col { flex-direction: column; }
@@ -692,8 +698,8 @@ ${getDocumentBaseCSS(customStyles)}
 
         <div class="flex flex-col items-center relative">
             ${supplier?.stamp_url ? `
-                <div class="absolute -top-20 opacity-80 mix-blend-multiply pointer-events-none">
-                    <img src="${supplier.stamp_url}" class="w-48 h-auto rotate-[-5deg]" />
+                <div class="absolute -top-16 opacity-80 mix-blend-multiply pointer-events-none" style="z-index: 10;">
+                    <img src="${supplier.stamp_url}" class="rotate-[-5deg]" style="width: 140px; height: auto; display: block;" />
                 </div>
             ` : ''}
             <div class="w-2/3 border-t border-black mb-2"></div>
@@ -824,8 +830,8 @@ ${getDocumentBaseCSS(customStyles)}
                 <p>Pagamento após conferência atesto da nota fiscal, mediante apresentação de recibo.</p>
             </div>
             ${supplier?.stamp_url ? `
-            <div class="flex items-center justify-center min-w-[140px] h-[80px] mr-4 relative">
-                <img src="${supplier.stamp_url}" class="w-32 h-auto opacity-90 mix-blend-multiply pointer-events-none rotate-[-3deg]" />
+            <div class="flex items-center justify-center min-w-[140px] h-[80px] mr-4 relative" style="z-index: 10;">
+                <img src="${supplier.stamp_url}" class="rotate-[-3deg]" style="width: 110px; height: auto; display: block; pointer-events: none;" />
             </div>
             ` : ''}
         </div>
