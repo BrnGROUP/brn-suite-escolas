@@ -209,10 +209,10 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
           if (pError) throw pError;
 
           // Insert default item
-          const months = Math.ceil(
-            (new Date(contract.end_date).getTime() - new Date(contract.start_date).getTime()) /
-              (1000 * 60 * 60 * 24 * 30.43)
-          ) || 12;
+          const sDate = new Date(contract.start_date + 'T12:00:00');
+          const eDate = new Date(contract.end_date + 'T12:00:00');
+          let months = (eDate.getFullYear() - sDate.getFullYear()) * 12 + (eDate.getMonth() - sDate.getMonth());
+          if (months <= 0) months = 12;
 
           await supabase.from('accountability_items').insert({
             process_id: newProc.id,

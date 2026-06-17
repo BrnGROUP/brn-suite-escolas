@@ -44,6 +44,21 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
 
   const [competitorSearch, setCompetitorSearch] = useState<string[]>(['', '']);
 
+  const handleQuantityChange = (itemIdx: number, val: number) => {
+    const updatedItems = [...items];
+    updatedItems[itemIdx].quantity = val;
+    setItems(updatedItems);
+
+    // Sync to competitors
+    const updatedCompetitors = competitors.map(comp => ({
+      ...comp,
+      items: comp.items.map((it: any, idx: number) => 
+        idx === itemIdx ? { ...it, quantity: val } : it
+      )
+    }));
+    setCompetitors(updatedCompetitors);
+  };
+
   useEffect(() => {
     if (isOpen && processId) {
       fetchProcessData();
@@ -431,8 +446,18 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
                     {items.map((it, itemIdx) => (
                       <tr key={itemIdx} className="hover:bg-white/[0.01]">
                         <td className="p-4 font-bold text-slate-200 uppercase">{it.description}</td>
-                        <td className="p-4 text-center text-slate-400">
-                          {it.quantity} {it.unit}
+                        <td className="p-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <input
+                              type="number"
+                              min="1"
+                              value={it.quantity || 1}
+                              onChange={(e) => handleQuantityChange(itemIdx, parseFloat(e.target.value) || 1)}
+                              className="bg-black/40 border border-white/10 rounded-lg h-9 w-16 px-2 text-center text-xs text-white outline-none focus:border-primary"
+                              aria-label="Quantidade de meses"
+                            />
+                            <span className="text-slate-400 text-xs">{it.unit}</span>
+                          </div>
                         </td>
                         <td className="p-4 text-right font-black text-primary">
                           {formatCurrency(it.winner_unit_price)}
