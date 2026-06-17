@@ -39,6 +39,7 @@ const ACCOUNTABILITY_DOC_CATEGORIES = [
 const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
   isOpen,
   onClose,
+  user,
   editingId,
   auxData,
   onSave
@@ -70,6 +71,8 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
     showImportModal,
     setShowImportModal,
     linkedContract,
+    setLinkedContract,
+    schoolContracts,
     batchSiblings,
     checkingDocId,
     setCheckingDocId,
@@ -88,7 +91,7 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
     handleXMLImport,
     handleUploadAttachment,
     downloadTemplate
-  } = useAccountabilityProcess({ isOpen, onClose, editingId, auxData, onSave });
+  } = useAccountabilityProcess({ isOpen, onClose, user, editingId, auxData, onSave });
 
   const ValueCounter = () => {
     const siblingTotal = batchSiblings.reduce((acc, s) => acc + Math.abs(Number(s.value)), 0);
@@ -258,13 +261,39 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
                   </div>
                 </div>
 
-                {isContractBased && selectedEntry && (
+                {isContractBased && (
+                  <div className="mt-4 p-4 bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                    <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">
+                      Vincular Contrato
+                    </label>
+                    <select
+                      title="Selecionar Contrato"
+                      aria-label="Selecionar Contrato"
+                      value={linkedContract?.id || ''}
+                      onChange={e => {
+                        const contractId = e.target.value;
+                        const contract = schoolContracts.find(c => c.id === contractId);
+                        setLinkedContract(contract || null);
+                      }}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl h-12 px-4 text-white outline-none focus:border-primary transition-all text-xs"
+                    >
+                      <option value="">Nenhum contrato selecionado</option>
+                      {schoolContracts.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.contract_number ? `${c.contract_number} - ` : ''}{c.suppliers?.name} ({c.description.substring(0, 50)}...)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {isContractBased && linkedContract && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                     <button
                       onClick={() => {
                         try {
                           const printData = {
-                            id: selectedEntry.id || 'temp',
+                            id: selectedEntry?.id || 'temp',
                             financial_entry: selectedEntry,
                             contract: linkedContract,
                             discount: discount
@@ -283,7 +312,7 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
                       onClick={() => {
                         try {
                           const printData = {
-                            id: selectedEntry.id || 'temp',
+                            id: selectedEntry?.id || 'temp',
                             financial_entry: selectedEntry,
                             contract: linkedContract,
                             discount: discount

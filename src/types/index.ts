@@ -132,6 +132,7 @@ export interface School {
     address?: string;
     city?: string;
     uf?: string;
+    cep?: string;
     image_url?: string;
     gee?: string; // Gerência Executiva de Educação
     gee_id?: string;
@@ -181,6 +182,7 @@ export interface AccountabilityProcess {
     financial_entry_id: string;
     school_id: string;
     status: 'Em Andamento' | 'Concluído';
+    description?: string;
     is_contract_based?: boolean;
     contract_id?: string;
     discount?: number;

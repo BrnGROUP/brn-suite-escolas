@@ -33,11 +33,11 @@ export const extractDocumentData = (rawProcess: DocumentProcess) => {
     let entry = process.financial_entries || process.financial_entry;
     if (Array.isArray(entry)) entry = entry[0];
 
-    const school = entry?.schools || entry?.school;
-    const program = entry?.programs || entry?.program;
+    const school = entry?.schools || entry?.school || process.schools || (process as any).contract?.schools;
+    const program = entry?.programs || entry?.program || process.programs || (process as any).contract?.programs;
 
     // Block official document generation if the program resources are not registered
-    const programName = program?.name || (entry as any)?.program || (process as any).contract?.programs?.name;
+    const programName = program?.name || (entry as any)?.program || (process as any).contract?.programs?.name || (typeof program === 'string' ? program : '');
     if (!programName || !programName.trim()) {
         throw new Error('O programa de recursos financeiros (ex: PDDE Básico, PDDE Qualidade) não está cadastrado ou vinculado a este processo. A geração do documento oficial foi bloqueada para evitar informações incorretas. Por favor, vincule um programa válido.');
     }
@@ -676,7 +676,7 @@ ${getDocumentBaseCSS(customStyles)}
 
         <div class="p-8 text-justified text-[14px] bg-gray-50/30 rounded-2xl border border-gray-100">
             RECEBEMOS DO <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || 'UNIDADE EXECUTORA'}`).toUpperCase()}</strong>, 
-            CNPJ <strong>${formatCNPJ(school?.cnpj)}</strong>, SITUADO NA <strong>${school?.address?.toUpperCase()}</strong>, 
+            CNPJ <strong>${formatCNPJ(school?.cnpj)}</strong>, SITUADO NA <strong>${school?.address?.toUpperCase()}${school?.city ? `, NO MUNICÍPIO DE ${school.city.toUpperCase()}` : ''}${school?.uf ? ` - ${school.uf.toUpperCase()}` : ''}${school?.cep ? `, CEP: ${school.cep}` : ''}</strong>, 
             A IMPORTÂNCIA DE <strong>${formatCurrency(totalValue)} (${numberToWords(totalValue).toUpperCase()})</strong>, 
             REFERENTE A COMPRA DE PRODUTOS CONFORME NOTA FISCAL DE Nº <strong>${entry?.document_number || entry?.invoice_number || '_______'}</strong>, 
             DATADA DE <strong>${dispInvoiceDate}</strong>.
@@ -755,7 +755,7 @@ ${getDocumentBaseCSS(customStyles)}
                 <td colspan="3"><span class="font-bold uppercase">ENDEREÇO:</span> ${supplier?.address || '---'}</td>
             </tr>
             <tr>
-                <td class="uppercase"><span class="font-bold">UF:</span> ${supplier?.uf || 'AL'} <span class="font-bold ml-4">MUNICÍPIO:</span> ${supplier?.city || '---'} <span class="font-bold ml-4">TELEFONE:</span> ${supplier?.phone || '---'}</td>
+                <td class="uppercase"><span class="font-bold">UF:</span> ${supplier?.uf || 'AL'} <span class="font-bold ml-4">MUNICÍPIO:</span> ${supplier?.city || '---'} <span class="font-bold ml-4">CEP:</span> ${supplier?.cep || '---'} <span class="font-bold ml-4">TELEFONE:</span> ${supplier?.phone || '---'}</td>
                 <td colspan="2"></td>
             </tr>
         </table>
@@ -773,7 +773,7 @@ ${getDocumentBaseCSS(customStyles)}
                 <td colspan="3"><span class="font-bold uppercase">ENDEREÇO:</span> ${school?.address || '---'}</td>
             </tr>
             <tr>
-                <td class="uppercase"><span class="font-bold">UF:</span> AL <span class="font-bold ml-4">MUNICÍPIO:</span> ${school?.city || '---'} <span class="font-bold ml-4">TELEFONE:</span> ${school?.phone || '---'}</td>
+                <td class="uppercase"><span class="font-bold">UF:</span> ${school?.uf || 'AL'} <span class="font-bold ml-4">MUNICÍPIO:</span> ${school?.city || '---'} <span class="font-bold ml-4">CEP:</span> ${school?.cep || '---'} <span class="font-bold ml-4">TELEFONE:</span> ${school?.phone || '---'}</td>
                 <td colspan="2"></td>
             </tr>
         </table>
@@ -928,9 +928,9 @@ ${getDocumentBaseCSS(customStyles)}
         <h1>CONTRATO DE PRESTAÇÃO DE SERVIÇOS CONTÍNUOS Nº ${contract?.contract_number || '___/2025'}</h1>
 
         <div class="text-justified">
-            <p>Pelo presente instrumento particular jurídico, de um lado, o <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</strong>, Unidade Executora (UEx) devidamente constituída, com sede na ${school?.address || '____________________'}, inscrito no CNPJ sob o nº <strong>${formatCNPJ(school?.cnpj)}</strong>, neste ato representado por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.</p>
+            <p>Pelo presente instrumento particular jurídico, de um lado, o <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</strong>, Unidade Executora (UEx) devidamente constituída, com sede na ${school?.address || '____________________'}${school?.city ? `, no município de ${school.city}` : ''}${school?.uf ? ` - ${school.uf}` : ''}${school?.cep ? `, CEP: ${school.cep}` : ''}, inscrito no CNPJ sob o nº <strong>${formatCNPJ(school?.cnpj)}</strong>, neste ato representado por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.</p>
             
-            <p>E, de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || '____________________'}</strong>, inscrita no CNPJ sob o nº <strong>${formatCNPJ(supplier?.cnpj)}</strong>, com sede estabelecida na ${supplier?.address?.toUpperCase() || '____________________'}, neste ato representada por <strong>${contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, doravante denominada simplesmente <strong>CONTRATADA</strong>.</p>
+            <p>E, de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || '____________________'}</strong>, inscrita no CNPJ sob o nº <strong>${formatCNPJ(supplier?.cnpj)}</strong>, com sede estabelecida na ${supplier?.address?.toUpperCase() || '____________________'}${supplier?.city ? `, no município de ${supplier.city.toUpperCase()}` : ''}${supplier?.uf ? ` - ${supplier.uf.toUpperCase()}` : ''}${supplier?.cep ? `, CEP: ${supplier.cep}` : ''}, neste ato representada por <strong>${contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, doravante denominada simplesmente <strong>CONTRATADA</strong>.</p>
 
             <p>As partes acima identificadas, de comum acordo, celebram o presente contrato administrativo, regendo-se pelas normas da <strong>Lei Federal nº 14.133/2021</strong>, mediante as seguintes cláusulas:</p>
 
@@ -965,7 +965,7 @@ ${getDocumentBaseCSS(customStyles)}
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA QUINTA – DA FISCALIZAÇÃO E GESTÃO</div>
-                <p>5.1. A gestão e fiscalização da execução deste Contrato ficarão a cargo do Presidente do Conselho Escolar (Gestor), auxiliado por comissão especificamente designada para fins de auditoria interna e prestação de contas junto ao FNDE/SEDUC.</p>
+                <p>5.1. A gestão e fiscalização da execução deste Contrato ficarão a cargo do Presidente do Conselho Escolar (Gestor), auxiliado pelo Conselho Escolar para fins de auditoria interna e prestação de contas junto ao FNDE/SEDUC.</p>
             </div>
 
             <div class="clause-block">
@@ -1118,9 +1118,9 @@ ${getDocumentBaseCSS(customStyles)}
         <h1>CONTRATO DE FORNECIMENTO CONTÍNUO DE PRODUTOS Nº ${contract?.contract_number || '___/2025'}</h1>
 
         <div class="text-justified">
-            <p>Pelo presente instrumento o <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</strong>, estabelecido na ${school?.address || '____________________'}, inscrito no CNPJ sob o nº <strong>${formatCNPJ(school?.cnpj)}</strong>, neste ato representado por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.</p>
+            <p>Pelo presente instrumento o <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</strong>, estabelecido na ${school?.address || '____________________'}${school?.city ? `, no município de ${school.city}` : ''}${school?.uf ? ` - ${school.uf}` : ''}${school?.cep ? `, CEP: ${school.cep}` : ''}, inscrito no CNPJ sob o nº <strong>${formatCNPJ(school?.cnpj)}</strong>, neste ato representado por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, doravante denominado simplesmente <strong>CONTRATANTE</strong>.</p>
             
-            <p>E, de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || '____________________'}</strong>, inscrita no CNPJ sob o nº <strong>${formatCNPJ(supplier?.cnpj)}</strong>, com sede estabelecida na ${supplier?.address?.toUpperCase() || '____________________'}, neste ato representada por <strong>${contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, doravante denominada simplesmente <strong>CONTRATADA</strong>.</p>
+            <p>E, de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || '____________________'}</strong>, inscrita no CNPJ sob o nº <strong>${formatCNPJ(supplier?.cnpj)}</strong>, com sede estabelecida na ${supplier?.address?.toUpperCase() || '____________________'}${supplier?.city ? `, no município de ${supplier.city.toUpperCase()}` : ''}${supplier?.uf ? ` - ${supplier.uf.toUpperCase()}` : ''}${supplier?.cep ? `, CEP: ${supplier.cep}` : ''}, neste ato representada por <strong>${contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, doravante denominada simplesmente <strong>CONTRATADA</strong>.</p>
 
             <p>Celebram o presente Contrato sob a égide da <strong>Lei Federal nº 14.133/2021</strong>, mediante as cláusulas seguintes:</p>
 
@@ -1260,9 +1260,9 @@ ${getDocumentBaseCSS(customStyles)}
         <h1>TERMO ADITIVO DE PRORROGAÇÃO E REAJUSTE DE CONTRATO</h1>
 
         <div class="text-justified">
-            <p>Pelo presente instrumento particular, de um lado a <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || 'UNIDADE EXECUTORA'}`).toUpperCase()}</strong>, inscrita no CNPJ sob o nº <strong>${school?.cnpj || '___.___.___/____-__'}</strong>, com sede na ${school?.address || 'ENDEREÇO NÃO CADASTRADO'}, doravante denominada <strong>CONTRATANTE</strong>, representada neste ato por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, residente e domiciliado(a) na ${directorAddress}.</p>
+            <p>Pelo presente instrumento particular, de um lado a <strong>${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || 'UNIDADE EXECUTORA'}`).toUpperCase()}</strong>, inscrita no CNPJ sob o nº <strong>${school?.cnpj || '___.___.___/____-__'}</strong>, com sede na ${school?.address || 'ENDEREÇO NÃO CADASTRADO'}${school?.city ? `, no município de ${school.city}` : ''}${school?.uf ? ` - ${school.uf}` : ''}${school?.cep ? `, CEP: ${school.cep}` : ''}, doravante denominada <strong>CONTRATANTE</strong>, representada neste ato por seu Presidente, o(a) Sr(a). <strong>${directorName}</strong>, portador(a) do RG nº <strong>${directorRg}</strong> e CPF nº <strong>${directorCpf}</strong>, residente e domiciliado(a) na ${directorAddress}.</p>
 
-            <p class="mt-4">E de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || 'RAZÃO SOCIAL DO FORNECEDOR'}</strong>, inscrita no CNPJ sob o nº <strong>${supplier?.cnpj || '___.___.___/____-__'}</strong>, com sede na ${supplier?.address || 'ENDEREÇO DO FORNECEDOR'}, doravante denominada <strong>CONTRATADA</strong>, neste ato representada por <strong>${(process as any).contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${(process as any).contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${(process as any).contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, residente e domiciliado(a) na ${(process as any).contract?.representative_address || supplier?.rep_address?.toUpperCase() || '____________________'}.</p>
+            <p class="mt-4">E de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || 'RAZÃO SOCIAL DO FORNECEDOR'}</strong>, inscrita no CNPJ sob o nº <strong>${supplier?.cnpj || '___.___.___/____-__'}</strong>, com sede na ${supplier?.address || 'ENDEREÇO DO FORNECEDOR'}${supplier?.city ? `, no município de ${supplier.city}` : ''}${supplier?.uf ? ` - ${supplier.uf}` : ''}${supplier?.cep ? `, CEP: ${supplier.cep}` : ''}, doravante denominada <strong>CONTRATADA</strong>, neste ato representada por <strong>${(process as any).contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${(process as any).contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${(process as any).contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, residente e domiciliado(a) na ${(process as any).contract?.representative_address || supplier?.rep_address?.toUpperCase() || '____________________'}.</p>
 
             <p class="mt-6">As partes acima qualificadas resolvem, de mútuo acordo, aditar o <strong>Contrato nº ${contractNumber}</strong>, originalmente firmado em <strong>${startDate}</strong>, mediante as seguintes cláusulas e condições:</p>
 

@@ -141,7 +141,7 @@ export const useReports = (user: User, filters: ReportsFilters) => {
 
             if (filters.schoolId) query = query.eq('school_id', filters.schoolId);
             if (filters.programId) query = query.eq('program_id', filters.programId);
-            if (filters.search) query = query.ilike('description', `%${filters.search}%`);
+            if (filters.search) query = query.or(`description.ilike.%${filters.search}%,contract_number.ilike.%${filters.search}%`);
 
             if (user.role !== UserRole.ADMIN && user.role !== UserRole.OPERADOR) {
                 if (user.role === UserRole.DIRETOR || user.role === UserRole.CLIENTE) {

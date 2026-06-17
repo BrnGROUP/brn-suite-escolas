@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { FinancialEntry, AccountabilityItem, AccountabilityQuoteItem, Supplier } from '../types';
+import { User, FinancialEntry, AccountabilityItem, AccountabilityQuoteItem, Supplier } from '../types';
 import { useToast } from '../context/ToastContext';
 import { parseInvoiceXML } from '../lib/xmlParser';
 import { useFileUpload } from './useFileUpload';
@@ -8,6 +8,7 @@ import { useFileUpload } from './useFileUpload';
 interface UseAccountabilityProcessProps {
   isOpen: boolean;
   onClose: () => void;
+  user: User;
   editingId: string | null;
   auxData: {
     schools: any[];
@@ -22,6 +23,7 @@ interface UseAccountabilityProcessProps {
 export const useAccountabilityProcess = ({
   isOpen,
   onClose,
+  user,
   editingId,
   auxData,
   onSave
@@ -62,6 +64,7 @@ export const useAccountabilityProcess = ({
   const [showEntryModal, setShowEntryModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [linkedContract, setLinkedContract] = useState<any | null>(null);
+  const [schoolContracts, setSchoolContracts] = useState<any[]>([]);
   const [batchSiblings, setBatchSiblings] = useState<any[]>([]);
   const [checkingDocId, setCheckingDocId] = useState<string | null>(null);
   const [supplierSearch, setSupplierSearch] = useState('');
@@ -217,6 +220,38 @@ export const useAccountabilityProcess = ({
     }
   }, [selectedEntry]);
 
+  const activeSchoolId = selectedEntry?.school_id || linkedContract?.school_id || (user?.schoolId && user.schoolId !== 'all' ? user.schoolId : null);
+
+  useEffect(() => {
+    const fetchSchoolContracts = async () => {
+      if (!activeSchoolId) {
+        setSchoolContracts([]);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('supplier_contracts')
+          .select(`
+            *,
+            schools(*),
+            suppliers(*),
+            programs(name),
+            rubrics(name)
+          `)
+          .eq('school_id', activeSchoolId)
+          .eq('status', 'Ativo')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setSchoolContracts(data || []);
+      } catch (err: any) {
+        console.error('Erro ao buscar contratos da escola:', err.message);
+      }
+    };
+
+    fetchSchoolContracts();
+  }, [activeSchoolId]);
+
   const handleAddItem = () => {
     const newItem = { description: '', quantity: 1, unit: 'un', winner_unit_price: 0 };
     setItems([...items, newItem]);
@@ -292,7 +327,7 @@ export const useAccountabilityProcess = ({
             discount,
             checklist,
             attachments: processAttachments,
-            contract_id: selectedEntry?.contract_id || linkedContract?.id || null,
+            contract_id: linkedContract?.id || selectedEntry?.contract_id || null,
             updated_at: new Date().toISOString()
           })
           .eq('id', editingId);
@@ -314,7 +349,7 @@ export const useAccountabilityProcess = ({
             is_contract_based: isContractBased,
             discount,
             checklist,
-            contract_id: selectedEntry?.contract_id || linkedContract?.id || null,
+            contract_id: linkedContract?.id || selectedEntry?.contract_id || null,
             attachments: processAttachments
           })
           .select()
@@ -606,6 +641,8 @@ export const useAccountabilityProcess = ({
     showImportModal,
     setShowImportModal,
     linkedContract,
+    setLinkedContract,
+    schoolContracts,
     batchSiblings,
     checkingDocId,
     setCheckingDocId,

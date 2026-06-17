@@ -24,6 +24,7 @@ import ReportsTable from '../components/reports/ReportsTable';
 import AccountabilityProcessModal from '../components/reports/AccountabilityProcessModal';
 import SupplierContractModal from '../components/reports/SupplierContractModal';
 import ContractsTable from '../components/reports/ContractsTable';
+import { ContractDocsModal } from '../components/reports/ContractDocsModal';
 
 const Reports: React.FC<{ user: User }> = ({ user }) => {
   // UI State
@@ -32,6 +33,9 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
   const [editingProcessId, setEditingProcessId] = useState<string | null>(null);
   const [editingContractId, setEditingContractId] = useState<string | null>(null);
   const [view, setView] = useState<'processes' | 'contracts'>('processes');
+  const [showContractDocsModal, setShowContractDocsModal] = useState(false);
+  const [selectedContractForDocs, setSelectedContractForDocs] = useState<any | null>(null);
+  const [selectedProcessIdForDocs, setSelectedProcessIdForDocs] = useState<string | null>(null);
   const { addToast } = useToast();
   const { confirm } = useConfirm();
 
@@ -165,6 +169,84 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
     } else {
       addToast('Contrato excluído com sucesso.', 'success');
       refresh();
+    }
+  };
+
+  const handleManageDocuments = async (contract: any) => {
+    try {
+      // Find initial process: p.contract_id === contract.id and financial_entry_id === null
+      let proc = processes.find(
+        (p) => p.contract_id === contract.id && !p.financial_entry_id
+      );
+
+      if (!proc) {
+        // If not found, double check directly in the database to avoid race conditions or caching
+        const { data: existingProc, error: fetchError } = await supabase
+          .from('accountability_processes')
+          .select('*')
+          .eq('contract_id', contract.id)
+          .is('financial_entry_id', null)
+          .maybeSingle();
+
+        if (fetchError) throw fetchError;
+
+        if (existingProc) {
+          proc = existingProc;
+        } else {
+          // Create process
+          const { data: newProc, error: pError } = await supabase
+            .from('accountability_processes')
+            .insert({
+              school_id: contract.school_id,
+              contract_id: contract.id,
+              status: 'Em Andamento',
+              is_contract_based: false,
+              description: `COTAÇÃO DE PREÇOS: ${contract.description.toUpperCase()}`
+            })
+            .select()
+            .single();
+
+          if (pError) throw pError;
+
+          // Insert default item
+          const months = Math.ceil(
+            (new Date(contract.end_date).getTime() - new Date(contract.start_date).getTime()) /
+              (1000 * 60 * 60 * 24 * 30.43)
+          ) || 12;
+
+          await supabase.from('accountability_items').insert({
+            process_id: newProc.id,
+            description: contract.description.toUpperCase(),
+            quantity: months,
+            unit: 'Mês',
+            winner_unit_price: contract.monthly_value
+          });
+
+          // Insert winner quote
+          await supabase.from('accountability_quotes').insert({
+            process_id: newProc.id,
+            supplier_id: contract.supplier_id,
+            supplier_name: contract.suppliers?.name || 'Vencedor',
+            supplier_cnpj: contract.suppliers?.cnpj || null,
+            is_winner: true,
+            total_value: contract.total_value || 0
+          });
+
+          proc = newProc;
+          // Refresh list to update parent's process array
+          refresh();
+        }
+      }
+
+      if (!proc) {
+        throw new Error('Não foi possível encontrar ou criar a prestação de contas vinculada a este contrato.');
+      }
+
+      setSelectedContractForDocs(contract);
+      setSelectedProcessIdForDocs(proc.id);
+      setShowContractDocsModal(true);
+    } catch (err: any) {
+      addToast('Erro ao inicializar documentos: ' + err.message, 'error');
     }
   };
 
@@ -350,6 +432,7 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
           onDelete={handleDeleteContract}
           onEdit={(c) => { setEditingContractId(c.id); setShowNewContractModal(true); }}
           onPrint={handlePrintContract}
+          onManageDocuments={handleManageDocuments}
         />
       )}
 
@@ -377,6 +460,22 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
         onSave={refresh}
         editingId={editingContractId}
       />
+
+      {selectedContractForDocs && (
+        <ContractDocsModal
+          isOpen={showContractDocsModal}
+          onClose={() => {
+            setShowContractDocsModal(false);
+            setSelectedContractForDocs(null);
+            setSelectedProcessIdForDocs(null);
+          }}
+          user={user}
+          contract={selectedContractForDocs}
+          processId={selectedProcessIdForDocs}
+          auxData={{ suppliers }}
+          onSave={refresh}
+        />
+      )}
     </div>
   );
 };

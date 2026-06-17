@@ -7,9 +7,10 @@ interface ContractTableProps {
     onDelete?: (id: string) => void;
     onEdit?: (contract: any) => void;
     onPrint?: (contract: any) => void;
+    onManageDocuments?: (contract: any) => void;
 }
 
-const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onEdit, onPrint }) => {
+const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onEdit, onPrint, onManageDocuments }) => {
     const [expandedContractId, setExpandedContractId] = useState<string | null>(null);
 
     if (contracts.length === 0) {
@@ -154,6 +155,13 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
                                         title="Imprimir Contrato"
                                     >
                                         <span className="material-symbols-outlined text-lg">print</span>
+                                    </button>
+                                    <button
+                                        onClick={() => onManageDocuments?.(contract)}
+                                        className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                                        title="Documentos de Cotação"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">folder_shared</span>
                                     </button>
                                     <button
                                         onClick={() => onEdit?.(contract)}

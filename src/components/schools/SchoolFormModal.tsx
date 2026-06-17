@@ -18,6 +18,7 @@ interface SchoolFormModalProps {
     address: string;
     city: string;
     uf: string;
+    cep: string;
     image_url: string;
     gee: string;
     gee_id: string;
@@ -528,6 +529,29 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
               />
             </div>
 
+            {/* CEP */}
+            <div>
+              <label htmlFor="school_cep" className="text-xs font-bold text-slate-400 uppercase mb-1 block">
+                CEP
+              </label>
+              <input
+                id="school_cep"
+                type="text"
+                placeholder="00000-000"
+                value={formData.cep || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const clean = val.replace(/\D/g, '');
+                  let formatted = clean;
+                  if (clean.length > 5) {
+                    formatted = `${clean.substring(0, 5)}-${clean.substring(5, 8)}`;
+                  }
+                  setFormData((prev: any) => ({ ...prev, cep: formatted.substring(0, 9) }));
+                }}
+                className="w-full bg-[#1e293b] border border-slate-700 rounded-lg text-white p-3 focus:border-primary outline-none"
+              />
+            </div>
+
             {/* UF */}
             <div>
               <label htmlFor="school_uf" className="text-xs font-bold text-slate-400 uppercase mb-1 block">
@@ -554,7 +578,7 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
             </div>
 
             {/* City */}
-            <div>
+            <div className="md:col-span-2">
               <label htmlFor="school_city" className="text-xs font-bold text-slate-400 uppercase mb-1 block">
                 Cidade
               </label>
