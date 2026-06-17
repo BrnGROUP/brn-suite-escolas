@@ -384,7 +384,7 @@ export const generateConsolidacaoHTML = (process: DocumentProcess) => {
 
     const customStyles = `
         body { padding: 10px; font-size: 8px; }
-        @media print { body { padding: 0; } }
+        @media print { body { padding: 1cm 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
         th, td { border: 1.5px solid black; padding: 2px 4px; }
         .bg-gray { background-color: #f3f3f3; }
@@ -528,7 +528,7 @@ export const generateOrdemHTML = (process: DocumentProcess) => {
     const customStyles = `
         * { box-sizing: border-box; }
         body { padding: 10px; font-size: 10px; }
-        @media print { body { padding: 0; } }
+        @media print { body { padding: 1.5cm 0 1cm 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: -1px; table-layout: fixed; }
         th, td { border: 1.5px solid black; padding: 4px 8px; height: 18px; word-wrap: break-word; overflow: hidden; }
         .bg-gray { background-color: #f3f3f3; }
@@ -732,7 +732,7 @@ export const generateCotacaoHTML = (process: DocumentProcess, supplierIdx: numbe
     const customStyles = `
         * { box-sizing: border-box; }
         body { padding: 10px; font-size: 9px; }
-        @media print { body { padding: 0; } }
+        @media print { body { padding: 1.5cm 0 1cm 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: -1px; table-layout: fixed; }
         th, td { border: 1px solid black; padding: 3px 6px; height: 18px; word-wrap: break-word; }
         .bg-gray { background-color: #f3f3f3; }
