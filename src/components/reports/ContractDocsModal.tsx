@@ -4,7 +4,15 @@ import { User, Supplier } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import { useFileUpload } from '../../hooks/useFileUpload';
 import { formatCurrency, formatCNPJ, printDocument, getContractPrintTitle } from '../../lib/printUtils';
-import { generateAtaHTML, generateConsolidacaoHTML, generateOrdemHTML, generateCotacaoHTML } from '../../lib/documentTemplates';
+import { 
+  generateAtaHTML, 
+  generateConsolidacaoHTML, 
+  generateOrdemHTML, 
+  generateCotacaoHTML,
+  generateContratoServicoHTML,
+  generateContratoGasHTML,
+  generateAditivoHTML
+} from '../../lib/documentTemplates';
 
 interface ContractDocsModalProps {
   isOpen: boolean;
@@ -316,9 +324,18 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
         html = generateCotacaoHTML(pseudoProcess, 1);
       } else if (type === 'cotacao3') {
         html = generateCotacaoHTML(pseudoProcess, 2);
+      } else if (type === 'contrato') {
+        if (contract.terms_json?.is_aditivo) {
+          html = generateAditivoHTML(pseudoProcess);
+        } else if (contract.category === 'GÁS') {
+          html = generateContratoGasHTML(pseudoProcess);
+        } else {
+          html = generateContratoServicoHTML(pseudoProcess);
+        }
       }
 
-      printDocument(html);
+      const printTitle = type === 'contrato' ? getContractPrintTitle(pseudoProcess) : undefined;
+      printDocument(html, printTitle);
     } catch (error: any) {
       addToast('Erro ao gerar documento: ' + error.message, 'error');
     }
@@ -478,7 +495,7 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
               <h4 className="text-[10px] md:text-[12px] font-black uppercase text-white tracking-widest">
                 3. Gerar Documentos da Cotação
               </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3">
                 <button onClick={() => handlePrintDoc('ata')} className="h-20 bg-white/5 border border-white/10 rounded-2xl hover:bg-primary/20 hover:border-primary/40 text-slate-300 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 p-3 text-center">
                   <span className="material-symbols-outlined text-2xl">description</span>
                   <span className="text-[8px] font-black uppercase tracking-wider">Ata da Assembleia</span>
@@ -490,6 +507,10 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
                 <button onClick={() => handlePrintDoc('ordem')} className="h-20 bg-white/5 border border-white/10 rounded-2xl hover:bg-primary/20 hover:border-primary/40 text-slate-300 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 p-3 text-center">
                   <span className="material-symbols-outlined text-2xl">shopping_cart</span>
                   <span className="text-[8px] font-black uppercase tracking-wider">Ordem de Compra</span>
+                </button>
+                <button onClick={() => handlePrintDoc('contrato')} className="h-20 bg-white/5 border border-white/10 rounded-2xl hover:bg-primary/20 hover:border-primary/40 text-slate-300 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 p-3 text-center">
+                  <span className="material-symbols-outlined text-2xl">history_edu</span>
+                  <span className="text-[8px] font-black uppercase tracking-wider">Contrato</span>
                 </button>
                 <button onClick={() => handlePrintDoc('cotacao1')} className="h-20 bg-white/5 border border-white/10 rounded-2xl hover:bg-primary/20 hover:border-primary/40 text-slate-300 hover:text-primary transition-all flex flex-col items-center justify-center gap-2 p-3 text-center">
                   <span className="material-symbols-outlined text-2xl">request_quote</span>
