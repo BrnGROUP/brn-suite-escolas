@@ -167,7 +167,13 @@ export const useSettings = (user: User) => {
             const { error } = await supabase.from(table).delete().eq('id', id);
             if (error) throw error;
         },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey })
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey });
+            addToast('Excluído com sucesso!', 'success');
+        },
+        onError: (err: any) => {
+            addToast('Erro ao excluir: ' + (err.message || err.details || 'Verifique se existem registros vinculados.'), 'error');
+        }
     });
 
     // Specific Local Mutations
