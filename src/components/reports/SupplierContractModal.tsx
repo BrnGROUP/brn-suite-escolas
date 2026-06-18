@@ -41,6 +41,8 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     const [endDate, setEndDate] = useState('');
     const [durationMonths, setDurationMonths] = useState('12');
     const [category, setCategory] = useState<'INTERNET' | 'GÁS' | 'OUTROS'>('INTERNET');
+    const [gasUnitPrice, setGasUnitPrice] = useState('');
+    const [gasQuantity, setGasQuantity] = useState('');
     const [status, setStatus] = useState<'Ativo' | 'Encerrado' | 'Suspenso'>('Ativo');
     const [creationMode, setCreationMode] = useState<'NEW' | 'ADITIVO'>('NEW');
     const [parentContractId, setParentContractId] = useState('');
@@ -117,6 +119,8 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setCustomDirectorCpf(terms.custom_director_cpf || '');
             setCustomDirectorRg(terms.custom_director_rg || '');
             setCustomDirectorAddress(terms.custom_director_address || '');
+            setGasUnitPrice(terms.gas_unit_price ? terms.gas_unit_price.toString() : '');
+            setGasQuantity(terms.gas_quantity ? terms.gas_quantity.toString() : '');
         }
     };
 
@@ -164,6 +168,8 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setCustomDirectorCpf(terms.custom_director_cpf || '');
             setCustomDirectorRg(terms.custom_director_rg || '');
             setCustomDirectorAddress(terms.custom_director_address || '');
+            setGasUnitPrice(terms.gas_unit_price ? terms.gas_unit_price.toString() : '');
+            setGasQuantity(terms.gas_quantity ? terms.gas_quantity.toString() : '');
         }
     };
 
@@ -179,12 +185,129 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             const dd = String(end.getDate()).padStart(2, '0');
             setEndDate(`${yyyy}-${mm}-${dd}`);
 
-            // Also auto-calculate total value if monthly exists
-            if (monthlyValue) {
+            // Also auto-calculate total value if monthly exists (only for non-GAS contracts)
+            if (monthlyValue && category !== 'GÁS') {
                 setTotalValue((parseFloat(monthlyValue) * parseInt(durationMonths)).toString());
             }
         }
-    }, [startDate, durationMonths, monthlyValue, creationMode]);
+    }, [startDate, durationMonths, monthlyValue, creationMode, category]);
+
+    const handleGasUnitPriceChange = (val: string) => {
+        setGasUnitPrice(val);
+        const price = parseFloat(val);
+        if (price > 0) {
+            if (gasQuantity) {
+                const qty = parseFloat(gasQuantity);
+                const total = price * qty;
+                setTotalValue(total.toString());
+                const months = parseInt(durationMonths) || 12;
+                setMonthlyValue((total / months).toFixed(2));
+            } else if (totalValue) {
+                const total = parseFloat(totalValue);
+                const qty = Math.floor(total / price);
+                setGasQuantity(qty.toString());
+            }
+        }
+    };
+
+    const handleGasQuantityChange = (val: string) => {
+        setGasQuantity(val);
+        const qty = parseFloat(val);
+        if (qty > 0 && gasUnitPrice) {
+            const price = parseFloat(gasUnitPrice);
+            const total = price * qty;
+            setTotalValue(total.toString());
+            const months = parseInt(durationMonths) || 12;
+            setMonthlyValue((total / months).toFixed(2));
+        }
+    };
+
+    const handleTotalValueChange = (val: string) => {
+        setTotalValue(val);
+        const total = parseFloat(val);
+        if (total > 0) {
+            const months = parseInt(durationMonths) || 12;
+            setMonthlyValue((total / months).toFixed(2));
+            if (category === 'GÁS' && gasUnitPrice) {
+                const price = parseFloat(gasUnitPrice);
+                if (price > 0) {
+                    const qty = Math.floor(total / price);
+                    setGasQuantity(qty.toString());
+                }
+            }
+        }
+    };
+
+    const handleMonthlyValueChange = (val: string) => {
+        setMonthlyValue(val);
+        const monthly = parseFloat(val);
+        if (monthly > 0) {
+            const months = parseInt(durationMonths) || 12;
+            const total = monthly * months;
+            setTotalValue(total.toString());
+            if (category === 'GÁS' && gasUnitPrice) {
+                const price = parseFloat(gasUnitPrice);
+                if (price > 0) {
+                    const qty = Math.floor(total / price);
+                    setGasQuantity(qty.toString());
+                }
+            }
+        }
+    };
+
+    const handleDurationMonthsChange = (val: string) => {
+        setDurationMonths(val);
+        const months = parseInt(val);
+        if (months > 0) {
+            if (category === 'GÁS') {
+                if (totalValue) {
+                    const total = parseFloat(totalValue);
+                    setMonthlyValue((total / months).toFixed(2));
+                } else if (monthlyValue) {
+                    const monthly = parseFloat(monthlyValue);
+                    const total = monthly * months;
+                    setTotalValue(total.toString());
+                    if (gasUnitPrice) {
+                        const price = parseFloat(gasUnitPrice);
+                        if (price > 0) {
+                            const qty = Math.floor(total / price);
+                            setGasQuantity(qty.toString());
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    const handleTotalValueBlur = () => {
+        if (category === 'GÁS' && gasUnitPrice && totalValue) {
+            const price = parseFloat(gasUnitPrice);
+            const totalAvail = parseFloat(totalValue);
+            if (price > 0 && totalAvail > 0) {
+                const qty = Math.floor(totalAvail / price);
+                const adjusted = qty * price;
+                setTotalValue(adjusted.toString());
+                setGasQuantity(qty.toString());
+                const months = parseInt(durationMonths) || 12;
+                setMonthlyValue((adjusted / months).toFixed(2));
+            }
+        }
+    };
+
+    const handleGasUnitPriceBlur = () => {
+        if (category === 'GÁS' && gasUnitPrice && totalValue && !gasQuantity) {
+            const price = parseFloat(gasUnitPrice);
+            const totalAvail = parseFloat(totalValue);
+            if (price > 0 && totalAvail > 0) {
+                const qty = Math.floor(totalAvail / price);
+                const adjusted = qty * price;
+                setTotalValue(adjusted.toString());
+                setGasQuantity(qty.toString());
+                const months = parseInt(durationMonths) || 12;
+                setMonthlyValue((adjusted / months).toFixed(2));
+            }
+        }
+    };
 
     const fetchRubrics = async () => {
         const { data } = await supabase.from('rubrics').select('*').order('name');
@@ -216,6 +339,8 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                     is_aditivo: creationMode === 'ADITIVO',
                     parent_contract_id: parentContractId || null,
                     internet_speed: category === 'INTERNET' ? internetSpeed : null,
+                    gas_unit_price: category === 'GÁS' && gasUnitPrice ? parseFloat(gasUnitPrice) : null,
+                    gas_quantity: category === 'GÁS' && gasQuantity ? parseFloat(gasQuantity) : null,
                     custom_director_name: customDirectorName,
                     custom_director_cpf: customDirectorCpf,
                     custom_director_rg: customDirectorRg,
@@ -307,6 +432,8 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
         setCustomDirectorCpf('');
         setCustomDirectorRg('');
         setCustomDirectorAddress('');
+        setGasUnitPrice('');
+        setGasQuantity('');
     };
 
     if (!isOpen) return null;
@@ -554,6 +681,36 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                     </div>
                                 </div>
 
+                                {category === 'GÁS' && (
+                                    <div className="grid grid-cols-2 gap-4 animate-in fade-in zoom-in-95 duration-200">
+                                        <div>
+                                            <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Preço Unitário do Botijão (R$)</label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                placeholder="0,00"
+                                                aria-label="Preço Unitário"
+                                                className="w-full bg-black/40 border border-white/10 rounded-2xl h-14 px-5 text-white outline-none focus:border-primary transition-all font-black text-sm"
+                                                value={gasUnitPrice}
+                                                onChange={e => handleGasUnitPriceChange(e.target.value)}
+                                                onBlur={handleGasUnitPriceBlur}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Quantidade de Botijões</label>
+                                            <input
+                                                type="number"
+                                                step="1"
+                                                placeholder="Ex: 32"
+                                                aria-label="Quantidade"
+                                                className="w-full bg-black/40 border border-white/10 rounded-2xl h-14 px-5 text-white outline-none focus:border-primary transition-all font-black text-sm"
+                                                value={gasQuantity}
+                                                onChange={e => handleGasQuantityChange(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Valor Mensal (R$)</label>
@@ -564,7 +721,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                             aria-label="Valor Mensal"
                                             className="w-full bg-black/40 border border-white/10 rounded-2xl h-14 px-5 text-white outline-none focus:border-primary transition-all font-black text-lg"
                                             value={monthlyValue}
-                                            onChange={e => setMonthlyValue(e.target.value)}
+                                            onChange={e => handleMonthlyValueChange(e.target.value)}
                                         />
                                     </div>
                                     <div>
@@ -576,10 +733,32 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                             aria-label="Valor Total"
                                             className="w-full bg-primary/5 border border-primary/20 rounded-2xl h-14 px-5 text-primary outline-none focus:border-primary transition-all font-black text-lg"
                                             value={totalValue}
-                                            onChange={e => setTotalValue(e.target.value)}
+                                            onChange={e => handleTotalValueChange(e.target.value)}
+                                            onBlur={handleTotalValueBlur}
                                         />
                                     </div>
                                 </div>
+
+                                {category === 'GÁS' && gasUnitPrice && totalValue && (
+                                    (() => {
+                                        const price = parseFloat(gasUnitPrice);
+                                        const totalAvail = parseFloat(totalValue);
+                                        if (price > 0 && totalAvail > 0) {
+                                            const qty = Math.floor(totalAvail / price);
+                                            const adjusted = qty * price;
+                                            const sobra = totalAvail - adjusted;
+                                            if (sobra > 0) {
+                                                return (
+                                                    <div className="text-[10px] text-amber-500/90 font-bold uppercase tracking-wider flex items-center gap-1.5 animate-in slide-in-from-top-1 duration-200">
+                                                        <span className="material-symbols-outlined text-sm">info</span>
+                                                        Sobra não contratada: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(sobra)} (será ajustado para {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(adjusted)} com {qty} unidades ao sair do campo)
+                                                    </div>
+                                                );
+                                            }
+                                        }
+                                        return null;
+                                    })()
+                                )}
 
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
@@ -600,7 +779,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                             aria-label="Meses de Vigência"
                                             className="w-full bg-black/40 border border-white/10 rounded-2xl h-14 px-5 text-white outline-none focus:border-primary transition-all font-black"
                                             value={durationMonths}
-                                            onChange={e => setDurationMonths(e.target.value)}
+                                            onChange={e => handleDurationMonthsChange(e.target.value)}
                                         />
                                     </div>
                                     <div>

@@ -1082,6 +1082,18 @@ export const generateContratoGasHTML = (process: DocumentProcess) => {
     const totalValue = contract?.total_value || (Math.abs(entry?.value || 0));
     const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue);
 
+    const gasUnitPrice = terms.gas_unit_price;
+    const gasQuantity = terms.gas_quantity;
+
+    let objectText = '1.1. Constitui objeto do presente Contrato o fornecimento de GÁS LIQUEFEITO DE PETRÓLEO (GÁS DE COZINHA - P13), para preparação da alimentação escolar da Unidade, conforme proposta da contratada.';
+    if (gasUnitPrice && gasQuantity) {
+        const formattedUnitPrice = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(gasUnitPrice);
+        const qtyInt = Math.floor(gasQuantity);
+        const qtyText = `${qtyInt} (${numberToWordsPure(qtyInt)})`;
+        const unitPriceText = `${formattedUnitPrice} (${numberToWords(gasUnitPrice)})`;
+        objectText = `1.1. Constitui objeto do presente Contrato o fornecimento de GÁS LIQUEFEITO DE PETRÓLEO (GÁS DE COZINHA - P13), sendo a quantidade estimada de <strong>${qtyText} botijões</strong> ao preço unitário de <strong>${unitPriceText}</strong>, totalizando o valor global deste contrato de <strong>${formattedTotalValue} (${numberToWords(totalValue).toUpperCase()})</strong>, para preparação da alimentação escolar da Unidade, conforme proposta da contratada.`;
+    }
+
     const startDateStr = contract?.start_date || (entry?.date ? entry.date : new Date().toISOString().split('T')[0]);
     const endDateStr = contract?.end_date || new Date(new Date(startDateStr).setMonth(new Date(startDateStr).getMonth() + 12)).toISOString().split('T')[0];
 
@@ -1137,7 +1149,7 @@ ${getDocumentBaseCSS(customStyles)}
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA PRIMEIRA – DO OBJETO</div>
-                <p>1.1. Constitui objeto do presente Contrato o fornecimento de GÁS LIQUEFEITO DE PETRÓLEO (GÁS DE COZINHA - P13), para preparação da alimentação escolar da Unidade, conforme proposta da contratada.</p>
+                <p>${objectText}</p>
                 <p>1.2. A entrega deverá ocorrer no prazo máximo de 24 horas contadas da solicitação da CONTRATANTE.</p>
             </div>
 
