@@ -286,13 +286,13 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
           {/* View Toggle */}
           <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
             <button
-              onClick={() => setView('processes')}
+              onClick={() => { setView('processes'); setFilters({ ...filters, status: '' }); }}
               className={`px-4 md:px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'processes' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
             >
               Prestações
             </button>
             <button
-              onClick={() => setView('contracts')}
+              onClick={() => { setView('contracts'); setFilters({ ...filters, status: '' }); }}
               className={`px-4 md:px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${view === 'contracts' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
             >
               Contratos
@@ -412,8 +412,18 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
                 className="w-full h-11 bg-black/40 border border-white/10 rounded-xl px-4 text-xs text-white outline-none focus:border-primary transition-all"
             >
                 <option value="">Todos os Status</option>
-                <option value="Em Andamento">Em Andamento</option>
-                <option value="Concluído">Concluído</option>
+                {view === 'contracts' ? (
+                    <>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Encerrado">Encerrado</option>
+                        <option value="Suspenso">Suspenso</option>
+                    </>
+                ) : (
+                    <>
+                        <option value="Em Andamento">Em Andamento</option>
+                        <option value="Concluído">Concluído</option>
+                    </>
+                )}
             </select>
         </div>
         <div className="flex flex-col gap-2">
