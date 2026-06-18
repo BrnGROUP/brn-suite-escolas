@@ -4,6 +4,16 @@ import { User, Supplier } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import { FORO_CITIES } from '../../lib/constants';
 
+const getDefaultDescription = (cat: 'INTERNET' | 'GÁS' | 'OUTROS', speed: string) => {
+    if (cat === 'INTERNET') {
+        return `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE ${speed.toUpperCase()}`;
+    }
+    if (cat === 'GÁS') {
+        return 'AQUISIÇÃO DE BOTIJÃO DE GÁS GLP-13 KG';
+    }
+    return '';
+};
+
 interface SupplierContractModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -191,6 +201,27 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             }
         }
     }, [startDate, durationMonths, monthlyValue, creationMode, category]);
+
+    useEffect(() => {
+        if (!editingId && creationMode === 'NEW') {
+            const currentDefaults = [
+                '',
+                'AQUISIÇÃO DE BOTIJÃO DE GÁS GLP-13 KG',
+                `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE 100 MBPS`,
+                `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE 200 MBPS`,
+                `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE 300 MBPS`,
+                `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE 400 MBPS`,
+                `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE 500 MBPS`,
+                `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE 600 MBPS`,
+                `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE 1 GBPS`,
+                `PRESTAÇÃO DE SERVIÇOS DE INTERNET BANDA LARGA COM VELOCIDADE DE ${internetSpeed.toUpperCase()}`
+            ].map(d => d.toUpperCase());
+
+            if (currentDefaults.includes(description.trim().toUpperCase())) {
+                setDescription(getDefaultDescription(category, internetSpeed).toUpperCase());
+            }
+        }
+    }, [category, internetSpeed, editingId, creationMode]);
 
     const handleGasUnitPriceChange = (val: string) => {
         setGasUnitPrice(val);
