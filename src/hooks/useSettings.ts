@@ -276,12 +276,49 @@ export const useSettings = (user: User) => {
     // Handlers
     const handleCreateProgram = () => newProgram.name && createMutation('programs', ['programs'], () => { setNewProgram({ name: '', description: '' }); addToast('Programa criado!', 'success'); }).mutate(newProgram);
     const handleDeleteProgram = async (id: string) => {
-        if (await confirm({
-            title: 'Excluir Programa',
-            message: 'Deseja realmente excluir este programa? Esta ação não pode ser desfeita.',
-            isDestructive: true
-        })) {
-            deleteMutation('programs', ['programs']).mutate(id);
+        try {
+            // Verificar vínculos
+            const [entriesRes, contractsRes, rubricsRes, bankAccountsRes, balancesRes] = await Promise.all([
+                supabase.from('financial_entries').select('id').eq('program_id', id),
+                supabase.from('supplier_contracts').select('id').eq('program_id', id),
+                supabase.from('rubrics').select('id').eq('program_id', id),
+                supabase.from('bank_accounts').select('id').eq('program_id', id),
+                supabase.from('reprogrammed_balances').select('id').eq('program_id', id)
+            ]);
+
+            const relations: string[] = [];
+            const entriesCount = entriesRes.data?.length || 0;
+            const contractsCount = contractsRes.data?.length || 0;
+            const rubricsCount = rubricsRes.data?.length || 0;
+            const bankAccountsCount = bankAccountsRes.data?.length || 0;
+            const balancesCount = balancesRes.data?.length || 0;
+
+            if (entriesCount > 0) relations.push(`- ${entriesCount} Lançamento(s) Financeiro(s)`);
+            if (contractsCount > 0) relations.push(`- ${contractsCount} Contrato(s) de Fornecedor`);
+            if (rubricsCount > 0) relations.push(`- ${rubricsCount} Rúbrica(s)`);
+            if (bankAccountsCount > 0) relations.push(`- ${bankAccountsCount} Conta(s) Bancária(s)`);
+            if (balancesCount > 0) relations.push(`- ${balancesCount} Saldo(s) Reprogramado(s)`);
+
+            if (relations.length > 0) {
+                await confirm({
+                    title: 'Não é possível excluir o programa',
+                    message: `Este programa não pode ser excluído porque possui os seguintes registros vinculados:\n\n${relations.join('\n')}\n\nPor favor, desvincule ou exclua estes registros antes de tentar excluir o programa novamente.`,
+                    confirmText: 'Entendido',
+                    cancelText: 'Voltar',
+                    isDestructive: false
+                });
+                return;
+            }
+
+            if (await confirm({
+                title: 'Excluir Programa',
+                message: 'Deseja realmente excluir este programa? Esta ação não pode ser desfeita.',
+                isDestructive: true
+            })) {
+                deleteMutation('programs', ['programs']).mutate(id);
+            }
+        } catch (err: any) {
+            addToast('Erro ao verificar vínculos do programa: ' + err.message, 'error');
         }
     };
 

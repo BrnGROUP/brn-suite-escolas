@@ -124,7 +124,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <div className="mb-6">
           <p
             id="confirm-modal-message"
-            className="text-sm text-slate-600 dark:text-slate-350 leading-relaxed"
+            className="text-sm text-slate-600 dark:text-slate-350 leading-relaxed whitespace-pre-line"
           >
             {message}
           </p>
