@@ -148,7 +148,8 @@ export const validateContractData = (process: DocumentProcess) => {
     }
 };
 
-export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boolean = false) => {
+export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boolean = false, pageMargin: string = '') => {
+    const marginValue = pageMargin ? pageMargin : (isLandscape ? '1cm' : '0');
     return `<head>
     <meta charset="utf-8"/>
     <style>
@@ -164,7 +165,7 @@ export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boole
         @media print {
             body { background: white !important; padding: 0 !important; margin: 0 !important; }
             .no-print { display: none !important; }
-            @page { size: ${isLandscape ? 'A4 landscape' : 'A4'}; margin: ${isLandscape ? '1cm' : '0'}; }
+            @page { size: ${isLandscape ? 'A4 landscape' : 'A4'}; margin: ${marginValue}; }
         }
 
         /* Native CSS Utilities replacing Tailwind CSS for absolute offline reliability */
@@ -384,7 +385,7 @@ export const generateConsolidacaoHTML = (process: DocumentProcess) => {
 
     const customStyles = `
         body { padding: 10px; font-size: 8px; }
-        @media print { body { padding: 1cm 0; } }
+        @media print { body { padding: 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
         th, td { border: 1.5px solid black; padding: 2px 4px; }
         .bg-gray { background-color: #f3f3f3; }
@@ -397,7 +398,7 @@ export const generateConsolidacaoHTML = (process: DocumentProcess) => {
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
-${getDocumentBaseCSS(customStyles, true)}
+${getDocumentBaseCSS(customStyles, true, '1.2cm 1cm 1cm 1cm')}
 <body>
     <div class="w-full">
         <div class="flex justify-between items-end mb-4">
@@ -528,7 +529,7 @@ export const generateOrdemHTML = (process: DocumentProcess) => {
     const customStyles = `
         * { box-sizing: border-box; }
         body { padding: 10px; font-size: 10px; }
-        @media print { body { padding: 1.5cm 0 1cm 0; } }
+        @media print { body { padding: 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: -1px; table-layout: fixed; }
         th, td { border: 1.5px solid black; padding: 4px 8px; height: 18px; word-wrap: break-word; overflow: hidden; }
         .bg-gray { background-color: #f3f3f3; }
@@ -539,7 +540,7 @@ export const generateOrdemHTML = (process: DocumentProcess) => {
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
-${getDocumentBaseCSS(customStyles)}
+${getDocumentBaseCSS(customStyles, false, '1.5cm 1cm 1.5cm 1cm')}
 <body>
     <div style="width: 100%; max-width: 190mm; margin: 0 auto;">
         <table>
@@ -732,7 +733,7 @@ export const generateCotacaoHTML = (process: DocumentProcess, supplierIdx: numbe
     const customStyles = `
         * { box-sizing: border-box; }
         body { padding: 10px; font-size: 9px; }
-        @media print { body { padding: 1.5cm 0 1cm 0; } }
+        @media print { body { padding: 0; } }
         table { width: 100%; border-collapse: collapse; margin-bottom: -1px; table-layout: fixed; }
         th, td { border: 1px solid black; padding: 3px 6px; height: 18px; word-wrap: break-word; }
         .bg-gray { background-color: #f3f3f3; }
@@ -743,7 +744,7 @@ export const generateCotacaoHTML = (process: DocumentProcess, supplierIdx: numbe
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
-${getDocumentBaseCSS(customStyles)}
+${getDocumentBaseCSS(customStyles, false, '1.5cm 1cm 1.5cm 1cm')}
 <body>
     <div style="width: 100%; max-width: 190mm; margin: 0 auto;">
         <table>
