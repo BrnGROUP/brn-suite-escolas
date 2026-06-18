@@ -172,6 +172,29 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
     }
   };
 
+  const handleEditProcess = async (p: AccountabilityProcess) => {
+    if (p.contract_id && !p.financial_entry_id) {
+      try {
+        const { data: contract, error } = await supabase
+          .from('supplier_contracts')
+          .select('*, schools(*), programs(*), rubrics(*), suppliers(*)')
+          .eq('id', p.contract_id)
+          .single();
+
+        if (error) throw error;
+
+        setSelectedContractForDocs(contract);
+        setSelectedProcessIdForDocs(p.id);
+        setShowContractDocsModal(true);
+      } catch (err: any) {
+        addToast('Erro ao carregar dados do contrato: ' + err.message, 'error');
+      }
+    } else {
+      setEditingProcessId(p.id);
+      setShowNewProcessModal(true);
+    }
+  };
+
   const handleManageDocuments = async (contract: any) => {
     try {
       // Find initial process: p.contract_id === contract.id and financial_entry_id === null
@@ -422,7 +445,7 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
       ) : view === 'processes' ? (
         <ReportsTable
           processes={processes}
-          onEdit={(p) => { setEditingProcessId(p.id); setShowNewProcessModal(true); }}
+          onEdit={handleEditProcess}
           onDelete={handleDelete}
           onPrint={handlePrint}
         />

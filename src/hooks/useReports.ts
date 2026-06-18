@@ -108,7 +108,8 @@ export const useReports = (user: User, filters: ReportsFilters) => {
                 return {
                     ...p,
                     schools: schoolObj,
-                    programs: programObj
+                    programs: programObj,
+                    contract: p.supplier_contracts
                 };
             });
 
