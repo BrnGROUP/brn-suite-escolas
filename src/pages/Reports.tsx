@@ -237,12 +237,16 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
           let months = (eDate.getFullYear() - sDate.getFullYear()) * 12 + (eDate.getMonth() - sDate.getMonth());
           if (months <= 0) months = 12;
 
+          const isGas = contract.category === 'GÁS';
+          const gasQty = contract.terms_json?.gas_quantity || 0;
+          const gasPrice = contract.terms_json?.gas_unit_price || 0;
+
           await supabase.from('accountability_items').insert({
             process_id: newProc.id,
             description: contract.description.toUpperCase(),
-            quantity: months,
-            unit: 'Mês',
-            winner_unit_price: contract.monthly_value
+            quantity: isGas ? gasQty : months,
+            unit: isGas ? 'Botijão' : 'Mês',
+            winner_unit_price: isGas ? gasPrice : contract.monthly_value
           });
 
           // Insert winner quote

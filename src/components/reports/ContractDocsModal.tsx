@@ -51,7 +51,44 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
   ]);
 
   const [competitorSearch, setCompetitorSearch] = useState<string[]>(['', '']);
+  const [openDropdownIdx, setOpenDropdownIdx] = useState<number | null>(null);
+  const dropdownRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)];
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const ref0 = dropdownRefs[0];
+      const ref1 = dropdownRefs[1];
+      if (
+        (ref0?.current && !ref0.current.contains(event.target as Node)) &&
+        (ref1?.current && !ref1.current.contains(event.target as Node))
+      ) {
+        setOpenDropdownIdx(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleClearCompetitor = (idx: number) => {
+    const updated = [...competitors];
+    updated[idx] = {
+      ...updated[idx],
+      supplier_id: '',
+      supplier_name: '',
+      supplier_cnpj: '',
+      items: updated[idx].items.map((it: any) => ({
+        ...it,
+        supplier_id: ''
+      }))
+    };
+    setCompetitors(updated);
+    
+    const searches = [...competitorSearch];
+    searches[idx] = '';
+    setCompetitorSearch(searches);
+  };
 
   useEffect(() => {
     if (isOpen && processId) {
@@ -84,20 +121,37 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
         let contractMonths = (eDate.getFullYear() - sDate.getFullYear()) * 12 + (eDate.getMonth() - sDate.getMonth());
         if (contractMonths <= 0) contractMonths = 12;
 
+        const isGas = contract.category === 'GÁS';
+        const gasQty = contract.terms_json?.gas_quantity || 0;
+        const gasPrice = contract.terms_json?.gas_unit_price || 0;
+
         // Load items or set default
         let docItems = process.accountability_items || [];
         if (docItems.length === 0) {
-          docItems.push({
-            description: contract.description,
-            quantity: contractMonths,
-            unit: 'Mês',
-            winner_unit_price: contract.monthly_value
-          });
+          if (isGas) {
+            docItems.push({
+              description: contract.description,
+              quantity: gasQty,
+              unit: 'Botijão',
+              winner_unit_price: gasPrice
+            });
+          } else {
+            docItems.push({
+              description: contract.description,
+              quantity: contractMonths,
+              unit: 'Mês',
+              winner_unit_price: contract.monthly_value
+            });
+          }
         } else {
-          // Force items with unit === 'Mês' to have contractMonths quantity
+          // Force items to have the correct contract quantity and unit
           docItems = docItems.map((it: any) => {
-            if (it.unit === 'Mês') {
-              return { ...it, quantity: contractMonths };
+            if (isGas) {
+              return { ...it, quantity: gasQty, unit: 'Botijão', winner_unit_price: gasPrice };
+            } else {
+              if (it.unit === 'Mês') {
+                return { ...it, quantity: contractMonths, winner_unit_price: contract.monthly_value };
+              }
             }
             return it;
           });
@@ -413,22 +467,110 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
                         <span className="text-[9px] font-black uppercase tracking-wider">Proponente {idx + 2} (Concorrente)</span>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[8px] font-black text-slate-500 uppercase block mb-1">Buscar Fornecedor</label>
-                        <select
-                          title={`Selecionar Fornecedor Concorrente ${idx + 1}`}
-                          aria-label={`Selecionar Fornecedor Concorrente ${idx + 1}`}
-                          value={comp?.supplier_id || ''}
-                          onChange={(e) => {
-                            const sup = auxData.suppliers.find(s => s.id === e.target.value);
-                            if (sup) handleSelectCompetitor(idx, sup);
-                          }}
-                          className="w-full bg-black/40 border border-white/10 rounded-xl h-10 px-3 text-white text-xs outline-none focus:border-primary appearance-none"
-                        >
-                          <option value="">Selecionar...</option>
-                          {auxData.suppliers.filter(s => s.id !== contract.supplier_id).map(s => (
-                            <option key={s.id} value={s.id}>{s.name} ({s.cnpj})</option>
-                          ))}
-                        </select>
+                        <label className="text-[8px] font-black text-slate-500 uppercase block mb-1">Fornecedor Concorrente</label>
+                        <div ref={dropdownRefs[idx]} className="relative">
+                          {/* Trigger Button */}
+                          <button
+                            type="button"
+                            onClick={() => setOpenDropdownIdx(openDropdownIdx === idx ? null : idx)}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl h-10 px-4 text-white text-xs outline-none focus:border-primary font-bold flex items-center justify-between text-left hover:bg-white/[0.04] transition-all"
+                          >
+                            <span className="truncate pr-4">
+                              {comp?.supplier_name || 'Selecionar fornecedor...'}
+                            </span>
+                            <span className={`material-symbols-outlined text-slate-500 text-sm transition-transform duration-200 ${openDropdownIdx === idx ? 'rotate-180' : ''}`}>
+                              expand_more
+                            </span>
+                          </button>
+
+                          {/* Dropdown Panel */}
+                          {openDropdownIdx === idx && (
+                            <div className="absolute z-50 left-0 right-0 mt-1 bg-[#0d131a] border border-white/10 rounded-xl shadow-2xl p-2 flex flex-col gap-2 max-h-60">
+                              {/* Search Input */}
+                              <div className="relative flex items-center bg-black/40 border border-white/5 rounded-lg h-9 px-3">
+                                <span className="material-symbols-outlined text-slate-500 text-sm mr-2 select-none">search</span>
+                                <input
+                                  type="text"
+                                  placeholder="Digitar nome ou CNPJ..."
+                                  className="w-full bg-transparent text-[10px] text-white outline-none font-bold placeholder:text-slate-600"
+                                  value={competitorSearch[idx] || ''}
+                                  onChange={(e) => {
+                                    const searches = [...competitorSearch];
+                                    searches[idx] = e.target.value;
+                                    setCompetitorSearch(searches);
+                                  }}
+                                  autoFocus
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                                {competitorSearch[idx] && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const searches = [...competitorSearch];
+                                      searches[idx] = '';
+                                      setCompetitorSearch(searches);
+                                    }}
+                                    className="text-slate-500 hover:text-white transition-colors"
+                                  >
+                                    <span className="material-symbols-outlined text-sm">close</span>
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Options List */}
+                              <div className="overflow-y-auto flex-1 divide-y divide-white/5 pr-1">
+                                {comp?.supplier_id && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      handleClearCompetitor(idx);
+                                      setOpenDropdownIdx(null);
+                                    }}
+                                    className="w-full text-left py-2 px-3 hover:bg-red-500/10 rounded-lg text-red-400 hover:text-red-300 transition-all text-[10px] font-bold uppercase tracking-wider flex items-center gap-2"
+                                  >
+                                    <span className="material-symbols-outlined text-xs">delete_sweep</span>
+                                    Limpar Seleção
+                                  </button>
+                                )}
+                                {(() => {
+                                  const otherIdx = idx === 0 ? 1 : 0;
+                                  const otherCompId = competitors[otherIdx]?.supplier_id;
+                                  const filteredOptions = auxData.suppliers
+                                    .filter(s => s.id !== contract.supplier_id)
+                                    .filter(s => !otherCompId || s.id !== otherCompId)
+                                    .filter(s => {
+                                      const term = competitorSearch[idx]?.toLowerCase() || '';
+                                      return !term || s.name.toLowerCase().includes(term) || (s.cnpj && s.cnpj.includes(term));
+                                    });
+
+                                  if (filteredOptions.length === 0) {
+                                    return (
+                                      <div className="py-3 px-2 text-center text-slate-600 text-[10px] uppercase font-black tracking-widest">
+                                        Nenhum fornecedor encontrado
+                                      </div>
+                                    );
+                                  }
+
+                                  return filteredOptions.map((s) => (
+                                    <button
+                                      key={s.id}
+                                      type="button"
+                                      onClick={() => {
+                                        handleSelectCompetitor(idx, s);
+                                        setOpenDropdownIdx(null);
+                                      }}
+                                      className={`w-full text-left py-2 px-3 hover:bg-primary/10 rounded-lg text-slate-300 hover:text-white transition-all text-xs flex flex-col gap-0.5 ${comp?.supplier_id === s.id ? 'bg-primary/20 text-white' : ''}`}
+                                    >
+                                      <span className="font-bold truncate uppercase">{s.name}</span>
+                                      <span className="text-[9px] font-mono text-slate-500">{formatCNPJ(s.cnpj || '')}</span>
+                                    </button>
+                                  ));
+                                })()}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <span className="text-[8px] font-black text-slate-500 uppercase block mb-1">CNPJ</span>
@@ -465,7 +607,7 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
                         <td className="p-4 font-bold text-slate-200 uppercase">{it.description}</td>
                         <td className="p-4 text-center">
                           <span className="text-xs font-bold text-slate-300">
-                            {it.quantity} {it.unit}
+                            {it.quantity} {it.unit === 'Botijão' ? 'Botijão(ões)' : it.unit === 'Mês' ? 'Mês(es)' : it.unit}
                           </span>
                         </td>
                         <td className="p-4 text-right font-black text-primary">

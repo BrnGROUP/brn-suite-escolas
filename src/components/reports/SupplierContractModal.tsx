@@ -403,15 +403,18 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                         is_contract_based: false, // This is the search-of-prices phase
                         description: `COTAÇÃO DE PREÇOS: ${description.toUpperCase()}`
                     }).select().single();
-
                     if (!pError) {
+                        const isGas = category === 'GÁS';
+                        const gasQty = isGas && gasQuantity ? parseFloat(gasQuantity) : (parseInt(durationMonths) || 1);
+                        const gasPrice = isGas && gasUnitPrice ? parseFloat(gasUnitPrice) : parseFloat(monthlyValue);
+
                         // Add the main contract item to the process
                         await supabase.from('accountability_items').insert({
                             process_id: process.id,
                             description: description.toUpperCase(),
-                            quantity: parseInt(durationMonths) || 1,
-                            unit: 'Mês',
-                            winner_unit_price: parseFloat(monthlyValue)
+                            quantity: gasQty,
+                            unit: isGas ? 'Botijão' : 'Mês',
+                            winner_unit_price: gasPrice
                         });
 
                         // Add the winner quote
