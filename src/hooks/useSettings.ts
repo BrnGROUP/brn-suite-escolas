@@ -135,45 +135,108 @@ export const useSettings = (user: User) => {
         }
     }, [systemSettings]);
 
-    // Generic helper mutations
-    const createMutation = (table: string, queryKey: string[], onSuccess?: () => void) => useMutation({
+    // Program Mutations
+    const createProgramMut = useMutation({
         mutationFn: async (payload: any) => {
-            const { error } = await supabase.from(table).insert(payload);
+            const { error } = await supabase.from('programs').insert(payload);
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey });
+            queryClient.invalidateQueries({ queryKey: ['programs'] });
             queryClient.invalidateQueries({ queryKey: ['aux_data'] });
             queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
-            onSuccess?.();
-        }
-    });
-
-    const updateMutation = (table: string, queryKey: string[], onSuccess?: () => void) => useMutation({
-        mutationFn: async ({ id, payload }: { id: string, payload: any }) => {
-            const { error } = await supabase.from(table).update(payload).eq('id', id);
-            if (error) throw error;
+            setNewProgram({ name: '', description: '' });
+            addToast('Programa criado!', 'success');
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey });
-            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
-            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
-            onSuccess?.();
-        }
+        onError: (err: any) => addToast('Erro ao criar programa: ' + err.message, 'error')
     });
 
-    const deleteMutation = (table: string, queryKey: string[]) => useMutation({
+    const deleteProgramMut = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await supabase.from(table).delete().eq('id', id);
+            const { error } = await supabase.from('programs').delete().eq('id', id);
             if (error) throw error;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey });
+            queryClient.invalidateQueries({ queryKey: ['programs'] });
+            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
+            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
             addToast('Excluído com sucesso!', 'success');
         },
-        onError: (err: any) => {
-            addToast('Erro ao excluir: ' + (err.message || err.details || 'Verifique se existem registros vinculados.'), 'error');
-        }
+        onError: (err: any) => addToast('Erro ao excluir: ' + (err.message || err.details || 'Verifique se existem registros vinculados.'), 'error')
+    });
+
+    // Payment Method Mutations
+    const createPaymentMethodMut = useMutation({
+        mutationFn: async (payload: { name: string }) => {
+            const { error } = await supabase.from('payment_methods').insert(payload);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['payment_methods'] });
+            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
+            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
+            setNewPaymentMethod('');
+            addToast('Método de pagamento criado!', 'success');
+        },
+        onError: (err: any) => addToast('Erro ao criar método de pagamento: ' + err.message, 'error')
+    });
+
+    const deletePaymentMethodMut = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from('payment_methods').delete().eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['payment_methods'] });
+            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
+            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
+            addToast('Excluído com sucesso!', 'success');
+        },
+        onError: (err: any) => addToast('Erro ao excluir: ' + (err.message || err.details || 'Verifique se existem registros vinculados.'), 'error')
+    });
+
+    // Period Mutations
+    const createPeriodMut = useMutation({
+        mutationFn: async (payload: any) => {
+            const { error } = await supabase.from('periods').insert(payload);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['periods'] });
+            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
+            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
+            setNewPeriod({ name: '', is_active: true });
+            addToast('Período criado!', 'success');
+        },
+        onError: (err: any) => addToast('Erro ao criar período: ' + err.message, 'error')
+    });
+
+    const updatePeriodMut = useMutation({
+        mutationFn: async ({ id, payload }: { id: string, payload: any }) => {
+            const { error } = await supabase.from('periods').update(payload).eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['periods'] });
+            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
+            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
+            addToast(`Período ${variables.payload.is_active ? 'ativado' : 'desativado'}!`, 'success');
+        },
+        onError: (err: any) => addToast('Erro ao atualizar período: ' + err.message, 'error')
+    });
+
+    const deletePeriodMut = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase.from('periods').delete().eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['periods'] });
+            queryClient.invalidateQueries({ queryKey: ['aux_data'] });
+            queryClient.invalidateQueries({ queryKey: ['reports_aux'] });
+            addToast('Excluído com sucesso!', 'success');
+        },
+        onError: (err: any) => addToast('Erro ao excluir: ' + (err.message || err.details || 'Verifique se existem registros vinculados.'), 'error')
     });
 
     // Specific Local Mutations
@@ -271,10 +334,8 @@ export const useSettings = (user: User) => {
         onError: (err: any) => addToast('Erro ao gerar cobranças: ' + err.message, 'error')
     });
 
-    const savePeriodMut = createMutation('periods', ['periods']);
-
     // Handlers
-    const handleCreateProgram = () => newProgram.name && createMutation('programs', ['programs'], () => { setNewProgram({ name: '', description: '' }); addToast('Programa criado!', 'success'); }).mutate(newProgram);
+    const handleCreateProgram = () => newProgram.name && createProgramMut.mutate(newProgram);
     const handleDeleteProgram = async (id: string) => {
         try {
             // Verificar vínculos
@@ -315,33 +376,33 @@ export const useSettings = (user: User) => {
                 message: 'Deseja realmente excluir este programa? Esta ação não pode ser desfeita.',
                 isDestructive: true
             })) {
-                deleteMutation('programs', ['programs']).mutate(id);
+                deleteProgramMut.mutate(id);
             }
         } catch (err: any) {
             addToast('Erro ao verificar vínculos do programa: ' + err.message, 'error');
         }
     };
 
-    const handleCreatePaymentMethod = () => newPaymentMethod && createMutation('payment_methods', ['payment_methods'], () => { setNewPaymentMethod(''); addToast('Método de pagamento criado!', 'success'); }).mutate({ name: newPaymentMethod });
+    const handleCreatePaymentMethod = () => newPaymentMethod && createPaymentMethodMut.mutate({ name: newPaymentMethod });
     const handleDeletePaymentMethod = async (id: string) => {
         if (await confirm({
             title: 'Excluir Método de Pagamento',
             message: 'Deseja realmente excluir este método de pagamento? Esta ação não pode ser desfeita.',
             isDestructive: true
         })) {
-            deleteMutation('payment_methods', ['payment_methods']).mutate(id);
+            deletePaymentMethodMut.mutate(id);
         }
     };
 
-    const handleCreatePeriod = () => newPeriod.name && createMutation('periods', ['periods'], () => { setNewPeriod({ name: '', is_active: true }); addToast('Período criado!', 'success'); }).mutate(newPeriod);
-    const handleTogglePeriod = (id: string, current: boolean) => updateMutation('periods', ['periods'], () => addToast(`Período ${current ? 'desativado' : 'ativado'}!`, 'success')).mutate({ id, payload: { is_active: !current } });
+    const handleCreatePeriod = () => newPeriod.name && createPeriodMut.mutate(newPeriod);
+    const handleTogglePeriod = (id: string, current: boolean) => updatePeriodMut.mutate({ id, payload: { is_active: !current } });
     const handleDeletePeriod = async (id: string) => {
         if (await confirm({
             title: 'Excluir Período',
             message: 'Deseja realmente excluir este período? Esta ação não pode ser desfeita.',
             isDestructive: true
         })) {
-            deleteMutation('periods', ['periods']).mutate(id);
+            deletePeriodMut.mutate(id);
         }
     };
 
@@ -428,7 +489,7 @@ export const useSettings = (user: User) => {
         paymentMethods, newPaymentMethod, setNewPaymentMethod,
         handleCreatePaymentMethod,
         handleDeletePaymentMethod,
-        periods, newPeriod, setNewPeriod, isSavingPeriod: savePeriodMut.isPending,
+        periods, newPeriod, setNewPeriod, isSavingPeriod: createPeriodMut.isPending,
         handleCreatePeriod,
         handleTogglePeriod,
         handleDeletePeriod,
