@@ -113,6 +113,9 @@ export const useReports = (user: User, filters: ReportsFilters) => {
                 };
             });
 
+            // Filter out contract-only quotation processes (they have a contract_id but no financial_entry_id)
+            results = results.filter((p: any) => !(p.contract_id && !p.financial_entry_id));
+
             if (filters.programId) {
                 results = results.filter((p: any) => 
                     p.financial_entries?.program_id === filters.programId || 
