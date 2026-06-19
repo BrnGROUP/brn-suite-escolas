@@ -40,9 +40,17 @@ DECLARE
     legacy_user RECORD;
 BEGIN
     current_user_id := auth.uid();
-    user_email := auth.email();
 
-    IF current_user_id IS NULL OR user_email IS NULL THEN
+    IF current_user_id IS NULL THEN
+        RETURN FALSE;
+    END IF;
+
+    -- Obter o email diretamente da tabela auth.users para evitar problemas com JWT
+    SELECT email INTO user_email 
+    FROM auth.users 
+    WHERE id = current_user_id;
+
+    IF user_email IS NULL THEN
         RETURN FALSE;
     END IF;
 

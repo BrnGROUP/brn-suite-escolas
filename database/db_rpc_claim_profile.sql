@@ -13,12 +13,20 @@ DECLARE
     legacy_user RECORD;
     affected_rows INT;
 BEGIN
-    -- Obter ID e Email do usuário autenticado atual
+    -- Obter ID do usuário autenticado atual
     current_user_id := auth.uid();
-    user_email := auth.email(); -- Supabase injeta isso automaticamente ou via jwt
 
-    IF current_user_id IS NULL OR user_email IS NULL THEN
+    IF current_user_id IS NULL THEN
         RAISE EXCEPTION 'Usuário não autenticado';
+    END IF;
+
+    -- Obter o email diretamente da tabela auth.users para evitar problemas com JWT
+    SELECT email INTO user_email 
+    FROM auth.users 
+    WHERE id = current_user_id;
+
+    IF user_email IS NULL THEN
+        RAISE EXCEPTION 'Email do usuário não encontrado';
     END IF;
 
     -- Buscar se existe um perfil "órfão" (criado pelo admin) com este email, mas ID diferente
