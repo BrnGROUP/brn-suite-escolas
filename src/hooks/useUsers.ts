@@ -162,7 +162,8 @@ export const useUsers = (currentUser: User) => {
                 const { error } = await supabase.from('users').update(userData).eq('id', userData.id);
                 if (error) throw error;
             } else {
-                const { error } = await supabase.from('users').insert([userData]);
+                const { id, ...insertData } = userData;
+                const { error } = await supabase.from('users').insert([insertData]);
                 if (error) throw error;
             }
         },
@@ -289,8 +290,7 @@ export const useUsers = (currentUser: User) => {
         if (!editingUser) return;
         if (!editingUser.name.trim() || !editingUser.email.trim()) return addToast('Nome e Email são obrigatórios', 'warning');
 
-        const userData = {
-            id: editingUser.id,
+        const userData: any = {
             name: editingUser.name.trim(),
             email: editingUser.email.trim().toLowerCase(),
             role: editingUser.role,
@@ -300,6 +300,10 @@ export const useUsers = (currentUser: User) => {
             active: editingUser.active,
             avatar_url: editingUser.avatar_url
         };
+
+        if (editingUser.id) {
+            userData.id = editingUser.id;
+        }
 
         saveUserMutation.mutate(userData, {
             onError: (err: any) => addToast('Erro ao salvar: ' + err.message, 'error'),
