@@ -37,6 +37,7 @@ const Schools: React.FC<{ user: User }> = ({ user }) => {
     handleDelete,
     handleViewContract,
     handleImageUpload,
+    handleFileUpload,
     displayedSchools,
   } = useSchools({ user });
 
@@ -130,6 +131,7 @@ const Schools: React.FC<{ user: User }> = ({ user }) => {
         isUploading={isUploading}
         loading={loading}
         onImageUpload={handleImageUpload}
+        onFileUpload={handleFileUpload}
         onSave={handleSave}
       />
 

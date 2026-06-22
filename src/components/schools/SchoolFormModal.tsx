@@ -32,6 +32,9 @@ interface SchoolFormModalProps {
     custom_description: string;
     active: boolean;
     notes: string;
+    teaching_modality: string;
+    ata_conselho_url: string;
+    cardapio_url: string;
   };
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   gees: { id: string; name: string }[];
@@ -41,6 +44,7 @@ interface SchoolFormModalProps {
   isUploading: boolean;
   loading: boolean;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, type: 'ata' | 'cardapio') => Promise<void>;
   onSave: () => Promise<void>;
 }
 
@@ -57,6 +61,7 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
   isUploading,
   loading,
   onImageUpload,
+  onFileUpload,
   onSave,
 }) => {
   const firstInputRef = useRef<HTMLInputElement>(null);
@@ -401,6 +406,38 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
               </div>
             )}
 
+            {/* Modalidades de Ensino */}
+            <div className="md:col-span-2">
+              <label className="text-xs font-bold text-slate-400 uppercase mb-2 block">
+                Modalidades de Ensino
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#1e293b] border border-slate-700 rounded-lg p-4">
+                {['Educação Infantil', 'Ensino Fundamental I', 'Ensino Fundamental II', 'Ensino Médio', 'Ensino Técnico', 'EJA'].map((mod) => {
+                  const selected = (formData.teaching_modality || '').split(', ').includes(mod);
+                  return (
+                    <label key={mod} className="flex items-center gap-2 text-xs text-white cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={(e) => {
+                          const current = (formData.teaching_modality || '').split(', ').filter(Boolean);
+                          let updated;
+                          if (e.target.checked) {
+                            updated = [...current, mod];
+                          } else {
+                            updated = current.filter((c) => c !== mod);
+                          }
+                          setFormData((prev: any) => ({ ...prev, teaching_modality: updated.join(', ') }));
+                        }}
+                        className="rounded border-slate-700 bg-slate-800 text-primary focus:ring-primary/20 w-4 h-4 cursor-pointer"
+                      />
+                      {mod}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Conselho Escolar */}
             <div className="md:col-span-2">
               <label htmlFor="conselho-escolar" className="text-xs font-bold text-slate-400 uppercase mb-1 block">
@@ -488,6 +525,83 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                     }
                     className="w-full bg-[#0f172a] border border-slate-800 rounded-lg text-white p-2 text-sm outline-none focus:border-primary/50"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Documentos e Anexos */}
+            <div className="md:col-span-2 p-4 bg-slate-800/40 border border-slate-700/50 rounded-2xl space-y-4">
+              <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase">
+                <span className="material-symbols-outlined text-sm">folder_open</span>
+                Documentos e Anexos da Unidade
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Ata do Conselho */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase block">
+                    Ata do Conselho Escolar
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="file"
+                      id="ata-conselho-input"
+                      accept=".pdf,image/*"
+                      onChange={(e) => onFileUpload(e, 'ata')}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="ata-conselho-input"
+                      className="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 select-none"
+                    >
+                      <span className="material-symbols-outlined text-sm">upload_file</span>
+                      {formData.ata_conselho_url ? 'Alterar Ata' : 'Anexar Ata'}
+                    </label>
+                    {formData.ata_conselho_url && (
+                      <a
+                        href={formData.ata_conselho_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-xs flex items-center gap-1 font-bold"
+                      >
+                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                        Visualizar
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Cardápio Escolar */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase block">
+                    Cardápio Escolar
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="file"
+                      id="cardapio-input"
+                      accept=".pdf,image/*"
+                      onChange={(e) => onFileUpload(e, 'cardapio')}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="cardapio-input"
+                      className="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 select-none"
+                    >
+                      <span className="material-symbols-outlined text-sm">upload_file</span>
+                      {formData.cardapio_url ? 'Alterar Cardápio' : 'Anexar Cardápio'}
+                    </label>
+                    {formData.cardapio_url && (
+                      <a
+                        href={formData.cardapio_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-xs flex items-center gap-1 font-bold"
+                      >
+                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                        Visualizar
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

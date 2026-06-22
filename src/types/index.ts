@@ -146,6 +146,9 @@ export interface School {
     custom_description?: string;
     active?: boolean;
     notes?: string;
+    teaching_modality?: string;
+    ata_conselho_url?: string;
+    cardapio_url?: string;
 }
 
 export interface Program {

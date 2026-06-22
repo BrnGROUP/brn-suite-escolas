@@ -83,10 +83,20 @@ export const SchoolCard: React.FC<SchoolCardProps> = ({
           Codes: {school.inep || 'N/A'} / {school.seec || 'N/A'}
         </div>
         
-        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase mb-4">
+        <div className="flex items-center gap-2 text-[10px] text-slate-500 font-black uppercase mb-3">
           <span className="material-symbols-outlined text-xs">map</span>
           {school.gee || 'SEM REGIONAL'}
         </div>
+
+        {school.teaching_modality && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {school.teaching_modality.split(', ').map((mod) => (
+              <span key={mod} className="bg-primary/10 text-primary text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-primary/20">
+                {mod}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="space-y-3">
           <div className="flex items-center gap-3 text-sm text-slate-400">
@@ -100,7 +110,7 @@ export const SchoolCard: React.FC<SchoolCardProps> = ({
           <div className="flex items-center gap-3 text-sm text-slate-400">
             <span className="material-symbols-outlined text-sm shrink-0">location_on</span>
             <span className="truncate">
-              {school.city}/{school.uf || '??'}
+              {school.city}/{school.uf || '??'}{school.cep ? ` (CEP: ${school.cep})` : ''}
             </span>
           </div>
           <div className="flex items-center gap-3 text-sm text-slate-400">
@@ -108,6 +118,36 @@ export const SchoolCard: React.FC<SchoolCardProps> = ({
             <span>{school.phone || 'N/A'}</span>
           </div>
         </div>
+
+        {(school.ata_conselho_url || school.cardapio_url) && (
+          <div className="mt-4 pt-4 border-t border-slate-100/5 flex flex-col gap-2">
+            <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider">Documentos da Unidade</span>
+            <div className="flex gap-2">
+              {school.ata_conselho_url && (
+                <a
+                  href={school.ata_conselho_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 bg-white/5 border border-white/10 hover:border-primary/30 px-3 py-1.5 rounded-xl text-white text-[10px] font-bold uppercase transition-all"
+                >
+                  <span className="material-symbols-outlined text-xs">gavel</span>
+                  Ata do Conselho
+                </a>
+              )}
+              {school.cardapio_url && (
+                <a
+                  href={school.cardapio_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 bg-white/5 border border-white/10 hover:border-primary/30 px-3 py-1.5 rounded-xl text-white text-[10px] font-bold uppercase transition-all"
+                >
+                  <span className="material-symbols-outlined text-xs">restaurant_menu</span>
+                  Cardápio
+                </a>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 pt-6 border-t border-slate-100/5 flex items-center justify-between">
           <button

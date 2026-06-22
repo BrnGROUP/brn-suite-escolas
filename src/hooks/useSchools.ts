@@ -48,7 +48,10 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
     director_address: '',
     custom_description: '',
     active: true,
-    notes: ''
+    notes: '',
+    teaching_modality: '',
+    ata_conselho_url: '',
+    cardapio_url: ''
   });
 
   const { addToast } = useToast();
@@ -148,7 +151,10 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
       director_address: '',
       custom_description: '',
       active: true,
-      notes: ''
+      notes: '',
+      teaching_modality: '',
+      ata_conselho_url: '',
+      cardapio_url: ''
     });
   };
 
@@ -179,7 +185,10 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
       director_address: school.director_address || '',
       custom_description: school.custom_description || '',
       active: school.active !== undefined ? school.active : true,
-      notes: school.notes || ''
+      notes: school.notes || '',
+      teaching_modality: school.teaching_modality || '',
+      ata_conselho_url: school.ata_conselho_url || '',
+      cardapio_url: school.cardapio_url || ''
     });
     setShowForm(true);
   };
@@ -279,6 +288,38 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'ata' | 'cardapio') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `schools/${type}_${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('attachments')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('attachments')
+        .getPublicUrl(fileName);
+
+      if (type === 'ata') {
+        setFormData((prev: any) => ({ ...prev, ata_conselho_url: publicUrl }));
+      } else {
+        setFormData((prev: any) => ({ ...prev, cardapio_url: publicUrl }));
+      }
+      addToast('Arquivo anexado com sucesso!', 'success');
+    } catch (error: any) {
+      addToast(`Erro no upload: ${error.message}`, 'error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -331,6 +372,7 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
     handleDelete,
     handleViewContract,
     handleImageUpload,
+    handleFileUpload,
     displayedSchools
   };
 };
