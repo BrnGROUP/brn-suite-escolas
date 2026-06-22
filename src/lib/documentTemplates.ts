@@ -286,12 +286,11 @@ export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boole
 };
 
 export const generateAtaHTML = (process: DocumentProcess) => {
-    const { entry, school, program, winnerQuote, allQuotes } = extractDocumentData(process);
+    const { entry, school, program, winnerQuote, allQuotes, invoiceDate } = extractDocumentData(process);
     const contract = process.contract;
     const rubricName = (entry as any)?.rubrics?.name || contract?.rubrics?.name || (entry as any)?.rubric;
 
-    const invoiceDate = entry?.date ? new Date(entry.date) : new Date();
-    const docDate = getSchoolDayBefore(invoiceDate, 2);
+    const docDate = getQuoteDate(invoiceDate);
     const meetingTime = docDate.getDate() % 2 === 0 ? '15:30' : '09:00';
 
     const customStyles = `
