@@ -763,6 +763,24 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
 
               </div>
 
+              {/* 5. Contrato Final Assinado */}
+              <div className="pt-4 border-t border-white/5 space-y-4">
+                <h4 className="text-[10px] md:text-[12px] font-black uppercase text-white tracking-widest">
+                  5. Contrato Final Assinado
+                </h4>
+                <div className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-left space-y-1">
+                    <span className="text-[10px] font-black text-slate-300 block uppercase tracking-wider">Contrato Assinado</span>
+                    <span className="text-[9px] text-slate-500 block">Anexe a via final digitalizada do contrato assinado por todas as partes.</span>
+                  </div>
+                  <label className="flex items-center justify-center gap-2 px-6 h-10 bg-black/40 border border-white/10 hover:border-primary/40 hover:bg-primary/10 text-slate-300 hover:text-primary rounded-xl text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all">
+                    <span className="material-symbols-outlined text-base">upload_file</span>
+                    <span>Anexar Contrato Assinado</span>
+                    <input type="file" className="hidden" disabled={isUploadingDoc} onChange={(e) => e.target.files?.[0] && handleUploadAttachment(e.target.files[0], 'Contrato Assinado')} />
+                  </label>
+                </div>
+              </div>
+
               {/* Attachments list */}
               <div className="space-y-2 pt-4 border-t border-white/5">
                 <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block mb-2">Arquivos Anexados</span>
@@ -772,25 +790,36 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {attachments.map(att => (
-                      <div key={att.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                        <div className="flex items-center gap-3 truncate min-w-0">
-                          <span className="material-symbols-outlined text-primary text-lg">attachment</span>
-                          <div className="truncate text-left">
-                            <span className="text-[11px] text-white font-black block truncate">{att.name}</span>
-                            <span className="text-[8px] text-primary font-black uppercase opacity-60">{att.category}</span>
+                    {attachments.map(att => {
+                      const isSignedContract = att.category === 'Contrato Assinado';
+                      return (
+                        <div key={att.id} className={`flex items-center justify-between p-3 rounded-xl transition-all ${isSignedContract ? 'bg-primary/10 border-2 border-primary/40 shadow-lg shadow-primary/5' : 'bg-white/5 border border-white/5'}`}>
+                          <div className="flex items-center gap-3 truncate min-w-0">
+                            <span className={`material-symbols-outlined text-lg ${isSignedContract ? 'text-primary font-bold' : 'text-primary'}`}>
+                              {isSignedContract ? 'history_edu' : 'attachment'}
+                            </span>
+                            <div className="truncate text-left">
+                              <span className="text-[11px] text-white font-black block truncate">{att.name}</span>
+                              {isSignedContract ? (
+                                <span className="text-[8px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-black uppercase tracking-wider block w-fit mt-1">
+                                  CONTRATO ASSINADO
+                                </span>
+                              ) : (
+                                <span className="text-[8px] text-primary font-black uppercase opacity-60 block mt-0.5">{att.category}</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a href={att.url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-black/40 hover:bg-primary text-slate-500 hover:text-white rounded-lg transition-all">
+                              <span className="material-symbols-outlined text-sm">visibility</span>
+                            </a>
+                            <button onClick={() => setAttachments(attachments.filter(a => a.id !== att.id))} className="w-8 h-8 flex items-center justify-center bg-black/40 hover:bg-red-500 text-slate-500 hover:text-white rounded-lg transition-all">
+                              <span className="material-symbols-outlined text-sm">delete</span>
+                            </button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <a href={att.url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 flex items-center justify-center bg-black/40 hover:bg-primary text-slate-500 hover:text-white rounded-lg transition-all">
-                            <span className="material-symbols-outlined text-sm">visibility</span>
-                          </a>
-                          <button onClick={() => setAttachments(attachments.filter(a => a.id !== att.id))} className="w-8 h-8 flex items-center justify-center bg-black/40 hover:bg-red-500 text-slate-500 hover:text-white rounded-lg transition-all">
-                            <span className="material-symbols-outlined text-sm">delete</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
