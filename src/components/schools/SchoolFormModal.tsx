@@ -412,7 +412,7 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 Modalidades de Ensino
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#1e293b] border border-slate-700 rounded-lg p-4">
-                {['Educação Infantil', 'Ensino Fundamental I', 'Ensino Fundamental II', 'Ensino Médio', 'Ensino Técnico', 'EJA'].map((mod) => {
+                {['Integral 9h', 'Integral 7h', 'Parcial', 'EJA'].map((mod) => {
                   const selected = (formData.teaching_modality || '').split(', ').includes(mod);
                   return (
                     <label key={mod} className="flex items-center gap-2 text-xs text-white cursor-pointer select-none">
