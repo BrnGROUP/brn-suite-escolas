@@ -287,6 +287,8 @@ export const getDocumentBaseCSS = (customStyles: string = '', isLandscape: boole
 
 export const generateAtaHTML = (process: DocumentProcess) => {
     const { entry, school, program, winnerQuote, allQuotes } = extractDocumentData(process);
+    const contract = process.contract;
+    const rubricName = (entry as any)?.rubrics?.name || contract?.rubrics?.name || (entry as any)?.rubric;
 
     const invoiceDate = entry?.date ? new Date(entry.date) : new Date();
     const docDate = getSchoolDayBefore(invoiceDate, 2);
@@ -319,7 +321,7 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 
         <!-- Paragraph 1 -->
         <div class="text-justified text-[14px] mb-10">
-            Às ${meetingTime} horas do dia <strong>${docDate.getDate()} DE ${docDate.toLocaleString('pt-BR', { month: 'long' }).toUpperCase()} DE ${docDate.getFullYear()}</strong>, foi realizada pesquisa de preços para <strong>${entry?.description?.toUpperCase()}</strong>, com recursos oriundos do <strong>${program?.name || 'PNAE/FNDE'}</strong>, entre as empresas:
+            Às ${meetingTime} horas do dia <strong>${docDate.getDate()} DE ${docDate.toLocaleString('pt-BR', { month: 'long' }).toUpperCase()} DE ${docDate.getFullYear()}</strong>, foi realizada pesquisa de preços para <strong>${entry?.description?.toUpperCase()}</strong>, com recursos oriundos do programa <strong>${program?.name || 'PNAE/FNDE'}</strong>${rubricName ? ` (Rubrica: <strong>${rubricName}</strong>)` : ''}, entre as empresas:
         </div>
 
         <!-- Proponents Section -->
@@ -377,7 +379,9 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 
 
 export const generateConsolidacaoHTML = (process: DocumentProcess) => {
-    const { school, program, allQuotes, invoiceDate } = extractDocumentData(process);
+    const { school, program, allQuotes, invoiceDate, entry } = extractDocumentData(process);
+    const contract = process.contract;
+    const rubricName = (entry as any)?.rubrics?.name || contract?.rubrics?.name || (entry as any)?.rubric;
     const items = (process.items || process.accountability_items || []);
 
     const getUnitPrice = (item: any, quote: any) => {
@@ -404,7 +408,7 @@ ${getDocumentBaseCSS(customStyles, true, '1.2cm 1cm 1cm 1cm')}
 <body>
     <div class="w-full">
         <div class="flex justify-between items-end mb-4">
-            <div class="font-bold text-lg">PNAE/FNDE</div>
+            <div class="font-bold text-lg">${(program?.name || 'PNAE/FNDE').toUpperCase()}${rubricName ? ` - ${rubricName.toUpperCase()}` : ''}</div>
             <div class="font-bold text-lg">CONSOLIDAÇÃO DE PESQUISAS DE PREÇOS</div>
         </div>
 
@@ -414,7 +418,7 @@ ${getDocumentBaseCSS(customStyles, true, '1.2cm 1cm 1cm 1cm')}
                 <td width="55%"><span class="font-bold">Uex:</span> ${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || ''}`).toUpperCase()}</td>
                 <td width="15%">${formatCNPJ(school?.cnpj)}</td>
                 <td width="10%" class="bg-gray font-bold">RECURSO:</td>
-                <td width="10%">${program?.name || '---'}</td>
+                <td width="10%">${program?.name || '---'}${rubricName ? ` / ${rubricName}` : ''}</td>
                 <td width="5%" class="bg-gray font-bold">EXERCÍCIO:</td>
                 <td width="5%">${invoiceDate.getFullYear()}</td>
             </tr>
@@ -521,7 +525,11 @@ ${getDocumentBaseCSS(customStyles, true, '1.2cm 1cm 1cm 1cm')}
 };
 
 export const generateOrdemHTML = (process: DocumentProcess) => {
-    const { school, winner, invoiceDate } = extractDocumentData(process);
+    const { school, winner, invoiceDate, program, entry } = extractDocumentData(process);
+    const contract = process.contract;
+    const rubricName = (entry as any)?.rubrics?.name || contract?.rubrics?.name || (entry as any)?.rubric;
+    const isService = contract?.category !== 'GÁS';
+    const orderTitle = isService ? 'ORDEM DE SERVIÇO' : 'ORDEM DE COMPRA';
     const items = (process.items || process.accountability_items || []).slice(0, 27);
     const dateText = invoiceDate.toLocaleDateString('pt-BR');
 
@@ -547,8 +555,8 @@ ${getDocumentBaseCSS(customStyles, false, '1.5cm 1cm 1.5cm 1cm')}
     <div style="width: 100%; max-width: 190mm; margin: 0 auto;">
         <table>
             <tr>
-                <td class="font-bold text-sm">PNAE/FNDE</td>
-                <td class="text-right font-bold text-sm">ORDEM DE COMPRA</td>
+                <td class="font-bold text-sm">${(program?.name || 'PNAE/FNDE').toUpperCase()}${rubricName ? ` - ${rubricName.toUpperCase()}` : ''}</td>
+                <td class="text-right font-bold text-sm">${orderTitle}</td>
             </tr>
         </table>
         <table>
@@ -719,7 +727,9 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 };
 
 export const generateCotacaoHTML = (process: DocumentProcess, supplierIdx: number = 0) => {
-    const { school, allQuotes, invoiceDate } = extractDocumentData(process);
+    const { school, allQuotes, invoiceDate, program, entry } = extractDocumentData(process);
+    const contract = process.contract;
+    const rubricName = (entry as any)?.rubrics?.name || contract?.rubrics?.name || (entry as any)?.rubric;
     const quote = allQuotes[supplierIdx];
 
     if (!quote) return '<h1>Erro: Cotação não encontrada</h1>';
@@ -751,7 +761,7 @@ ${getDocumentBaseCSS(customStyles, false, '1.5cm 1cm 1.5cm 1cm')}
     <div style="width: 100%; max-width: 190mm; margin: 0 auto;">
         <table>
             <tr class="bg-gray font-bold text-center text-[10px]">
-                <td>PNAE/FNDE - PLANILHA DE PESQUISA DE PREÇOS - ORÇAMENTO</td>
+                <td>${(program?.name || 'PNAE/FNDE').toUpperCase()}${rubricName ? ` - ${rubricName.toUpperCase()}` : ''} - PLANILHA DE PESQUISA DE PREÇOS - ORÇAMENTO</td>
             </tr>
         </table>
         <table>
