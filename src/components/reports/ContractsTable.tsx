@@ -62,8 +62,12 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
                                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{contract.contract_number || 'Sem Número'}</p>
                                 </div>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 ${contract.status === 'Ativo' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
-                                }`}>
+                            <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 ${
+                                contract.status === 'Ativo' ? 'bg-green-500/10 text-green-500' :
+                                contract.status === 'Suspenso' ? 'bg-amber-500/10 text-amber-500' :
+                                contract.status === 'Encerrado' ? 'bg-slate-500/10 text-slate-400' :
+                                'bg-red-500/10 text-red-500'
+                            }`}>
                                 {contract.status}
                             </div>
                         </div>

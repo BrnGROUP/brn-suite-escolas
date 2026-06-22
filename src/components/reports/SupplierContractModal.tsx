@@ -54,6 +54,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     const [gasUnitPrice, setGasUnitPrice] = useState('');
     const [gasQuantity, setGasQuantity] = useState('');
     const [status, setStatus] = useState<'Ativo' | 'Encerrado' | 'Suspenso'>('Ativo');
+    const [executedValue, setExecutedValue] = useState<number>(0);
     const [creationMode, setCreationMode] = useState<'NEW' | 'ADITIVO'>('NEW');
     const [parentContractId, setParentContractId] = useState('');
     const [existingContracts, setExistingContracts] = useState<any[]>([]);
@@ -137,7 +138,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     const fetchContract = async () => {
         const { data, error } = await supabase
             .from('supplier_contracts')
-            .select('*')
+            .select('*, financial_entries(value)')
             .eq('id', editingId)
             .single();
 
@@ -154,6 +155,10 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setEndDate(data.end_date);
             setCategory(data.category);
             setStatus(data.status);
+
+            const entries = data.financial_entries || [];
+            const executed = entries.reduce((acc: number, entry: any) => acc + Math.abs(entry.value || 0), 0);
+            setExecutedValue(executed);
 
             if (data.start_date && data.end_date) {
                 const start = new Date(data.start_date + 'T12:00:00');
@@ -351,6 +356,14 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             return;
         }
 
+        if (status === 'Encerrado') {
+            const total = parseFloat(totalValue) || 0;
+            if (Math.abs(total - executedValue) > 0.05) {
+                addToast(`Não é permitido concluir/encerrar o contrato se a soma dos lançamentos (R$ ${executedValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) não for equivalente ao valor total do contrato (R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}).`, 'warning');
+                return;
+            }
+        }
+
         setLoading(true);
         try {
             const payload = {
@@ -468,6 +481,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
         setCustomDirectorAddress('');
         setGasUnitPrice('');
         setGasQuantity('');
+        setExecutedValue(0);
     };
 
     if (!isOpen) return null;
@@ -670,6 +684,23 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                         />
                                     </div>
                                 </div>
+
+                                {editingId && (
+                                    <div className="animate-in fade-in zoom-in-95 duration-200">
+                                        <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Status do Contrato</label>
+                                        <select
+                                            title="Status do Contrato"
+                                            value={status}
+                                            onChange={e => setStatus(e.target.value as any)}
+                                            aria-label="Status do Contrato"
+                                            className="w-full bg-black/40 border border-white/10 rounded-2xl h-14 px-5 text-white outline-none focus:border-primary transition-all appearance-none font-bold text-xs"
+                                        >
+                                            <option value="Ativo">Ativo</option>
+                                            <option value="Suspenso">Suspenso</option>
+                                            <option value="Encerrado">Encerrado</option>
+                                        </select>
+                                    </div>
+                                )}
 
                                 <div>
                                     <label className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-2 block">Descrição (Objeto detalhado)</label>
