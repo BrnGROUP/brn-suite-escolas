@@ -293,9 +293,11 @@ export const generateAtaHTML = (process: DocumentProcess) => {
     const meetingTime = docDate.getDate() % 2 === 0 ? '15:30' : '09:00';
 
     const customStyles = `
+        * { box-sizing: border-box; }
         body { padding: 20px; }
         @media print {
-            .print-container { box-shadow: none !important; border: none !important; width: 100% !important; padding: 1.5cm 2cm !important; }
+            body { background: white !important; padding: 0 !important; margin: 0 !important; display: block !important; }
+            .print-container { box-shadow: none !important; border: none !important; width: 100% !important; padding: 1.5cm 2cm !important; margin: 0 !important; min-height: 0 !important; box-sizing: border-box !important; }
         }
         .print-container { background: white; width: 210mm; margin: 0 auto; padding: 2cm; min-height: 297mm; }
         .text-justified { line-height: 1.6; }
@@ -303,7 +305,7 @@ export const generateAtaHTML = (process: DocumentProcess) => {
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
-${getDocumentBaseCSS(customStyles)}
+${getDocumentBaseCSS(customStyles, false, '0')}
 <body class="flex flex-col items-center">
     <div class="print-container">
         <!-- Header -->
@@ -656,8 +658,8 @@ export const generateReciboHTML = (process: DocumentProcess) => {
         * { box-sizing: border-box; }
         body { background: #f8fafc; padding: 20px; }
         @media print { 
-            body { background: white !important; padding: 0 !important; }
-            .print-container { padding: 1.5cm !important; width: 100% !important; border: none !important; box-shadow: none !important; } 
+            body { background: white !important; padding: 0 !important; margin: 0 !important; display: block !important; }
+            .print-container { padding: 1.5cm 2cm !important; width: 100% !important; border: none !important; box-shadow: none !important; margin: 0 !important; min-height: 0 !important; box-sizing: border-box !important; } 
         }
         .print-container { background: white; width: 190mm; margin: 0 auto; padding: 2cm; min-height: 297mm; border: 1px solid #e2e8f0; position: relative; }
         .text-justified { text-align: justify; text-justify: inter-word; line-height: 1.8; }
@@ -665,7 +667,7 @@ export const generateReciboHTML = (process: DocumentProcess) => {
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
-${getDocumentBaseCSS(customStyles)}
+${getDocumentBaseCSS(customStyles, false, '0')}
 <body class="flex flex-col items-center">
     <div class="print-container">
         <div class="text-center border-b pb-8 mb-12">

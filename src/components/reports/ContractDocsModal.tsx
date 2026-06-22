@@ -362,7 +362,25 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
         schools: contract.schools,
         programs: contract.programs,
         accountability_items: items,
-        accountability_quotes: fullQuotes
+        accountability_quotes: fullQuotes,
+        financial_entry: {
+          schools: contract.schools,
+          suppliers: contract.suppliers,
+          programs: contract.programs,
+          rubrics: contract.rubrics,
+          description: contract.description,
+          date: contract.start_date,
+          category: contract.category
+        },
+        financial_entries: [{
+          schools: contract.schools,
+          suppliers: contract.suppliers,
+          programs: contract.programs,
+          rubrics: contract.rubrics,
+          description: contract.description,
+          date: contract.start_date,
+          category: contract.category
+        }]
       };
 
       let html = '';
