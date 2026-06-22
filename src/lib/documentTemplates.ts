@@ -319,7 +319,7 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 
         <!-- Paragraph 1 -->
         <div class="text-justified text-[14px] mb-10">
-            Às ${meetingTime} horas do dia <strong>${docDate.getDate()} DE ${docDate.toLocaleString('pt-BR', { month: 'long' }).toUpperCase()} DE ${docDate.getFullYear()}</strong>, foi realizada pesquisa de preços para aquisição de produtos do <strong>${entry?.description?.toUpperCase()}</strong>, com recursos oriundos do <strong>${program?.name || 'PNAE/FNDE'}</strong>, entre as empresas:
+            Às ${meetingTime} horas do dia <strong>${docDate.getDate()} DE ${docDate.toLocaleString('pt-BR', { month: 'long' }).toUpperCase()} DE ${docDate.getFullYear()}</strong>, foi realizada pesquisa de preços para <strong>${entry?.description?.toUpperCase()}</strong>, com recursos oriundos do <strong>${program?.name || 'PNAE/FNDE'}</strong>, entre as empresas:
         </div>
 
         <!-- Proponents Section -->
@@ -341,7 +341,7 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 
         <!-- Paragraph 2 -->
         <div class="text-justified text-[14px] mb-12">
-            Portanto, verificamos que o fornecedor <strong>${winnerQuote?.supplier_name?.toUpperCase()}</strong>, apresentou a melhor proposta, sendo assim autorizamos a aquisição dos produtos ofertados, atendendo as normas do FNDE. Nada mais havendo a tratar, o Presidente, deu por encerrada a reunião. Eu, <strong>${school?.secretary?.toUpperCase() || '____________________'}</strong>, lavrei a presente ata que depois de lida e aprovada, será assinada por mim e pelos demais presentes.
+            Portanto, verificamos que o fornecedor <strong>${winnerQuote?.supplier_name?.toUpperCase()}</strong>, apresentou a melhor proposta, sendo assim autorizamos a aquisição dos itens ofertados, atendendo as normas do FNDE. Nada mais havendo a tratar, o Presidente, deu por encerrada a reunião. Eu, <strong>${school?.secretary?.toUpperCase() || '____________________'}</strong>, lavrei a presente ata que depois de lida e aprovada, será assinada por mim e pelos demais presentes.
         </div>
 
         <!-- Location and Date -->
