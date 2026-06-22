@@ -4,6 +4,7 @@ import { TransactionStatus, TransactionNature, User } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useFileUpload } from './useFileUpload';
 import { ENTRY_CATEGORIES, EXIT_CATEGORIES } from '../lib/constants';
+import { updateContractStatusFromEntries } from '../lib/contractStatusHelper';
 
 export interface SplitItem {
     id: string;
@@ -396,6 +397,11 @@ export const useEntryForm = ({
             if (editingId) {
                 const { data } = await supabase.from('financial_entries').select('*').eq('id', editingId).single();
                 originalData = data;
+            } else if (editingBatchId) {
+                const { data } = await supabase.from('financial_entries').select('*').eq('batch_id', editingBatchId).limit(1);
+                if (data && data.length > 0) {
+                    originalData = data[0];
+                }
             }
 
             if (isSplitMode) {
@@ -488,6 +494,15 @@ export const useEntryForm = ({
                     }).select();
                 }
             }
+
+            // Automatically check and update contract statuses
+            if (selectedContractId) {
+                await updateContractStatusFromEntries(selectedContractId);
+            }
+            if (originalData?.contract_id && originalData.contract_id !== selectedContractId) {
+                await updateContractStatusFromEntries(originalData.contract_id);
+            }
+
             onSave();
             addToast('Lançamento salvo com sucesso!', 'success');
             onClose();

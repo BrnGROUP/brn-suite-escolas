@@ -34,6 +34,7 @@ export interface FinancialEntryExtended {
     is_reconciled: boolean;
     bank_transaction_ref?: string;
     payment_date?: string;
+    contract_id?: string;
 }
 
 export function useFinancialEntries(user: User, filters: any = {}) {

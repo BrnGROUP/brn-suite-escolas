@@ -14,6 +14,7 @@ import ReportOptionsModal from '../components/reports/ReportOptionsModal';
 import { generateCSV, ReportOptions } from '../lib/reportUtils';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import { updateContractStatusFromEntries } from '../lib/contractStatusHelper';
 
 const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
     const { confirm } = useConfirm();
@@ -80,6 +81,9 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
         if (error) {
             addToast(`Erro: ${error.message}`, 'error');
         } else {
+            if (entry.contract_id) {
+                await updateContractStatusFromEntries(entry.contract_id);
+            }
             addToast('Lançamento excluído com sucesso', 'success');
             refresh();
         }
@@ -99,10 +103,18 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
             message: `Tem certeza de que deseja excluir os ${selectedIds.length} lançamentos selecionados? Esta ação não pode ser desfeita.`,
             isDestructive: true
         })) return;
+        const selectedEntries = entries.filter(e => selectedIds.includes(e.id));
+        const contractIdsToUpdate = Array.from(
+            new Set(selectedEntries.map(e => e.contract_id).filter(Boolean))
+        );
+
         const { error } = await supabase.from('financial_entries').delete().in('id', selectedIds);
         if (error) {
             addToast(`Erro: ${error.message}`, 'error');
         } else {
+            for (const cid of contractIdsToUpdate) {
+                await updateContractStatusFromEntries(cid);
+            }
             addToast(`${selectedIds.length} lançamentos excluídos!`, 'success');
             setSelectedIds([]);
             refresh();
