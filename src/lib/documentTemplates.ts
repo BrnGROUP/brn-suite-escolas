@@ -321,7 +321,7 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 
         <!-- Paragraph 1 -->
         <div class="text-justified text-[14px] mb-10">
-            Às ${meetingTime} horas do dia <strong>${docDate.getDate()} DE ${docDate.toLocaleString('pt-BR', { month: 'long' }).toUpperCase()} DE ${docDate.getFullYear()}</strong>, foi realizada pesquisa de preços para <strong>${entry?.description?.toUpperCase()}</strong>, com recursos oriundos do programa <strong>${program?.name || 'PNAE/FNDE'}</strong>${rubricName ? ` (Rubrica: <strong>${rubricName}</strong>)` : ''}, entre as empresas:
+            Às ${meetingTime} horas do dia <strong>${docDate.getDate()} DE ${docDate.toLocaleString('pt-BR', { month: 'long' }).toUpperCase()} DE ${docDate.getFullYear()}</strong>, foi realizada pesquisa de preços para <strong>${entry?.description?.toUpperCase()}</strong>, com recursos oriundos do programa <strong>${program?.name || 'PNAE/FNDE'}</strong>${rubricName ? ` - <strong>${rubricName}</strong>` : ''}, entre as empresas:
         </div>
 
         <!-- Proponents Section -->
