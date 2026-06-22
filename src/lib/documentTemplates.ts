@@ -581,7 +581,9 @@ ${getDocumentBaseCSS(customStyles, false, '1.5cm 1cm 1.5cm 1cm')}
             </tr>
         </table>
         <div class="text-[9px] p-2 leading-tight border-x border-black">
-            Autorizo o fornecimento do produto/material, conforme descrição na planilha abaixo, em razão do proponente acima identificado ter apresentado uma proposta adequada e de menor preço, conforme previsto na RESOLUÇÃO CD/FNDE Nº 09, DE 02 DE MARÇO DE 2011.
+            ${isService 
+                ? 'Autorizo a prestação dos serviços, conforme descrição na planilha abaixo, em razão do proponente acima identificado ter apresentado uma proposta adequada e de menor preço, conforme previsto na RESOLUÇÃO CD/FNDE Nº 09, DE 02 DE MARÇO DE 2011.' 
+                : 'Autorizo o fornecimento do produto/material, conforme descrição na planilha abaixo, em razão do proponente acima identificado ter apresentado uma proposta adequada e de menor preço, conforme previsto na RESOLUÇÃO CD/FNDE Nº 09, DE 02 DE MARÇO DE 2011.'}
         </div>
         <table>
             <thead class="bg-gray font-bold text-center uppercase">

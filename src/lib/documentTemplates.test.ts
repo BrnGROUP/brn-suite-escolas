@@ -118,6 +118,17 @@ describe('documentTemplates', () => {
         const html = generateOrdemHTML(mockProcess);
         expect(html).toContain('ORDEM DE COMPRA');
         expect(html).toContain('FORNECEDOR A LTDA');
+        expect(html).toContain('Autorizo o fornecimento do produto/material');
+    });
+
+    it('deve gerar Ordem de Serviço HTML com texto de serviço quando for categoria diferente de GÁS', () => {
+        const serviceProcess = {
+            ...mockProcess,
+            contract: { ...mockProcess.contract, category: 'INTERNET' }
+        };
+        const html = generateOrdemHTML(serviceProcess);
+        expect(html).toContain('ORDEM DE SERVIÇO');
+        expect(html).toContain('Autorizo a prestação dos serviços');
     });
 
     it('deve gerar Recibo HTML corretamente', () => {
