@@ -22,6 +22,7 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
   const [isFetchingContract, setIsFetchingContract] = useState(false);
   const [availablePlans, setAvailablePlans] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [teachingModalities, setTeachingModalities] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -79,6 +80,7 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
     fetchSchools();
     fetchGEEs();
     fetchPlans();
+    fetchTeachingModalities();
   }, []);
 
   useEffect(() => {
@@ -92,6 +94,14 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
   const fetchPlans = async () => {
     const { data } = await supabase.from('system_settings').select('value').eq('key', 'landing_page_plans').maybeSingle();
     if (data?.value) setAvailablePlans(data.value);
+  };
+
+  const fetchTeachingModalities = async () => {
+    const { data } = await supabase
+      .from('teaching_modalities')
+      .select('name')
+      .order('name');
+    if (data) setTeachingModalities(data.map(d => d.name));
   };
 
   const fetchGEEs = async () => {
@@ -373,6 +383,7 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
     handleViewContract,
     handleImageUpload,
     handleFileUpload,
-    displayedSchools
+    displayedSchools,
+    teachingModalities
   };
 };

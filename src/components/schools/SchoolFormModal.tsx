@@ -46,6 +46,7 @@ interface SchoolFormModalProps {
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, type: 'ata' | 'cardapio') => Promise<void>;
   onSave: () => Promise<void>;
+  teachingModalities: string[];
 }
 
 export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
@@ -63,6 +64,7 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
   onImageUpload,
   onFileUpload,
   onSave,
+  teachingModalities,
 }) => {
   const firstInputRef = useRef<HTMLInputElement>(null);
 
@@ -412,7 +414,7 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 Modalidades de Ensino
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#1e293b] border border-slate-700 rounded-lg p-4">
-                {['Integral 9h', 'Integral 7h', 'Parcial', 'EJA'].map((mod) => {
+                {teachingModalities.map((mod) => {
                   const selected = (formData.teaching_modality || '').split(', ').includes(mod);
                   return (
                     <label key={mod} className="flex items-center gap-2 text-xs text-white cursor-pointer select-none">

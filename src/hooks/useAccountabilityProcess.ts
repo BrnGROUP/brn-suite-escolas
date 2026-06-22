@@ -367,15 +367,32 @@ export const useAccountabilityProcess = ({
       const { error: insertItemsErr } = await supabase.from('accountability_items').insert(cleanItems);
       if (insertItemsErr) throw insertItemsErr;
 
-      const { error: insertQuotesErr } = await supabase.from('accountability_quotes').insert({
-        process_id: processId,
-        supplier_id: selectedEntry?.supplier_id || linkedContract?.supplier_id,
-        supplier_name: (selectedEntry as any)?.suppliers?.name || linkedContract?.suppliers?.name || 'Vencedor',
-        supplier_cnpj: (selectedEntry as any)?.suppliers?.cnpj || linkedContract?.suppliers?.cnpj || null,
-        is_winner: true,
-        total_value: subtotal
-      });
+      const { data: winQuote, error: insertQuotesErr } = await supabase
+        .from('accountability_quotes')
+        .insert({
+          process_id: processId,
+          supplier_id: selectedEntry?.supplier_id || linkedContract?.supplier_id,
+          supplier_name: (selectedEntry as any)?.suppliers?.name || linkedContract?.suppliers?.name || 'Vencedor',
+          supplier_cnpj: (selectedEntry as any)?.suppliers?.cnpj || linkedContract?.suppliers?.cnpj || null,
+          is_winner: true,
+          total_value: subtotal
+        })
+        .select()
+        .single();
       if (insertQuotesErr) throw insertQuotesErr;
+
+      const winQItems = items.map(it => {
+        const { id, ...rest } = it as any;
+        return {
+          quote_id: winQuote.id,
+          description: rest.description,
+          quantity: rest.quantity,
+          unit: rest.unit,
+          unit_price: rest.winner_unit_price
+        };
+      });
+      const { error: winItemsErr } = await supabase.from('accountability_quote_items').insert(winQItems);
+      if (winItemsErr) throw winItemsErr;
 
       if (!isContractBased) {
         for (const comp of competitorQuotes) {

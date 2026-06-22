@@ -7,6 +7,7 @@ import { useRubricSettings } from './settings/useRubricSettings';
 import { useSupplierSettings } from './settings/useSupplierSettings';
 import { useBankSettings } from './settings/useBankSettings';
 import { useConfirm } from '../context/ConfirmContext';
+import { useModalitySettings } from './settings/useModalitySettings';
 
 
 export const BRAZIL_STATES = [
@@ -73,10 +74,10 @@ export const useSettings = (user: User) => {
     const [activeTab, setActiveTab] = useState('profile');
 
 
-    // Consolidate Rubric, Supplier, and Bank Settings into sub-hooks
     const rubricSettings = useRubricSettings();
     const supplierSettings = useSupplierSettings();
     const bankSettings = useBankSettings();
+    const modalitySettings = useModalitySettings();
 
     // Local states
     const [newProgram, setNewProgram] = useState({ name: '', description: '' });
@@ -507,7 +508,20 @@ export const useSettings = (user: User) => {
         handleGenerateBilling: generateBillingMut.mutate,
         templateUrl: systemSettings.templateUrl, loadingAssets: false, isUploadingTemplate: false,
         handleTemplateUpload,
-        loading: rubricSettings.loadingRubrics || supplierSettings.loadingSuppliers || bankSettings.loadingBanks || loadingPayments || loadingPeriods || loadingBilling,
+        
+        // Modality settings delegator
+        modalities: modalitySettings.modalities,
+        newModality: modalitySettings.newModality,
+        setNewModality: modalitySettings.setNewModality,
+        editingModalityId: modalitySettings.editingModalityId,
+        setEditingModalityId: modalitySettings.setEditingModalityId,
+        handleSaveModality: modalitySettings.handleSaveModality,
+        handleEditModality: modalitySettings.handleEditModality,
+        handleDeleteModality: modalitySettings.handleDeleteModality,
+        loadingModalities: modalitySettings.loadingModalities,
+        isSavingModality: modalitySettings.isSaving,
+
+        loading: rubricSettings.loadingRubrics || supplierSettings.loadingSuppliers || bankSettings.loadingBanks || loadingPayments || loadingPeriods || loadingBilling || modalitySettings.loadingModalities,
         fetchAuxOptions: () => { },
         fetchRubricData: () => { },
         fetchSupplierData: () => { },
@@ -517,6 +531,7 @@ export const useSettings = (user: User) => {
         fetchSupportContacts: () => { },
         fetchPlans: () => { },
         fetchAssets: () => { },
+        fetchModalityData: () => { },
         
         updatePlanField: (i: number, f: string, v: any) => { const p = [...localPlans]; p[i] = { ...p[i], [f]: v }; setLocalPlans(p); },
         handleAddFeature: (pi: number) => { const p = [...localPlans]; if (!p[pi].features) p[pi].features = []; p[pi].features.push(""); setLocalPlans(p); },

@@ -15,6 +15,7 @@ import SupportContactsSection from '../components/settings/SupportContactsSectio
 import WebsitePlansSection from '../components/settings/WebsitePlansSection';
 import AssetsSection from '../components/settings/AssetsSection';
 import BillingSection from '../components/settings/BillingSection';
+import ModalitiesSection from '../components/settings/ModalitiesSection';
 
 const Settings: React.FC<{ user: User }> = ({ user }) => {
   const settings = useSettings(user);
@@ -25,6 +26,7 @@ const Settings: React.FC<{ user: User }> = ({ user }) => {
     { id: 'profile', label: 'Minha Conta', icon: 'person', roles: [] },
     { id: 'security', label: 'Segurança', icon: 'lock', roles: [] },
     { id: 'general', label: 'Configurações Gerais', icon: 'tune', roles: ['Administrador', 'Operador'] },
+    { id: 'modalities', label: 'Modalidades de Ensino', icon: 'school', roles: ['Administrador', 'Operador'] },
     { id: 'rubrics', label: 'Recursos & Rubricas', icon: 'category', roles: ['Administrador', 'Operador'] },
     { id: 'status', label: 'Status de Movimentação', icon: 'sync_alt', roles: ['Administrador', 'Operador'] },
     { id: 'payment', label: 'Tipos de Pagamento', icon: 'payments', roles: ['Administrador', 'Operador'] },
@@ -47,6 +49,7 @@ const Settings: React.FC<{ user: User }> = ({ user }) => {
     if (activeTab === 'contacts') settings.fetchSupportContacts();
     if (activeTab === 'website') settings.fetchPlans();
     if (activeTab === 'assets') settings.fetchAssets();
+    if (activeTab === 'modalities') settings.fetchModalityData();
   }, [activeTab]);
 
   return (
@@ -190,6 +193,21 @@ const Settings: React.FC<{ user: User }> = ({ user }) => {
                 setNewPaymentMethod={settings.setNewPaymentMethod}
                 onSave={settings.handleCreatePaymentMethod}
                 onDelete={settings.handleDeletePaymentMethod}
+              />
+            )}
+
+            {activeTab === 'modalities' && (
+              <ModalitiesSection
+                modalities={settings.modalities}
+                newModality={settings.newModality}
+                setNewModality={settings.setNewModality}
+                editingModalityId={settings.editingModalityId}
+                setEditingModalityId={settings.setEditingModalityId}
+                handleSaveModality={settings.handleSaveModality}
+                handleEditModality={settings.handleEditModality}
+                handleDeleteModality={settings.handleDeleteModality}
+                loading={settings.loadingModalities}
+                isSaving={settings.isSavingModality}
               />
             )}
 

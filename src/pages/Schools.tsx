@@ -39,6 +39,7 @@ const Schools: React.FC<{ user: User }> = ({ user }) => {
     handleImageUpload,
     handleFileUpload,
     displayedSchools,
+    teachingModalities,
   } = useSchools({ user });
 
   if (!isAuthorized) {
@@ -133,6 +134,7 @@ const Schools: React.FC<{ user: User }> = ({ user }) => {
         onImageUpload={handleImageUpload}
         onFileUpload={handleFileUpload}
         onSave={handleSave}
+        teachingModalities={teachingModalities}
       />
 
       {/* Contract Viewer Modal */}

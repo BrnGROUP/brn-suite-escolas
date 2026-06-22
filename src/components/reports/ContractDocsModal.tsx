@@ -279,14 +279,29 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
       }
 
       // Re-insert winner quote
-      await supabase.from('accountability_quotes').insert({
-        process_id: processId,
-        supplier_id: contract.supplier_id,
-        supplier_name: contract.suppliers?.name || 'Vencedor',
-        supplier_cnpj: contract.suppliers?.cnpj || null,
-        is_winner: true,
-        total_value: subtotal
-      });
+      const { data: winQuote, error: winQE } = await supabase
+        .from('accountability_quotes')
+        .insert({
+          process_id: processId,
+          supplier_id: contract.supplier_id,
+          supplier_name: contract.suppliers?.name || 'Vencedor',
+          supplier_cnpj: contract.suppliers?.cnpj || null,
+          is_winner: true,
+          total_value: subtotal
+        })
+        .select()
+        .single();
+      
+      if (winQE) throw winQE;
+
+      const winQItems = items.map((it: any) => ({
+        quote_id: winQuote.id,
+        description: it.description,
+        quantity: it.quantity,
+        unit: it.unit,
+        unit_price: it.winner_unit_price
+      }));
+      await supabase.from('accountability_quote_items').insert(winQItems);
 
       // Insert competitor quotes
       for (const comp of competitors) {
@@ -342,7 +357,13 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
           supplier_cnpj: contract.suppliers?.cnpj,
           is_winner: true,
           total_value: items.reduce((acc, it) => acc + (it.quantity || 0) * (it.winner_unit_price || 0), 0),
-          suppliers: contract.suppliers
+          suppliers: contract.suppliers,
+          accountability_quote_items: items.map(it => ({
+            description: it.description,
+            quantity: it.quantity,
+            unit: it.unit,
+            unit_price: it.winner_unit_price
+          }))
         },
         ...competitors.map(c => {
           const compSup = auxData.suppliers.find(s => s.id === c.supplier_id);
@@ -351,7 +372,13 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
             supplier_cnpj: c.supplier_cnpj,
             is_winner: false,
             total_value: c.items.reduce((acc: number, curr: any) => acc + (curr.quantity || 0) * (curr.unit_price || 0), 0),
-            suppliers: compSup
+            suppliers: compSup,
+            accountability_quote_items: c.items.map((it: any) => ({
+              description: it.description,
+              quantity: it.quantity,
+              unit: it.unit,
+              unit_price: it.unit_price
+            }))
           };
         })
       ].filter(q => q.supplier_name);
