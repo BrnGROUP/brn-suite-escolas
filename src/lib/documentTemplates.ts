@@ -378,10 +378,21 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 
 
 export const generateConsolidacaoHTML = (process: DocumentProcess) => {
-    const { school, program, allQuotes, invoiceDate, entry } = extractDocumentData(process);
+    const { school, program, allQuotes, invoiceDate, entry, paymentDate } = extractDocumentData(process);
     const contract = process.contract;
     const rubricName = (entry as any)?.rubrics?.name || contract?.rubrics?.name || (entry as any)?.rubric;
     const items = (process.items || process.accountability_items || []);
+
+    const getExercicioDate = () => {
+        if (paymentDate) return paymentDate;
+        if (entry?.date) return new Date(entry.date + 'T12:00:00');
+        if (contract?.start_date) return new Date(contract.start_date + 'T12:00:00');
+        return invoiceDate;
+    };
+
+    const targetDate = getExercicioDate();
+    const semester = targetDate.getMonth() <= 5 ? 1 : 2;
+    const exercicio = `${targetDate.getFullYear()}.${semester}`;
 
     const getUnitPrice = (item: any, quote: any) => {
         const qItem = quote.accountability_quote_items?.find((qi: any) => qi.description === item.description);
@@ -419,7 +430,7 @@ ${getDocumentBaseCSS(customStyles, true, '1.2cm 1cm 1cm 1cm')}
                 <td width="10%" class="bg-gray font-bold">RECURSO:</td>
                 <td width="10%">${program?.name || '---'}${rubricName ? ` / ${rubricName}` : ''}</td>
                 <td width="5%" class="bg-gray font-bold">EXERCÍCIO:</td>
-                <td width="5%">${invoiceDate.getFullYear()}</td>
+                <td width="5%">${exercicio}</td>
             </tr>
         </table>
 

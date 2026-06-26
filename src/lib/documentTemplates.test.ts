@@ -112,6 +112,37 @@ describe('documentTemplates', () => {
         expect(html).toContain('CONSOLIDAÇÃO DE PESQUISAS DE PREÇOS');
         expect(html).toContain('Fornecedor A Ltda');
         expect(html).toContain('Fornecedor B Ltda');
+        expect(html).toContain('2025.1'); // mockProcess: payment_date is '2025-01-16' (Jan -> Semester 1)
+    });
+
+    it('deve gerar Consolidação HTML com exercício baseado na data da nota se não houver data de pagamento', () => {
+        const processWithoutPayment = {
+            ...mockProcess,
+            financial_entries: {
+                ...mockProcess.financial_entries,
+                payment_date: undefined,
+                date: '2025-07-20' // Jul -> Semester 2
+            }
+        };
+        const html = generateConsolidacaoHTML(processWithoutPayment);
+        expect(html).toContain('2025.2');
+    });
+
+    it('deve gerar Consolidação HTML com exercício baseado na data de início do contrato se não houver pagamento nem data da nota', () => {
+        const contractProcess = {
+            ...mockProcess,
+            financial_entries: {
+                ...mockProcess.financial_entries,
+                payment_date: undefined,
+                date: undefined
+            },
+            contract: {
+                ...mockProcess.contract,
+                start_date: '2026-08-15' // Aug -> Semester 2
+            }
+        };
+        const html = generateConsolidacaoHTML(contractProcess);
+        expect(html).toContain('2026.2');
     });
 
     it('deve gerar Ordem de Compra HTML corretamente', () => {
