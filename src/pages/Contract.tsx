@@ -29,6 +29,7 @@ const Contract: React.FC<ContractProps> = ({ user, onSigned }) => {
             setIp(data.ip);
         } catch (e) {
             console.error('Failed to fetch IP', e);
+            setIp('0.0.0.0 (Indisponível)');
         }
     };
 
