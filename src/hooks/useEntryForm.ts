@@ -244,6 +244,7 @@ export const useEntryForm = ({
                     setPaymentDate(first.payment_date || '');
                     setAttachments(first.attachments || []);
                     setSelectedContractId(first.contract_id || '');
+                    setSelectedSupplierId(first.supplier_id || '');
                     const descParts = first.description.split(' - ');
                     setMainDescription(descParts[0]);
                     setSplitItems(entries.map((e: any) => ({
@@ -394,13 +395,15 @@ export const useEntryForm = ({
         try {
             const batchId = editingBatchId || (isSplitMode ? (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); })) : null);
             let originalData: any = null;
+            let originalEntries: any[] = [];
             if (editingId) {
                 const { data } = await supabase.from('financial_entries').select('*').eq('id', editingId).single();
                 originalData = data;
             } else if (editingBatchId) {
-                const { data } = await supabase.from('financial_entries').select('*').eq('batch_id', editingBatchId).limit(1);
-                if (data && data.length > 0) {
-                    originalData = data[0];
+                const { data } = await supabase.from('financial_entries').select('*').eq('batch_id', editingBatchId);
+                originalEntries = data || [];
+                if (originalEntries.length > 0) {
+                    originalData = originalEntries[0];
                 }
             }
 
@@ -408,30 +411,36 @@ export const useEntryForm = ({
                 if (editingBatchId) {
                     await supabase.from('financial_entries').delete().eq('batch_id', editingBatchId);
                 }
-                const entriesToSave = splitItems.map(item => ({
-                    school_id: selectedSchoolId,
-                    program_id: selectedProgramId,
-                    date,
-                    description: item.description ? `${mainDescription} - ${item.description.toUpperCase()}` : mainDescription,
-                    value: item.value * (type === 'Saída' ? -1 : 1),
-                    type,
-                    status,
-                    category,
-                    nature: item.nature,
-                    rubric_id: item.rubricId || null,
-                    supplier_id: selectedSupplierId || null,
-                    bank_account_id: selectedBankAccountId || null,
-                    payment_method_id: selectedPaymentMethodId || null,
-                    invoice_date: invoiceDate || null,
-                    document_number: documentNumber || null,
-                    auth_number: authNumber || null,
-                    payment_date: paymentDate || null,
-                    attachments,
-                    batch_id: batchId,
-                    contract_id: selectedContractId || null,
-                    created_by_name: editingBatchId ? undefined : user.name,
-                    updated_by_name: user.name
-                }));
+                const entriesToSave = splitItems.map(item => {
+                    const orig = originalEntries.find(oe => oe.id === item.id);
+                    return {
+                        school_id: selectedSchoolId,
+                        program_id: selectedProgramId,
+                        date,
+                        description: item.description ? `${mainDescription} - ${item.description.toUpperCase()}` : mainDescription,
+                        value: item.value * (type === 'Saída' ? -1 : 1),
+                        type,
+                        status: orig ? orig.status : status,
+                        category,
+                        nature: item.nature,
+                        rubric_id: item.rubricId || null,
+                        supplier_id: selectedSupplierId || null,
+                        bank_account_id: selectedBankAccountId || null,
+                        payment_method_id: selectedPaymentMethodId || null,
+                        invoice_date: invoiceDate || null,
+                        document_number: documentNumber || null,
+                        auth_number: authNumber || null,
+                        payment_date: paymentDate || null,
+                        attachments,
+                        batch_id: batchId,
+                        contract_id: selectedContractId || null,
+                        is_reconciled: orig ? (orig.is_reconciled ?? false) : false,
+                        reconciled_at: orig ? (orig.reconciled_at ?? null) : null,
+                        bank_transaction_ref: orig ? (orig.bank_transaction_ref ?? null) : null,
+                        created_by_name: editingBatchId ? undefined : user.name,
+                        updated_by_name: user.name
+                    };
+                });
 
                 const { data: savedEntries, error } = await supabase.from('financial_entries').insert(entriesToSave).select();
                 if (error) throw error;

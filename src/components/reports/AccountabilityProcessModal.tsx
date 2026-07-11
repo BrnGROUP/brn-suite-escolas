@@ -601,7 +601,22 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
             <div className="p-6 flex flex-col gap-4 overflow-hidden">
               <input aria-label="Buscar fornecedor por nome ou CNPJ" placeholder="Buscar por nome ou CNPJ..." className="w-full bg-black/40 border border-white/10 rounded-xl h-12 px-5 text-white outline-none focus:border-primary transition-all" value={supplierSearch} onChange={e => setSupplierSearch(e.target.value)} autoFocus />
               <div className="overflow-y-auto space-y-2 custom-scrollbar">
-                {auxData.suppliers.filter(s => s.name.toLowerCase().includes(supplierSearch.toLowerCase())).map(s => (
+                {auxData.suppliers.filter(s => {
+                  const matchesSearch = s.name.toLowerCase().includes(supplierSearch.toLowerCase()) ||
+                    (s.cnpj && s.cnpj.replace(/\D/g, '').includes(supplierSearch.replace(/\D/g, '')));
+                  if (!matchesSearch) return false;
+
+                  const winningSupplierId = selectedEntry?.supplier_id || linkedContract?.supplier_id;
+                  if (winningSupplierId && s.id === winningSupplierId) return false;
+
+                  if (showSupplierModal.quoteIdx !== -1) {
+                    const otherIdx = showSupplierModal.quoteIdx === 0 ? 1 : 0;
+                    const otherCompetitorId = competitorQuotes[otherIdx]?.supplier_id;
+                    if (otherCompetitorId && s.id === otherCompetitorId) return false;
+                  }
+
+                  return true;
+                }).map(s => (
                   <button key={s.id} onClick={() => handleSelectSupplier(s)} className="w-full p-4 bg-white/5 border border-white/5 rounded-2xl text-left hover:bg-primary/10 hover:border-primary/30 transition-all">
                     <span className="text-sm font-bold text-white block">{s.name}</span>
                     <span className="text-[10px] text-slate-500">{s.cnpj || 'SEM CNPJ'}</span>

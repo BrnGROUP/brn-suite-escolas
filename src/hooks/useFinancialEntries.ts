@@ -64,8 +64,8 @@ export function useFinancialEntries(user: User, filters: any = {}) {
     });
 
     // Main Query for Financial Entries
-    const { data: entries = [], isLoading: loading, refetch: refreshQuery } = useQuery({
-        queryKey: ['financial_entries', user.id, filters],
+    const { data: allEntries = [], isLoading: loading, refetch: refreshQuery } = useQuery({
+        queryKey: ['financial_entries', user.id, { ...filters, search: undefined }],
         queryFn: async () => {
             let q = supabase.from('financial_entries').select(`
                 *, 
@@ -104,7 +104,6 @@ export function useFinancialEntries(user: User, filters: any = {}) {
             if (filters.startDate) q = q.gte('date', filters.startDate);
             if (filters.endDate) q = q.lte('date', filters.endDate);
             if (filters.nature) q = q.eq('nature', filters.nature);
-            if (filters.search) q = q.ilike('description', `%${filters.search}%`);
 
             if (filters.quick === 'pending') q = q.eq('status', TransactionStatus.PENDENTE);
             if (filters.quick === 'paid') q = q.eq('status', TransactionStatus.PAGO);
@@ -148,6 +147,71 @@ export function useFinancialEntries(user: User, filters: any = {}) {
         },
         enabled: !!user // Only run if user is loaded
     });
+
+    // Client-side advanced filtering based on search query
+    const entries = useMemo(() => {
+        if (!filters.search) return allEntries;
+
+        const searchLower = filters.search.toLowerCase().trim();
+        if (!searchLower) return allEntries;
+
+        const searchDigits = searchLower.replace(/\D/g, '');
+
+        return allEntries.filter((entry) => {
+            // Check description
+            if (entry.description?.toLowerCase().includes(searchLower)) return true;
+
+            // Check school
+            if (entry.school?.toLowerCase().includes(searchLower)) return true;
+
+            // Check program
+            if (entry.program?.toLowerCase().includes(searchLower)) return true;
+
+            // Check rubric
+            if (entry.rubric?.toLowerCase().includes(searchLower)) return true;
+
+            // Check supplier
+            if (entry.supplier?.toLowerCase().includes(searchLower)) return true;
+
+            // Check nature
+            if (entry.nature?.toLowerCase().includes(searchLower)) return true;
+
+            // Check value
+            const rawValStr = String(entry.value).toLowerCase();
+            const absValStr = String(Math.abs(entry.value)).toLowerCase();
+
+            // Format standard Brazilian Real style value (e.g. R$ 1.500,00)
+            const formattedBRL = entry.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).toLowerCase();
+            const formattedBRLNoSymbol = formattedBRL.replace('r$', '').trim(); // e.g. "1.500,00"
+
+            if (
+                rawValStr.includes(searchLower) ||
+                absValStr.includes(searchLower) ||
+                formattedBRL.includes(searchLower) ||
+                formattedBRLNoSymbol.includes(searchLower)
+            ) {
+                return true;
+            }
+
+            // Digit-only comparison for values if search has digits
+            if (searchDigits) {
+                const valueDigits = String(Math.abs(entry.value)).replace(/\D/g, '');
+                const valueInCents = Math.round(entry.value * 100);
+                const centsStr = String(Math.abs(valueInCents));
+                const valueNoDecimalsStr = String(Math.abs(Math.trunc(entry.value)));
+
+                if (
+                    centsStr.includes(searchDigits) || 
+                    valueNoDecimalsStr.includes(searchDigits) || 
+                    valueDigits.includes(searchDigits)
+                ) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+    }, [allEntries, filters.search]);
 
     // Compute stats derived from entries
     const stats = useMemo(() => {

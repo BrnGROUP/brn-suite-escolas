@@ -278,6 +278,22 @@ export const useAccountabilityProcess = ({
   const handleSelectSupplier = (supplier: Supplier) => {
     const { quoteIdx } = showSupplierModal;
     if (quoteIdx === -1) return;
+
+    // Check if supplier is the winner
+    const winningSupplierId = selectedEntry?.supplier_id || linkedContract?.supplier_id;
+    if (winningSupplierId && supplier.id === winningSupplierId) {
+      addToast('O concorrente não pode ser igual ao fornecedor vencedor.', 'error');
+      return;
+    }
+
+    // Check if supplier is the other competitor
+    const otherIdx = quoteIdx === 0 ? 1 : 0;
+    const otherCompetitorId = competitorQuotes[otherIdx]?.supplier_id;
+    if (otherCompetitorId && supplier.id === otherCompetitorId) {
+      addToast('Os concorrentes não podem ser o mesmo fornecedor.', 'error');
+      return;
+    }
+
     const cq = [...competitorQuotes];
     const targetQuote = cq[quoteIdx];
     if (targetQuote) {
@@ -292,8 +308,25 @@ export const useAccountabilityProcess = ({
 
   const handleSave = async () => {
     if (!selectedEntry && !linkedContract) return;
-    if (!isContractBased && competitorQuotes.some(q => !q.supplier_id)) {
-      return addToast('Selecione os 2 fornecedores proponentes (ou ative Serviço sob Contrato).', 'warning');
+
+    const winningSupplierId = selectedEntry?.supplier_id || linkedContract?.supplier_id;
+    if (!isContractBased) {
+      if (competitorQuotes.some(q => !q.supplier_id)) {
+        return addToast('Selecione os 2 fornecedores proponentes (ou ative Serviço sob Contrato).', 'warning');
+      }
+
+      const c1 = competitorQuotes[0]?.supplier_id;
+      const c2 = competitorQuotes[1]?.supplier_id;
+
+      if (c1 && winningSupplierId && c1 === winningSupplierId) {
+        return addToast('O concorrente 1 não pode ser igual ao fornecedor vencedor.', 'error');
+      }
+      if (c2 && winningSupplierId && c2 === winningSupplierId) {
+        return addToast('O concorrente 2 não pode ser igual ao fornecedor vencedor.', 'error');
+      }
+      if (c1 && c2 && c1 === c2) {
+        return addToast('O concorrente 1 não pode ser igual ao concorrente 2.', 'error');
+      }
     }
 
     const subtotal = items.reduce((acc, it) => acc + (it.quantity || 0) * (it.winner_unit_price || 0), 0);

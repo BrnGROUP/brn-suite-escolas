@@ -50,9 +50,10 @@ export const useReconciliationMutations = ({
 
         if (!original) throw new Error('Lançamento original não encontrado');
 
-        const remainingValue = Number(original.value) - splitInfo.value;
-        const splitBatchId = original.batch_id || original.id;
-
+        const isNegative = Number(original.value) < 0;
+        const reconciledValue = Number((isNegative ? -Math.abs(splitInfo.value) : Math.abs(splitInfo.value)).toFixed(2));
+        const diffValue = Math.abs(Number(original.value)) - Math.abs(splitInfo.value);
+        const remainingValue = Number((isNegative ? -Math.abs(diffValue) : Math.abs(diffValue)).toFixed(2));
         // 1. Create the "remaining balance" entry
         const { error: insertError } = await supabase
           .from('financial_entries')
@@ -65,7 +66,7 @@ export const useReconciliationMutations = ({
             bank_transaction_ref: null,
             status: TransactionStatus.PENDENTE,
             description: `[SALDO] ${original.description}`,
-            batch_id: splitBatchId,
+            batch_id: null, // Force to null so it's a standalone entry, not grouped in Rateio
             created_at: new Date().toISOString(),
           });
 
@@ -75,14 +76,13 @@ export const useReconciliationMutations = ({
         const { error: updateError } = await supabase
           .from('financial_entries')
           .update({
-            value: splitInfo.value,
+            value: reconciledValue,
             is_reconciled: true,
             reconciled_at: new Date().toISOString(),
             payment_date: bt.date,
             bank_transaction_ref: bt.fitid,
             bank_account_id: selectedBankAccountId,
             status: TransactionStatus.CONCILIADO,
-            batch_id: splitBatchId,
           })
           .eq('id', splitInfo.originalEntryId);
 

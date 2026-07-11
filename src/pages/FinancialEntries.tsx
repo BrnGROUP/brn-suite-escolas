@@ -74,9 +74,7 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
             message: 'Tem certeza de que deseja excluir este lançamento? Esta ação não pode ser desfeita.',
             isDestructive: true
         })) return;
-        const { error } = entry.batch_id
-            ? await supabase.from('financial_entries').delete().eq('batch_id', entry.batch_id)
-            : await supabase.from('financial_entries').delete().eq('id', entry.id);
+        const { error } = await supabase.from('financial_entries').delete().eq('id', entry.id);
 
         if (error) {
             addToast(`Erro: ${error.message}`, 'error');

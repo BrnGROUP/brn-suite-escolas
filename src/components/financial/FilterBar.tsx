@@ -258,8 +258,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         </select>
                     </div>
                     <div className="md:col-span-3 lg:col-span-4 flex flex-col gap-2">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Pesquisar por Descrição</label>
-                        <input type="text" aria-label="Pesquisar por Descrição" value={filters.search} onChange={e => setFilters({ ...filters, search: e.target.value })} className="w-full bg-[#1c2936] text-white text-xs h-10 px-4 rounded-xl border border-white/10 outline-none focus:border-primary" placeholder="Digite algo para buscar..." />
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Pesquisar Lançamento</label>
+                        <input type="text" aria-label="Pesquisar Lançamento" value={filters.search} onChange={e => setFilters({ ...filters, search: e.target.value })} className="w-full bg-[#1c2936] text-white text-xs h-10 px-4 rounded-xl border border-white/10 outline-none focus:border-primary" placeholder="Busque por descrição, valor, escola, fornecedor..." />
                     </div>
                     <div className="md:col-span-1 lg:col-span-2 grid grid-cols-2 gap-2">
                         <button onClick={clearFilters} className="bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-tighter h-10 rounded-xl hover:bg-white/10 transition-colors">Limpar</button>
