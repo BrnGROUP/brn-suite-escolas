@@ -1180,16 +1180,33 @@ ${getDocumentBaseCSS(customStyles)}
             <div class="clause-block">
                 <div class="clause">CLÁUSULA SEGUNDA – DO VALOR</div>
                 <p>2.1. O valor global estimado do presente Contrato é de <strong>${formattedTotalValue}</strong> (${numberToWords(totalValue).toUpperCase()}).</p>
+                <p>2.2. O valor global previsto neste contrato possui caráter estimativo, não obrigando o CONTRATANTE à aquisição da totalidade dos quantitativos previstos, sendo o pagamento limitado aos produtos efetivamente solicitados, entregues, atestados e recebidos.</p>
             </div>
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA TERCEIRA – DA VIGÊNCIA</div>
-                <p>3.1. O prazo de vigência deste Contrato será de <strong>12 (doze) meses</strong>, iniciando-se em <strong>${startDate}</strong> e finalizando em <strong>${endDate}</strong>.</p>
+                <p>3.1. O presente Contrato terá vigência de <strong>12 (doze) meses</strong>, iniciando-se em <strong>${startDate}</strong> e encerrando-se em <strong>${endDate}</strong>, produzindo seus efeitos a partir da data de sua assinatura.</p>
+                <p>3.2. Durante o período de vigência, a CONTRATADA compromete-se a fornecer os produtos objeto deste contrato sempre que solicitados pelo CONTRATANTE, observadas as condições, quantidades estimadas e demais disposições contratuais.</p>
             </div>
 
             <div class="clause-block">
-                <div class="clause">CLÁUSULA QUARTA – DA FORMA DE PAGAMENTO</div>
-                <p>4.1. O pagamento será processado mensalmente, no prazo de até 05 (cinco) dias úteis após o atesto do recebimento definitivo do produto (liquidação da despesa), condicionado à apresentação da Nota Fiscal acompanhada obrigatoriamente das seguintes Certidões de Regularidade Fiscal e Trabalhista, em plena validade:</p>
+                <div class="clause">CLÁUSULA QUARTA – DA PRORROGAÇÃO DA VIGÊNCIA</div>
+                <p>4.1. A vigência deste contrato poderá ser prorrogada, mediante interesse das partes, desde que haja justificativa formal do Conselho Escolar, disponibilidade orçamentária, manutenção da vantajosidade da contratação e celebração de Termo Aditivo antes do término de sua vigência.</p>
+                <p>4.2. A prorrogação dependerá da comprovação de que a CONTRATADA permanece atendendo às condições de regularidade fiscal, trabalhista, cadastral e demais condições de habilitação exigidas na contratação.</p>
+                <p>4.3. A prorrogação não implicará alteração automática dos valores contratados, ficando eventual reajuste condicionado ao disposto na cláusula específica de reajuste de preços.</p>
+            </div>
+
+            <div class="clause-block">
+                <div class="clause">CLÁUSULA QUINTA – DAS ORDENS DE FORNECIMENTO</div>
+                <p>5.1. O fornecimento dos produtos objeto deste contrato ocorrerá de forma parcelada, conforme a necessidade do CONTRATANTE, mediante solicitação formal emitida pelo Conselho Escolar durante a vigência contratual.</p>
+                <p>5.2. Cada entrega deverá ser acompanhada da respectiva Nota Fiscal e será objeto de conferência quanto às quantidades, especificações e condições dos produtos, sendo o recebimento atestado pelo fiscal do contrato.</p>
+                <p>5.3. A emissão da Nota Fiscal deverá corresponder exclusivamente aos produtos efetivamente fornecidos e recebidos pelo CONTRATANTE.</p>
+                <p>5.4. A ausência de solicitação formal pelo CONTRATANTE não gera obrigação de fornecimento nem direito à cobrança de quantidades estimadas e não demandadas durante a vigência do contrato.</p>
+            </div>
+
+            <div class="clause-block">
+                <div class="clause">CLÁUSULA SEXTA – DA FORMA DE PAGAMENTO</div>
+                <p>6.1. O pagamento será processado mensalmente, no prazo de até 05 (cinco) dias úteis após o recebimento definitivo do objeto, devidamente atestado pelo fiscal do contrato, caracterizando a liquidação da despesa, condicionado à apresentação da Nota Fiscal acompanhada obrigatoriamente das seguintes Certidões de Regularidade Fiscal e Trabalhista, em plena validade:</p>
                 <ul class="list-contract" style="margin-left: 20px; list-style-type: decimal;">
                     <li>Certidão de Regularidade perante a Fazenda Pública Federal;</li>
                     <li>Certidão de Regularidade perante a Fazenda Pública Estadual;</li>
@@ -1201,18 +1218,83 @@ ${getDocumentBaseCSS(customStyles)}
             </div>
 
             <div class="clause-block">
-                <div class="clause">CLÁUSULA QUINTA – DA FONTE DE RECURSOS</div>
-                <p>5.1. As despesas decorrentes deste Contrato correrão à conta de recurso repassado pelo programa <strong>${(program?.name || (entry as any)?.program || (process as any).contract?.programs?.name || 'PDDE').toUpperCase()} - ${((entry as any)?.rubrics?.name || (process as any).contract?.rubrics?.name || (entry as any)?.rubric || 'QUALIDADE').toUpperCase()}</strong>.</p>
+                <div class="clause">CLÁUSULA SÉTIMA – DA FONTE DE RECURSOS</div>
+                <p>7.1. As despesas decorrentes deste Contrato correrão à conta de recurso repassado pelo programa <strong>${(program?.name || (entry as any)?.program || (process as any).contract?.programs?.name || 'PDDE').toUpperCase()} - ${((entry as any)?.rubrics?.name || (process as any).contract?.rubrics?.name || (entry as any)?.rubric || 'QUALIDADE').toUpperCase()}</strong>.</p>
             </div>
 
             <div class="clause-block">
-                <div class="clause">CLÁUSULA SEXTA – DAS PENALIDADES</div>
-                <p>6.1. Pelo atraso injustificado na entrega, a CONTRATANTE poderá aplicar multa de 0,5% ao dia sobre o valor da parcela, limitada a 10%, sem prejuízo de outras sanções da <strong>Lei 14.133/2021</strong>.</p>
+                <div class="clause">CLÁUSULA OITAVA – DO REAJUSTE DOS PREÇOS</div>
+                <p>8.1. Os preços contratados permanecerão fixos e irreajustáveis durante os primeiros <strong>12 (doze) meses</strong> de vigência deste contrato, contados da data de sua assinatura.</p>
+                <p>8.2. Após o período de 12 (doze) meses, caso haja interesse das partes na continuidade da contratação, os valores poderão ser reajustados mediante termo aditivo, utilizando-se como índice oficial o <strong>Índice Nacional de Preços ao Consumidor Amplo – IPCA</strong>, divulgado pelo Instituto Brasileiro de Geografia e Estatística – IBGE, ou outro índice oficial que venha a substituí-lo.</p>
+                <p>8.3. O reajuste somente poderá ocorrer mediante solicitação formal da CONTRATADA, acompanhada da memória de cálculo correspondente, e dependerá de análise e aprovação do CONTRATANTE, observada a disponibilidade orçamentária e a legislação vigente.</p>
+                <p>8.4. A ausência de solicitação de reajuste não implicará direito à retroatividade, passando o novo valor a produzir efeitos somente após a formalização do respectivo termo aditivo.</p>
+                <p>8.5. Na hipótese de extinção do índice adotado, será utilizado outro índice oficial que melhor reflita a variação dos custos do objeto contratado, mediante acordo entre as partes e observância da legislação aplicável.</p>
+            </div>
+
+            <div class="clause-block">
+                <div class="clause">CLÁUSULA NONA – DA FISCALIZAÇÃO DO CONTRATO</div>
+                <p>9.1. A execução do presente contrato será acompanhada e fiscalizada pelo <strong>Conselho Escolar</strong>, por intermédio do Presidente do Conselho Escolar ou outro membro formalmente designado por deliberação do Conselho Escolar, competindo-lhe verificar o fiel cumprimento das obrigações assumidas pela CONTRATADA.</p>
+                <p>9.2. Compete ao fiscal do contrato:</p>
+                <ul class="list-contract" style="margin-left: 20px; list-style-type: none;">
+                    <li>I – acompanhar a execução do fornecimento;</li>
+                    <li>II – verificar se os produtos entregues estão em conformidade com as especificações contratadas;</li>
+                    <li>III – conferir as quantidades fornecidas e os respectivos documentos fiscais;</li>
+                    <li>IV – atestar o recebimento dos produtos após a verificação de sua conformidade;</li>
+                    <li>V – comunicar imediatamente à CONTRATADA qualquer irregularidade constatada, fixando prazo para sua regularização, quando cabível;</li>
+                    <li>VI – solicitar esclarecimentos e documentos complementares sempre que necessários à correta execução do contrato;</li>
+                    <li>VII – encaminhar a documentação necessária para liquidação e pagamento somente após o regular recebimento do objeto contratado.</li>
+                </ul>
+                <p>9.3. A fiscalização exercida pelo CONTRATANTE não exclui nem reduz a responsabilidade da CONTRATADA pela perfeita execução do contrato, permanecendo esta integralmente responsável pelos produtos fornecidos, inclusive por vícios, defeitos, falhas de qualidade ou quaisquer prejuízos decorrentes de sua atuação.</p>
+                <p>9.4. A constatação de irregularidades durante a execução contratual poderá ensejar a aplicação das penalidades previstas neste contrato e na legislação vigente, assegurados o contraditório e a ampla defesa.</p>
+            </div>
+
+            <div class="clause-block">
+                <div class="clause">CLÁUSULA DÉCIMA – DAS ALTERAÇÕES CONTRATUAIS</div>
+                <p>10.1. O presente contrato poderá ser alterado, mediante acordo entre as partes e formalização por meio de Termo Aditivo, sempre que houver necessidade devidamente justificada e desde que observadas as disposições da Lei Federal nº 14.133, de 1º de abril de 2021, bem como a disponibilidade dos recursos financeiros do programa que custeia a despesa.</p>
+                <p>10.2. As alterações poderão ocorrer para adequação das condições de execução, quantitativos, especificações técnicas ou demais aspectos necessários ao fiel cumprimento do objeto contratado, desde que não descaracterizem sua finalidade nem impliquem desvio do objeto originalmente contratado.</p>
+                <p>10.3. Toda alteração deverá ser previamente autorizada pelo Conselho Escolar, devidamente registrada em ata, quando exigida pelas normas do Conselho Escolar, e formalizada mediante Termo Aditivo assinado pelas partes antes de sua execução.</p>
+                <p>10.4. Nenhuma alteração contratual produzirá efeitos sem a formalização do respectivo Termo Aditivo, ressalvadas as hipóteses expressamente admitidas pela legislação vigente.</p>
+            </div>
+
+            <div class="clause-block">
+                <div class="clause">CLÁUSULA DÉCIMA PRIMEIRA – DAS PENALIDADES</div>
+                <p>11.1. Pelo atraso injustificado na entrega, a CONTRATANTE poderá aplicar multa de 0,5% ao dia sobre o valor da parcela, limitada a 10%, sem prejuízo de outras sanções da <strong>Lei 14.133/2021</strong>.</p>
+            </div>
+
+            <div class="clause-block">
+                <div class="clause">CLÁUSULA DÉCIMA SEGUNDA – DA RESCISÃO CONTRATUAL</div>
+                <p>12.1. O presente contrato poderá ser rescindido por qualquer das partes, mediante comunicação formal e escrita, observadas as disposições da Lei Federal nº 14.133, de 1º de abril de 2021, sem prejuízo das obrigações já assumidas até a data da rescisão.</p>
+                <p>12.2. Constituem motivos para rescisão contratual, dentre outros previstos na legislação vigente:</p>
+                <ul class="list-contract" style="margin-left: 20px; list-style-type: none;">
+                    <li>I – o descumprimento total ou parcial das cláusulas contratuais;</li>
+                    <li>II – o atraso injustificado e reiterado na entrega dos produtos contratados;</li>
+                    <li>III – a perda das condições de habilitação, regularidade fiscal, trabalhista ou cadastral da CONTRATADA;</li>
+                    <li>IV – a prática de atos que comprometam a execução regular do contrato;</li>
+                    <li>V – razões de interesse público devidamente justificadas pelo CONTRATANTE;</li>
+                    <li>VI – ocorrência de caso fortuito ou força maior que impossibilite a continuidade da execução contratual.</li>
+                </ul>
+                <p>12.3. A rescisão será formalizada por Termo de Rescisão, assegurados à CONTRATADA o contraditório e a ampla defesa, quando aplicáveis.</p>
+                <p>12.4. A rescisão não eximirá a CONTRATADA da responsabilidade pelas obrigações assumidas até a data de sua efetivação, nem prejudicará a aplicação das penalidades cabíveis.</p>
+            </div>
+
+            <div class="clause-block">
+                <div class="clause">CLÁUSULA DÉCIMA TERCEIRA – DAS COMUNICAÇÕES ENTRE AS PARTES</div>
+                <p>13.1. Todas as comunicações relacionadas à execução deste contrato deverão ser realizadas por escrito, mediante protocolo, correspondência eletrônica (e-mail), aplicativo oficial de mensagens previamente aceito pelas partes ou outro meio que permita comprovar seu recebimento.</p>
+                <p>13.2. Consideram-se válidas as comunicações encaminhadas aos endereços físicos ou eletrônicos informados pelas partes neste contrato, cabendo a cada uma delas comunicar imediatamente eventual alteração de seus dados de contato.</p>
+                <p>13.3. As solicitações de fornecimento, notificações, advertências, pedidos de esclarecimento e demais atos relacionados à execução contratual poderão ser realizados pelos meios previstos nesta cláusula, preservando-se os respectivos registros.</p>
+            </div>
+
+            <div class="clause-block">
+                <div class="clause">CLÁUSULA DÉCIMA QUARTA – DOS CASOS FORTUITOS E DE FORÇA MAIOR</div>
+                <p>14.1. Nenhuma das partes será responsabilizada pelo descumprimento de obrigações decorrentes de caso fortuito ou força maior, assim considerados os eventos imprevisíveis ou inevitáveis que impeçam, total ou parcialmente, a execução deste contrato, nos termos da legislação civil vigente.</p>
+                <p>14.2. A parte que for afetada por caso fortuito ou força maior deverá comunicar imediatamente a outra parte, apresentando justificativa e documentação comprobatória, sempre que possível.</p>
+                <p>14.3. Persistindo o impedimento por período que inviabilize a continuidade da execução contratual, as partes poderão, de comum acordo, promover a suspensão temporária da execução ou a rescisão do contrato, mediante formalização por escrito.</p>
             </div>
 
             <div class="clause-block" style="break-inside: avoid;">
-                <div class="clause">CLÁUSULA SÉTIMA – DO FORO</div>
-                <p>7.1. Fica eleito o Foro da Comarca de <strong>${(contract?.terms_json?.foro_city || getForoByCity(school?.city)).toUpperCase()}/AL</strong> para dirimir quaisquer controvérsias.</p>
+                <div class="clause">CLÁUSULA DÉCIMA QUINTA – DO FORO</div>
+                <p>15.1. As partes elegem o <strong>Foro da Comarca de ${(contract?.terms_json?.foro_city || getForoByCity(school?.city)).toUpperCase()}, Estado de Alagoas</strong>, para dirimir quaisquer dúvidas, controvérsias ou litígios oriundos da interpretação, execução, cumprimento ou rescisão deste Contrato, com renúncia expressa a qualquer outro foro, por mais privilegiado que seja ou venha a ser.</p>
+                <p>15.2. Antes do ajuizamento de qualquer medida judicial, as partes comprometem-se a envidar esforços para solucionar administrativamente eventuais divergências decorrentes da execução deste Contrato, mediante diálogo e formalização das tratativas, sempre que possível.</p>
 
                 <div class="mt-6 text-center font-bold">
                     ${school?.city?.toUpperCase() || 'ALAGOAS'}/AL, ${dateLong.toUpperCase()}
