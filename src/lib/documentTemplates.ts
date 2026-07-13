@@ -956,7 +956,7 @@ ${getDocumentBaseCSS(customStyles)}
         <div class="header-box">
             <p class="font-bold text-[10px] m-0">ESTADO DE ALAGOAS</p>
             <p class="font-bold text-[10px] m-0">SECRETARIA DE ESTADO DA EDUCAÇÃO</p>
-            <p class="font-bold text-[10px] m-0">7ª GERÊNCIA REGIONAL DE EDUCAÇÃO - GRE</p>
+            <p class="font-bold text-[10px] m-0">7ª GERÊNCIA ESPECIAL DE EDUCAÇÃO - GEE</p>
             <p class="font-bold text-[11px] mt-1">${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || 'UNIDADE EXECUTORA'}`).toUpperCase()}</p>
         </div>
 
@@ -1158,7 +1158,7 @@ ${getDocumentBaseCSS(customStyles)}
         <div class="header-box">
             <p class="font-bold text-[10px] m-0">ESTADO DE ALAGOAS</p>
             <p class="font-bold text-[10px] m-0">SECRETARIA DE ESTADO DA EDUCAÇÃO</p>
-            <p class="font-bold text-[10px] m-0">7ª GERÊNCIA REGIONAL DE EDUCAÇÃO - GRE</p>
+            <p class="font-bold text-[10px] m-0">7ª GERÊNCIA ESPECIAL DE EDUCAÇÃO - GEE</p>
             <p class="font-black text-[12px] mt-1">${(school?.conselho_escolar || `CONSELHO ESCOLAR DA ESCOLA ESTADUAL ${school?.name || 'UNIDADE EXECUTORA'}`).toUpperCase()}</p>
         </div>
 
