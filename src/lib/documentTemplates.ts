@@ -977,12 +977,14 @@ ${getDocumentBaseCSS(customStyles)}
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA SEGUNDA – DO REGIME DE EXECUÇÃO E QUALIDADE (SLA)</div>
-                <p>2.1. Os serviços deverão ser prestados com observância aos seguintes padrões de qualidade (Service Level Agreement - SLA):</p>
-                <ul class="list-contract" style="margin-left: 20px; list-style-type: disc;">
-                    <li>Disponibilidade (Uptime): Mínimo de 95% (noventa e cinco por cento) ao mês, garantindo a continuidade das atividades administrativas e pedagógicas.</li>
-                    <li>Suporte Técnico (Reparo): Prazo máximo de 24 (vinte e quatro) horas para solução de incidentes contados a partir da abertura do chamado/notificação.</li>
-                    <li>Prazo de Instalação: Em caso de mudança ou nova sede, o prazo limite é de 15 (quinze) dias úteis.</li>
+                <p>2.1. Os serviços deverão ser prestados com observância aos seguintes padrões mínimos de qualidade (Service Level Agreement – SLA):</p>
+                <ul class="list-contract" style="margin-left: 20px; list-style-type: none;">
+                    <li>I – Disponibilidade (Uptime): mínima de 99% (noventa e nove por cento) ao mês, garantindo a continuidade das atividades administrativas e pedagógicas da Unidade Escolar;</li>
+                    <li>II – Atendimento Técnico: atendimento remoto imediato, sempre que tecnicamente possível, após a abertura do chamado;</li>
+                    <li>III – Prazo para Solução de Incidentes: máximo de 24 (vinte e quatro) horas, contadas da abertura do chamado técnico ou da comunicação formal da CONTRATANTE;</li>
+                    <li>IV – Instalação ou Remanejamento: em caso de nova instalação, mudança de endereço ou remanejamento do ponto de acesso, a CONTRATADA deverá concluir os serviços em até 15 (quinze) dias úteis, salvo motivo devidamente justificado.</li>
                 </ul>
+                <p>2.2. Não serão computadas para fins de cálculo da disponibilidade mensal as interrupções decorrentes de manutenção preventiva previamente comunicada à CONTRATANTE, bem como aquelas ocasionadas por caso fortuito, força maior ou fatores externos que não sejam de responsabilidade da CONTRATADA.</p>
             </div>
 
             <div class="clause-block">
@@ -990,6 +992,7 @@ ${getDocumentBaseCSS(customStyles)}
                 <p>3.1. Prestar os serviços com o emprego de mão de obra qualificada e equipamentos adequados, mantendo todos os requisitos de regularidade fiscal e trabalhista durante a vigência contratual.</p>
                 <p>3.2. Responder por quaisquer danos causados à CONTRATANTE ou a terceiros, decorrentes de erro, negligência ou imperícia na execução do objeto.</p>
                 <p>3.3. Manter sigilo sobre quaisquer dados ou informações da Unidade Escolar que venha a ter acesso em virtude da manutenção dos serviços.</p>
+                <p>3.4. Manter, durante toda a vigência deste Contrato, autorização, licença ou habilitação necessária para a prestação dos serviços contratados, inclusive autorização da Agência Nacional de Telecomunicações – ANATEL, quando exigível para a atividade desenvolvida, bem como todas as condições de habilitação e regularidade fiscal, trabalhista e cadastral.</p>
             </div>
 
             <div class="clause-block">
@@ -1000,7 +1003,17 @@ ${getDocumentBaseCSS(customStyles)}
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA QUINTA – DA FISCALIZAÇÃO E GESTÃO</div>
-                <p>5.1. A gestão e fiscalização da execução deste Contrato ficarão a cargo do Presidente do Conselho Escolar (Gestor), auxiliado pelo Conselho Escolar para fins de auditoria interna e prestação de contas junto ao FNDE/SEDUC.</p>
+                <p>5.1. A gestão e fiscalização da execução deste Contrato ficarão sob a responsabilidade do Presidente do Conselho Escolar, na qualidade de Gestor do Contrato, podendo ser auxiliado por outro membro formalmente designado pelo Conselho Escolar.</p>
+                <p>5.2. Compete ao fiscal do contrato acompanhar a execução dos serviços, verificando especialmente:</p>
+                <ul class="list-contract" style="margin-left: 20px; list-style-type: none;">
+                    <li>I – a continuidade da prestação do serviço;</li>
+                    <li>II – a qualidade da conexão disponibilizada;</li>
+                    <li>III – a estabilidade e disponibilidade do link de internet;</li>
+                    <li>IV – o atendimento aos prazos de suporte técnico previstos neste contrato;</li>
+                    <li>V – o cumprimento das obrigações assumidas pela CONTRATADA;</li>
+                    <li>VI – a conformidade entre os serviços prestados, as Notas Fiscais emitidas e as condições contratuais.</li>
+                </ul>
+                <p>5.3. O recebimento dos serviços será formalizado mediante atesto na Nota Fiscal, após verificação da regular execução contratual.</p>
             </div>
 
             <div class="clause-block">
@@ -1025,16 +1038,24 @@ ${getDocumentBaseCSS(customStyles)}
                     <li>Certidão Negativa de Débitos Trabalhistas (CNDT);</li>
                     <li>Comprovante de Inscrição e de Situação Cadastral (CNPJ) atualizado, comprovando a manutenção das condições de habilitação.</li>
                 </ul>
+                <p>8.2. O pagamento será devido exclusivamente em relação aos períodos em que houver efetiva prestação dos serviços contratados, devidamente atestada pelo fiscal do contrato.</p>
             </div>
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA NONA – DO REAJUSTE</div>
-                <p>9.1. Caso haja prorrogação, os valores serão reajustados anualmente pela variação acumulada do IGP-M/FGV, ou outro índice oficial que venha a substituí-lo, respeitando a periodicidade mínima de 12 meses.</p>
+                <p>9.1. Na hipótese de prorrogação da vigência contratual por período superior a 12 (doze) meses, os valores poderão ser reajustados anualmente pela variação acumulada do Índice Nacional de Preços ao Consumidor Amplo – IPCA, divulgado pelo Instituto Brasileiro de Geografia e Estatística – IBGE, ou outro índice oficial que venha a substituí-lo, observada a periodicidade mínima prevista na legislação vigente.</p>
             </div>
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA DÉCIMA – DAS PENALIDADES E SANÇÕES</div>
-                <p>10.1. Pelo descumprimento total ou parcial do objeto, a CONTRATANTE poderá aplicar advertência, impedimento de licitar ou multa de 0,5% ao dia sobre o valor mensal, limitada a 10% (dez por cento) do valor total.</p>
+                <p>10.1. O descumprimento total ou parcial das obrigações assumidas neste Contrato poderá sujeitar a CONTRATADA, garantidos o contraditório e a ampla defesa, às seguintes penalidades:</p>
+                <ul class="list-contract" style="margin-left: 20px; list-style-type: none;">
+                    <li>I – advertência por escrito;</li>
+                    <li>II – multa moratória de 0,5% (meio por cento) por dia de atraso, incidente sobre o valor mensal contratado, limitada a 10% (dez por cento) do valor global do contrato;</li>
+                    <li>III – rescisão contratual, nos casos previstos neste instrumento;</li>
+                    <li>IV – demais sanções previstas na legislação aplicável.</li>
+                </ul>
+                <p>10.2. A aplicação das penalidades não afasta a obrigação da CONTRATADA de reparar integralmente os prejuízos eventualmente causados à CONTRATANTE.</p>
             </div>
 
             <div class="clause-block">
@@ -1049,7 +1070,8 @@ ${getDocumentBaseCSS(customStyles)}
 
             <div class="clause-block" style="break-inside: avoid;">
                 <div class="clause">CLÁUSULA DÉCIMA TERCEIRA – DO FORO</div>
-                <p>13.1. Fica eleito o Foro da Comarca de <strong>${(contract?.terms_json?.foro_city || getForoByCity(school?.city)).toUpperCase()}/AL</strong> para dirimir quaisquer controvérsias oriundas deste ajuste.</p>
+                <p>13.1. As partes elegem o <strong>Foro da Comarca de ${(contract?.terms_json?.foro_city || getForoByCity(school?.city)).toUpperCase()}, Estado de Alagoas</strong>, para dirimir quaisquer dúvidas, controvérsias ou litígios oriundos da interpretação, execução, cumprimento ou rescisão deste Contrato, com renúncia expressa a qualquer outro foro, por mais privilegiado que seja ou venha a ser.</p>
+                <p>13.2. Antes do ajuizamento de qualquer medida judicial, as partes comprometem-se a envidar esforços para solucionar administrativamente eventuais divergências decorrentes da execução deste Contrato, mediante diálogo e formalização das tratativas, sempre que possível.</p>
 
                 <div class="mt-6 text-center font-bold">
                     ${school?.city?.toUpperCase() || 'ALAGOAS'}/AL, ${dateLong.toUpperCase()}
