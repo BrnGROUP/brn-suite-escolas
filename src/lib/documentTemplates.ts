@@ -290,8 +290,9 @@ export const generateAtaHTML = (process: DocumentProcess) => {
     const contract = process.contract;
     const rubricName = (entry as any)?.rubrics?.name || contract?.rubrics?.name || (entry as any)?.rubric;
 
-    const docDate = getQuoteDate(invoiceDate);
-    const meetingTime = docDate.getDate() % 2 === 0 ? '15:30' : '09:00';
+    const docDate = getSchoolDayBefore(invoiceDate, 2);
+    const quoteDate = getQuoteDate(invoiceDate);
+    const meetingTime = quoteDate.getDate() % 2 === 0 ? '15:30' : '09:00';
 
     const customStyles = `
         * { box-sizing: border-box; }
@@ -320,7 +321,7 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 
         <!-- Paragraph 1 -->
         <div class="text-justified text-[14px] mb-10">
-            Às ${meetingTime} horas do dia <strong>${docDate.getDate()} DE ${docDate.toLocaleString('pt-BR', { month: 'long' }).toUpperCase()} DE ${docDate.getFullYear()}</strong>, foi realizada pesquisa de preços para <strong>${entry?.description?.toUpperCase()}</strong>, com recursos oriundos do programa <strong>${program?.name || 'PNAE/FNDE'}</strong>${rubricName ? ` - <strong>${rubricName}</strong>` : ''}, entre as empresas:
+            Às ${meetingTime} horas do dia <strong>${quoteDate.getDate()} DE ${quoteDate.toLocaleString('pt-BR', { month: 'long' }).toUpperCase()} DE ${quoteDate.getFullYear()}</strong>, foi realizada pesquisa de preços para <strong>${entry?.description?.toUpperCase()}</strong>, com recursos oriundos do programa <strong>${program?.name || 'PNAE/FNDE'}</strong>${rubricName ? ` - <strong>${rubricName}</strong>` : ''}, entre as empresas:
         </div>
 
         <!-- Proponents Section -->
@@ -391,6 +392,7 @@ export const generateConsolidacaoHTML = (process: DocumentProcess) => {
     };
 
     const targetDate = getExercicioDate();
+    const docDate = getSchoolDayBefore(invoiceDate, 2);
     const semester = targetDate.getMonth() <= 5 ? 1 : 2;
     const exercicio = `${targetDate.getFullYear()}.${semester}`;
 
@@ -522,7 +524,7 @@ ${getDocumentBaseCSS(customStyles, true, '1.2cm 1cm 1cm 1cm')}
 
         <div class="grid grid-cols-2 gap-8 mt-4">
             <div class="text-center font-bold">
-                <p>LOCAL E DATA: ${school?.city?.toUpperCase() || 'ALAGOAS'}, ${invoiceDate.toLocaleDateString('pt-BR')}</p>
+                <p>LOCAL E DATA: ${school?.city?.toUpperCase() || 'ALAGOAS'}, ${docDate.toLocaleDateString('pt-BR')}</p>
             </div>
             <div class="text-center font-bold">
                 <div class="border-t border-black mb-1 mx-8 pt-1">${school?.director?.toUpperCase() || 'PRESIDENTE'}</div>
@@ -541,7 +543,8 @@ export const generateOrdemHTML = (process: DocumentProcess) => {
     const isService = contract?.category !== 'GÁS';
     const orderTitle = isService ? 'ORDEM DE SERVIÇO' : 'ORDEM DE COMPRA';
     const items = (process.items || process.accountability_items || []).slice(0, 27);
-    const dateText = invoiceDate.toLocaleDateString('pt-BR');
+    const docDate = getSchoolDayBefore(invoiceDate, 2);
+    const dateText = docDate.toLocaleDateString('pt-BR');
 
     const rows = [...items];
     while (rows.length < 27) rows.push({});
