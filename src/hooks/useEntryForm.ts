@@ -410,6 +410,8 @@ export const useEntryForm = ({
             if (isSplitMode) {
                 if (editingBatchId) {
                     await supabase.from('financial_entries').delete().eq('batch_id', editingBatchId);
+                } else if (editingId) {
+                    await supabase.from('financial_entries').delete().eq('id', editingId);
                 }
                 const entriesToSave = splitItems.map(item => {
                     const orig = originalEntries.find(oe => oe.id === item.id);
@@ -453,6 +455,14 @@ export const useEntryForm = ({
                     }).select();
                 }
             } else {
+                if (editingBatchId) {
+                    if (editingId) {
+                        await supabase.from('financial_entries').delete().eq('batch_id', editingBatchId).neq('id', editingId);
+                    } else {
+                        await supabase.from('financial_entries').delete().eq('batch_id', editingBatchId);
+                    }
+                }
+
                 const payload = {
                     school_id: selectedSchoolId,
                     program_id: selectedProgramId,

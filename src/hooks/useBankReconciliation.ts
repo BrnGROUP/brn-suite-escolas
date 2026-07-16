@@ -65,6 +65,11 @@ export const useBankReconciliation = (user: User) => {
         setQuickForm
     } = filters;
 
+    // Close statement view when filters change
+    useEffect(() => {
+        setTransactions([]);
+    }, [selectedSchoolId, selectedBankAccountId, filterMonth]);
+
     // System entries query
     const { data: systemEntries = [], isLoading: isLoadingSystem, refetch: fetchSystemEntries } = useQuery({
         queryKey: ['system_entries', selectedSchoolId, selectedBankAccountId, filterMonth],

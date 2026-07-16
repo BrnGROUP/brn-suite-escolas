@@ -75,7 +75,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
                     >
                         Gerar Termo
                     </button>
-                    <button onClick={onClear} className="text-[10px] text-red-400 font-bold uppercase hover:underline">Limpar Tudo</button>
+                    <button onClick={onClear} className="text-[10px] text-slate-400 font-bold uppercase hover:text-white transition-colors">Fechar Extrato</button>
                 </div>
             </div>
 
