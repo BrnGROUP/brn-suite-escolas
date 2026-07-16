@@ -602,8 +602,10 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
               <input aria-label="Buscar fornecedor por nome ou CNPJ" placeholder="Buscar por nome ou CNPJ..." className="w-full bg-black/40 border border-white/10 rounded-xl h-12 px-5 text-white outline-none focus:border-primary transition-all" value={supplierSearch} onChange={e => setSupplierSearch(e.target.value)} autoFocus />
               <div className="overflow-y-auto space-y-2 custom-scrollbar">
                 {auxData.suppliers.filter(s => {
-                  const matchesSearch = s.name.toLowerCase().includes(supplierSearch.toLowerCase()) ||
-                    (s.cnpj && s.cnpj.replace(/\D/g, '').includes(supplierSearch.replace(/\D/g, '')));
+                  const searchLower = supplierSearch.toLowerCase();
+                  const searchDigits = supplierSearch.replace(/\D/g, '');
+                  const matchesSearch = s.name.toLowerCase().includes(searchLower) ||
+                    (searchDigits.length > 0 && s.cnpj && s.cnpj.replace(/\D/g, '').includes(searchDigits));
                   if (!matchesSearch) return false;
 
                   const winningSupplierId = selectedEntry?.supplier_id || linkedContract?.supplier_id;
