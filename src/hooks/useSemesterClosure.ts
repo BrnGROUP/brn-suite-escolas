@@ -270,22 +270,41 @@ export const useSemesterClosure = ({ user, schoolId, year, semesterNumber }: Use
             });
             if (!confirmed) throw new Error('CANCELLED');
 
-            // 1. Create closure record
-            const { data: closure, error: closureErr } = await supabase
-                .from('semester_closures')
-                .insert({
-                    school_id: schoolId,
-                    semester: semesterLabel,
-                    year,
-                    semester_number: semesterNumber,
-                    status: 'Concluído',
-                    executed_by: user.id,
-                    executed_at: new Date().toISOString(),
-                    summary_snapshot: { stats: summaryStats, validation: validationChecks }
-                })
-                .select()
-                .single();
-            if (closureErr) throw closureErr;
+            // 1. Create or update closure record
+            let closure: any;
+            if (existingClosure?.id) {
+                const { data, error } = await supabase
+                    .from('semester_closures')
+                    .update({
+                        status: 'Concluído',
+                        executed_by: user.id,
+                        executed_at: new Date().toISOString(),
+                        summary_snapshot: { stats: summaryStats, validation: validationChecks },
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', existingClosure.id)
+                    .select()
+                    .single();
+                if (error) throw error;
+                closure = data;
+            } else {
+                const { data, error } = await supabase
+                    .from('semester_closures')
+                    .insert({
+                        school_id: schoolId,
+                        semester: semesterLabel,
+                        year,
+                        semester_number: semesterNumber,
+                        status: 'Concluído',
+                        executed_by: user.id,
+                        executed_at: new Date().toISOString(),
+                        summary_snapshot: { stats: summaryStats, validation: validationChecks }
+                    })
+                    .select()
+                    .single();
+                if (error) throw error;
+                closure = data;
+            }
 
             // 2. Insert closure lines
             const lineInserts = calculatedLines.map(line => ({
