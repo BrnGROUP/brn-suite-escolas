@@ -61,9 +61,8 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
 
     const { addToast } = useToast();
 
-    // Handlers
     const handleEdit = (entry: FinancialEntryExtended) => {
-        if (entry.is_locked) {
+        if (entry.is_locked && user.role !== UserRole.ADMIN) {
             addToast('Este lançamento está travado por um fechamento semestral e não pode ser editado.', 'warning');
             return;
         }
@@ -73,13 +72,15 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
     };
 
     const handleDelete = async (entry: FinancialEntryExtended) => {
-        if (entry.is_locked) {
+        if (entry.is_locked && user.role !== UserRole.ADMIN) {
             addToast('Este lançamento está travado por um fechamento semestral e não pode ser excluído.', 'warning');
             return;
         }
         if (!await confirm({
-            title: 'Excluir Lançamento',
-            message: 'Tem certeza de que deseja excluir este lançamento? Esta ação não pode ser desfeita.',
+            title: entry.is_locked ? 'Excluir Lançamento Travado (Aviso de Admin)' : 'Excluir Lançamento',
+            message: entry.is_locked 
+                ? 'ATENÇÃO: Este lançamento está travado por um fechamento semestral. Deseja realmente excluí-lo? Esta ação será registrada no log de auditoria.'
+                : 'Tem certeza de que deseja excluir este lançamento? Esta ação não pode ser desfeita.',
             isDestructive: true
         })) return;
         const { error } = await supabase.from('financial_entries').delete().eq('id', entry.id);
@@ -87,6 +88,13 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
         if (error) {
             addToast(`Erro: ${error.message}`, 'error');
         } else {
+            if (entry.is_locked) {
+                await supabase.from('audit_logs').insert({
+                    user_name: user.name,
+                    action: 'DELETE_LOCKED',
+                    details: `ADMIN BYPASS: Lançamento travado pelo fechamento ID ${entry.locked_by_closure_id || 'N/A'} excluído. Descrição: ${entry.description}, Valor: ${entry.value}, Data: ${entry.date}`
+                });
+            }
             if (entry.contract_id) {
                 await updateContractStatusFromEntries(entry.contract_id);
             }
@@ -105,13 +113,16 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
 
     const handleBulkDelete = async () => {
         const selectedEntries = entries.filter(e => selectedIds.includes(e.id));
-        if (selectedEntries.some(e => e.is_locked)) {
+        const hasLocked = selectedEntries.some(e => e.is_locked);
+        if (hasLocked && user.role !== UserRole.ADMIN) {
             addToast('Um ou mais lançamentos selecionados estão travados por um fechamento semestral e não podem ser excluídos.', 'warning');
             return;
         }
         if (!await confirm({
-            title: 'Excluir Lançamentos Selecionados',
-            message: `Tem certeza de que deseja excluir os ${selectedIds.length} lançamentos selecionados? Esta ação não pode ser desfeita.`,
+            title: hasLocked ? 'Excluir Lançamentos Travados (Aviso de Admin)' : 'Excluir Lançamentos Selecionados',
+            message: hasLocked
+                ? `ATENÇÃO: Dentre os selecionados, existem lançamentos travados por fechamento semestral. Deseja realmente excluir todos os ${selectedIds.length} lançamentos selecionados? Esta ação será registrada no log de auditoria.`
+                : `Tem certeza de que deseja excluir os ${selectedIds.length} lançamentos selecionados? Esta ação não pode ser desfeita.`,
             isDestructive: true
         })) return;
         const contractIdsToUpdate = Array.from(
@@ -122,6 +133,16 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
         if (error) {
             addToast(`Erro: ${error.message}`, 'error');
         } else {
+            // Audit log for locked entries
+            const lockedEntries = selectedEntries.filter(e => e.is_locked);
+            if (lockedEntries.length > 0) {
+                const details = lockedEntries.map(e => `[Desc: ${e.description}, Val: ${e.value}, Data: ${e.date}, Fechamento ID: ${e.locked_by_closure_id || 'N/A'}]`).join('; ');
+                await supabase.from('audit_logs').insert({
+                    user_name: user.name,
+                    action: 'BULK_DELETE_LOCKED',
+                    details: `ADMIN BYPASS: Exclusão em lote de ${lockedEntries.length} lançamento(s) travado(s): ${details}`
+                });
+            }
             for (const cid of contractIdsToUpdate) {
                 await updateContractStatusFromEntries(cid);
             }

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { TransactionStatus, TransactionNature, User } from '../types';
+import { TransactionStatus, TransactionNature, User, UserRole } from '../types';
 import { useToast } from '../context/ToastContext';
 import { useFileUpload } from './useFileUpload';
 import { ENTRY_CATEGORIES, EXIT_CATEGORIES } from '../lib/constants';
@@ -399,7 +399,7 @@ export const useEntryForm = ({
             if (editingId) {
                 const { data } = await supabase.from('financial_entries').select('*').eq('id', editingId).single();
                 originalData = data;
-                if (originalData?.is_locked) {
+                if (originalData?.is_locked && user.role !== UserRole.ADMIN) {
                     addToast('Este lançamento está travado por um fechamento semestral e não pode ser alterado.', 'warning');
                     return;
                 }
@@ -408,7 +408,7 @@ export const useEntryForm = ({
                 originalEntries = data || [];
                 if (originalEntries.length > 0) {
                     originalData = originalEntries[0];
-                    if (originalEntries.some((e: any) => e.is_locked)) {
+                    if (originalEntries.some((e: any) => e.is_locked) && user.role !== UserRole.ADMIN) {
                         addToast('Um ou mais lançamentos deste lote estão travados por um fechamento semestral e não podem ser alterados.', 'warning');
                         return;
                     }
@@ -455,11 +455,14 @@ export const useEntryForm = ({
                 const { data: savedEntries, error } = await supabase.from('financial_entries').insert(entriesToSave).select();
                 if (error) throw error;
                 if (savedEntries && savedEntries.length > 0) {
+                    const hasLockedOriginal = originalEntries.some((e: any) => e.is_locked);
                     await supabase.from('audit_logs').insert({
                         entry_id: savedEntries[0].id,
                         user_name: user.name,
                         action: editingBatchId ? 'UPDATE' : 'CREATE',
-                        details: editingBatchId ? `Edição de lote (rateio) - ID Lote: ${batchId}` : `Criação de lote (rateio) - ID Lote: ${batchId}`
+                        details: editingBatchId 
+                            ? `${hasLockedOriginal ? 'ADMIN BYPASS: ' : ''}Edição de lote (rateio) - ID Lote: ${batchId}` 
+                            : `Criação de lote (rateio) - ID Lote: ${batchId}`
                     }).select();
                 }
             } else {
@@ -512,12 +515,15 @@ export const useEntryForm = ({
                             }
                         });
                     }
+                    const isLockedOriginal = originalData?.is_locked;
                     await supabase.from('audit_logs').insert({
                         entry_id: savedId,
                         user_name: user.name,
                         action: editingId ? 'UPDATE' : 'CREATE',
                         changes: editingId ? (Object.keys(changes).length > 0 ? changes : null) : null,
-                        details: editingId ? 'Alteração de dados cadastrais' : 'Criação do lançamento'
+                        details: editingId 
+                            ? `${isLockedOriginal ? 'ADMIN BYPASS: ' : ''}Alteração de dados cadastrais` 
+                            : 'Criação do lançamento'
                     }).select();
                 }
             }
