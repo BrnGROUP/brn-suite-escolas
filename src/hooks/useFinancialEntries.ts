@@ -35,6 +35,8 @@ export interface FinancialEntryExtended {
     bank_transaction_ref?: string;
     payment_date?: string;
     contract_id?: string;
+    is_locked?: boolean;
+    locked_by_closure_id?: string;
 }
 
 export function useFinancialEntries(user: User, filters: any = {}) {
@@ -141,7 +143,9 @@ export function useFinancialEntries(user: User, filters: any = {}) {
                     payment_method: i.payment_methods?.name || '-',
                     value: Number(i.value),
                     is_reconciled: i.is_reconciled,
-                    bank_transaction_ref: i.bank_transaction_ref
+                    bank_transaction_ref: i.bank_transaction_ref,
+                    is_locked: i.is_locked,
+                    locked_by_closure_id: i.locked_by_closure_id
                 };
             }) as FinancialEntryExtended[];
         },

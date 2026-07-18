@@ -22,6 +22,7 @@ const ProgramsGuide = lazy(() => import('./pages/ProgramsGuide'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Contract = lazy(() => import('./pages/Contract'));
 const ValidateReport = lazy(() => import('./pages/ValidateReport'));
+const SemesterClosure = lazy(() => import('./pages/SemesterClosure'));
 
 const AppRoutes: React.FC = () => {
     const navigate = useNavigate();
@@ -82,6 +83,11 @@ const AppRoutes: React.FC = () => {
                 <Route path="/users" element={
                     <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
                         <Users user={currentUser!} />
+                    </ProtectedRoute>
+                } />
+                <Route path="/fechamento" element={
+                    <ProtectedRoute allowedRoles={[UserRole.ADMIN, UserRole.OPERADOR]}>
+                        <SemesterClosure user={currentUser!} />
                     </ProtectedRoute>
                 } />
             </Route>

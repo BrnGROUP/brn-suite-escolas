@@ -63,12 +63,20 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
 
     // Handlers
     const handleEdit = (entry: FinancialEntryExtended) => {
+        if (entry.is_locked) {
+            addToast('Este lançamento está travado por um fechamento semestral e não pode ser editado.', 'warning');
+            return;
+        }
         setEditingId(entry.id);
         setEditingBatchId(entry.batch_id || null);
         setShowForm(true);
     };
 
     const handleDelete = async (entry: FinancialEntryExtended) => {
+        if (entry.is_locked) {
+            addToast('Este lançamento está travado por um fechamento semestral e não pode ser excluído.', 'warning');
+            return;
+        }
         if (!await confirm({
             title: 'Excluir Lançamento',
             message: 'Tem certeza de que deseja excluir este lançamento? Esta ação não pode ser desfeita.',
@@ -96,12 +104,16 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
     };
 
     const handleBulkDelete = async () => {
+        const selectedEntries = entries.filter(e => selectedIds.includes(e.id));
+        if (selectedEntries.some(e => e.is_locked)) {
+            addToast('Um ou mais lançamentos selecionados estão travados por um fechamento semestral e não podem ser excluídos.', 'warning');
+            return;
+        }
         if (!await confirm({
             title: 'Excluir Lançamentos Selecionados',
             message: `Tem certeza de que deseja excluir os ${selectedIds.length} lançamentos selecionados? Esta ação não pode ser desfeita.`,
             isDestructive: true
         })) return;
-        const selectedEntries = entries.filter(e => selectedIds.includes(e.id));
         const contractIdsToUpdate = Array.from(
             new Set(selectedEntries.map(e => e.contract_id).filter(Boolean))
         );

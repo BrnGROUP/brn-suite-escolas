@@ -71,6 +71,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     { id: 'reports', label: 'Prestação de Contas', icon: 'description', roles: [] },
                     { id: 'reconciliation', label: 'Conciliação Bancária', icon: 'account_balance', roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.TECNICO_GEE] },
                     { id: 'vault', label: 'Cofre Docs', icon: 'folder_managed', roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.TECNICO_GEE] },
+                    { id: 'fechamento', label: 'Fechamento Semestral', icon: 'event_repeat', roles: [UserRole.ADMIN, UserRole.OPERADOR] },
                 ]
             },
             {

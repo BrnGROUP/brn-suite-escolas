@@ -399,11 +399,19 @@ export const useEntryForm = ({
             if (editingId) {
                 const { data } = await supabase.from('financial_entries').select('*').eq('id', editingId).single();
                 originalData = data;
+                if (originalData?.is_locked) {
+                    addToast('Este lançamento está travado por um fechamento semestral e não pode ser alterado.', 'warning');
+                    return;
+                }
             } else if (editingBatchId) {
                 const { data } = await supabase.from('financial_entries').select('*').eq('batch_id', editingBatchId);
                 originalEntries = data || [];
                 if (originalEntries.length > 0) {
                     originalData = originalEntries[0];
+                    if (originalEntries.some((e: any) => e.is_locked)) {
+                        addToast('Um ou mais lançamentos deste lote estão travados por um fechamento semestral e não podem ser alterados.', 'warning');
+                        return;
+                    }
                 }
             }
 

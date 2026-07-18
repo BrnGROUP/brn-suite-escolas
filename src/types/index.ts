@@ -107,6 +107,8 @@ export interface FinancialEntry {
     reconciled_at?: string;
     bank_transaction_ref?: string;
     logs?: any[];
+    is_locked?: boolean;
+    locked_by_closure_id?: string;
 }
 
 export interface Alert {
@@ -355,3 +357,47 @@ export interface BankTransaction {
     extract_type: 'Conta Corrente' | 'Conta Investimento';
 }
 
+export type SemesterClosureStatus = 'Em Andamento' | 'Concluído' | 'Reaberto';
+
+export interface SemesterClosure {
+    id: string;
+    school_id: string;
+    semester: string;
+    year: number;
+    semester_number: 1 | 2;
+    status: SemesterClosureStatus;
+    summary_snapshot?: any;
+    executed_by?: string;
+    executed_at?: string;
+    created_at: string;
+    updated_at: string;
+    schools?: School;
+    users?: { name: string };
+    semester_closure_lines?: SemesterClosureLine[];
+    semester_closure_documents?: SemesterClosureDocument[];
+}
+
+export interface SemesterClosureLine {
+    id: string;
+    closure_id: string;
+    program_id: string;
+    rubric_id?: string;
+    bank_account_id?: string;
+    nature: TransactionNature;
+    total_income: number;
+    total_expense: number;
+    balance: number;
+    reprogrammed_value: number;
+    programs?: Program;
+    rubrics?: Rubric;
+    bank_accounts?: BankAccount;
+}
+
+export interface SemesterClosureDocument {
+    id: string;
+    closure_id: string;
+    document_type: 'demonstrativo' | 'relacao_bens' | 'conciliacao' | 'termo_doacao';
+    file_url?: string;
+    file_name?: string;
+    generated_at: string;
+}
