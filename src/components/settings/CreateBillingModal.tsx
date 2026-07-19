@@ -29,14 +29,16 @@ export const CreateBillingModal: React.FC<CreateBillingModalProps> = ({
         };
         window.addEventListener('keydown', handleKeyDown);
 
-        if (firstSelectRef.current) {
-            firstSelectRef.current.focus();
-        }
-
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [isOpen, onClose]);
+
+    useEffect(() => {
+        if (isOpen && firstSelectRef.current) {
+            firstSelectRef.current.focus();
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
