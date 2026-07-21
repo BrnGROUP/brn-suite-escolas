@@ -52,7 +52,8 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
     notes: '',
     teaching_modality: '',
     ata_conselho_url: '',
-    cardapio_url: ''
+    cardapio_url: '',
+    ficha_tecnica_url: ''
   });
 
   const { addToast } = useToast();
@@ -164,7 +165,8 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
       notes: '',
       teaching_modality: '',
       ata_conselho_url: '',
-      cardapio_url: ''
+      cardapio_url: '',
+      ficha_tecnica_url: ''
     });
   };
 
@@ -198,7 +200,8 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
       notes: school.notes || '',
       teaching_modality: school.teaching_modality || '',
       ata_conselho_url: school.ata_conselho_url || '',
-      cardapio_url: school.cardapio_url || ''
+      cardapio_url: school.cardapio_url || '',
+      ficha_tecnica_url: school.ficha_tecnica_url || ''
     });
     setShowForm(true);
   };
@@ -298,7 +301,7 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'ata' | 'cardapio') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'ata' | 'cardapio' | 'ficha') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -319,8 +322,10 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
 
       if (type === 'ata') {
         setFormData((prev: any) => ({ ...prev, ata_conselho_url: publicUrl }));
-      } else {
+      } else if (type === 'cardapio') {
         setFormData((prev: any) => ({ ...prev, cardapio_url: publicUrl }));
+      } else {
+        setFormData((prev: any) => ({ ...prev, ficha_tecnica_url: publicUrl }));
       }
       addToast('Arquivo anexado com sucesso!', 'success');
     } catch (error: any) {

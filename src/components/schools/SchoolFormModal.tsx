@@ -35,6 +35,7 @@ interface SchoolFormModalProps {
     teaching_modality: string;
     ata_conselho_url: string;
     cardapio_url: string;
+    ficha_tecnica_url: string;
   };
   setFormData: React.Dispatch<React.SetStateAction<any>>;
   gees: { id: string; name: string }[];
@@ -44,7 +45,7 @@ interface SchoolFormModalProps {
   isUploading: boolean;
   loading: boolean;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, type: 'ata' | 'cardapio') => Promise<void>;
+  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, type: 'ata' | 'cardapio' | 'ficha') => Promise<void>;
   onSave: () => Promise<void>;
   teachingModalities: string[];
 }
@@ -537,7 +538,7 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 <span className="material-symbols-outlined text-sm">folder_open</span>
                 Documentos e Anexos da Unidade
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Ata do Conselho */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold text-slate-400 uppercase block">
@@ -595,6 +596,40 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                     {formData.cardapio_url && (
                       <a
                         href={formData.cardapio_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-xs flex items-center gap-1 font-bold"
+                      >
+                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                        Visualizar
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Ficha Técnica de Preparação Alimentar */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase block">
+                    Ficha Técnica de Preparação Alimentar
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="file"
+                      id="ficha-tecnica-input"
+                      accept=".pdf,image/*"
+                      onChange={(e) => onFileUpload(e, 'ficha')}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="ficha-tecnica-input"
+                      className="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 select-none"
+                    >
+                      <span className="material-symbols-outlined text-sm">upload_file</span>
+                      {formData.ficha_tecnica_url ? 'Alterar Ficha Técnica' : 'Anexar Ficha Técnica'}
+                    </label>
+                    {formData.ficha_tecnica_url && (
+                      <a
+                        href={formData.ficha_tecnica_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline text-xs flex items-center gap-1 font-bold"

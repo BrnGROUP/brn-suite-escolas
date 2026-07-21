@@ -119,10 +119,10 @@ export const SchoolCard: React.FC<SchoolCardProps> = ({
           </div>
         </div>
 
-        {(school.ata_conselho_url || school.cardapio_url) && (
+        {(school.ata_conselho_url || school.cardapio_url || school.ficha_tecnica_url) && (
           <div className="mt-4 pt-4 border-t border-slate-100/5 flex flex-col gap-2">
             <span className="text-[9px] font-black uppercase text-slate-500 tracking-wider">Documentos da Unidade</span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {school.ata_conselho_url && (
                 <a
                   href={school.ata_conselho_url}
@@ -143,6 +143,17 @@ export const SchoolCard: React.FC<SchoolCardProps> = ({
                 >
                   <span className="material-symbols-outlined text-xs">restaurant_menu</span>
                   Cardápio
+                </a>
+              )}
+              {school.ficha_tecnica_url && (
+                <a
+                  href={school.ficha_tecnica_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 bg-white/5 border border-white/10 hover:border-primary/30 px-3 py-1.5 rounded-xl text-white text-[10px] font-bold uppercase transition-all"
+                >
+                  <span className="material-symbols-outlined text-xs">assignment</span>
+                  Ficha Técnica
                 </a>
               )}
             </div>

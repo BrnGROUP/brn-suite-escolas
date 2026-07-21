@@ -151,6 +151,7 @@ export interface School {
     teaching_modality?: string;
     ata_conselho_url?: string;
     cardapio_url?: string;
+    ficha_tecnica_url?: string;
 }
 
 export interface Program {
