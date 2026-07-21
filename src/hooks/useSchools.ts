@@ -172,6 +172,10 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
 
   const handleEdit = (school: School) => {
     setEditingId(school.id);
+    const cleanedModality = school.teaching_modality
+      ? Array.from(new Set(school.teaching_modality.split(', ').map(m => m.trim()).filter(Boolean))).join(', ')
+      : '';
+
     setFormData({
       name: school.name,
       inep: school.inep || '',
@@ -198,7 +202,7 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
       custom_description: school.custom_description || '',
       active: school.active !== undefined ? school.active : true,
       notes: school.notes || '',
-      teaching_modality: school.teaching_modality || '',
+      teaching_modality: cleanedModality,
       ata_conselho_url: school.ata_conselho_url || '',
       cardapio_url: school.cardapio_url || '',
       ficha_tecnica_url: school.ficha_tecnica_url || ''
@@ -212,19 +216,28 @@ export const useSchools = ({ user }: UseSchoolsProps) => {
       return;
     }
 
+    const cleanedModality = formData.teaching_modality
+      ? Array.from(new Set(formData.teaching_modality.split(', ').map(m => m.trim()).filter(Boolean))).join(', ')
+      : '';
+
+    const payload = {
+      ...formData,
+      teaching_modality: cleanedModality
+    };
+
     setLoading(true);
     try {
       if (editingId) {
         const { error } = await supabase
           .from('schools')
-          .update(formData)
+          .update(payload)
           .eq('id', editingId);
         if (error) throw error;
         addToast('Escola atualizada com sucesso', 'success');
       } else {
         const { error } = await supabase
           .from('schools')
-          .insert([formData]);
+          .insert([payload]);
         if (error) throw error;
         addToast('Escola cadastrada com sucesso', 'success');
       }

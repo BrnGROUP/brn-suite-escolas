@@ -415,29 +415,36 @@ export const SchoolFormModal: React.FC<SchoolFormModalProps> = ({
                 Modalidades de Ensino
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#1e293b] border border-slate-700 rounded-lg p-4">
-                {teachingModalities.map((mod) => {
-                  const selected = (formData.teaching_modality || '').split(', ').includes(mod);
-                  return (
-                    <label key={mod} className="flex items-center gap-2 text-xs text-white cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={selected}
-                        onChange={(e) => {
-                          const current = (formData.teaching_modality || '').split(', ').filter(Boolean);
-                          let updated;
-                          if (e.target.checked) {
-                            updated = [...current, mod];
-                          } else {
-                            updated = current.filter((c) => c !== mod);
-                          }
-                          setFormData((prev: any) => ({ ...prev, teaching_modality: updated.join(', ') }));
-                        }}
-                        className="rounded border-slate-700 bg-slate-800 text-primary focus:ring-primary/20 w-4 h-4 cursor-pointer"
-                      />
-                      {mod}
-                    </label>
-                  );
-                })}
+                {(() => {
+                  const currentSelected = (formData.teaching_modality || '')
+                    .split(', ')
+                    .map((m: string) => m.trim())
+                    .filter(Boolean);
+                  const allModalities = Array.from(new Set([...teachingModalities, ...currentSelected]));
+                  return allModalities.map((mod) => {
+                    const selected = currentSelected.includes(mod);
+                    return (
+                      <label key={mod} className="flex items-center gap-2 text-xs text-white cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          onChange={(e) => {
+                            let updated;
+                            if (e.target.checked) {
+                              updated = [...currentSelected, mod];
+                            } else {
+                              updated = currentSelected.filter((c) => c !== mod);
+                            }
+                            const uniqueUpdated = Array.from(new Set(updated));
+                            setFormData((prev: any) => ({ ...prev, teaching_modality: uniqueUpdated.join(', ') }));
+                          }}
+                          className="rounded border-slate-700 bg-slate-800 text-primary focus:ring-primary/20 w-4 h-4 cursor-pointer"
+                        />
+                        {mod}
+                      </label>
+                    );
+                  });
+                })()}
               </div>
             </div>
 

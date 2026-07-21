@@ -90,7 +90,7 @@ export const SchoolCard: React.FC<SchoolCardProps> = ({
 
         {school.teaching_modality && (
           <div className="flex flex-wrap gap-1 mb-4">
-            {school.teaching_modality.split(', ').map((mod) => (
+            {Array.from(new Set(school.teaching_modality.split(', ').map(m => m.trim()).filter(Boolean))).map((mod) => (
               <span key={mod} className="bg-primary/10 text-primary text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded border border-primary/20">
                 {mod}
               </span>
