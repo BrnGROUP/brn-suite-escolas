@@ -74,6 +74,13 @@ export const useEntryForm = ({
     const [singleRubricId, setSingleRubricId] = React.useState('');
     const [singleNature, setSingleNature] = React.useState<TransactionNature>(TransactionNature.CUSTEIO);
 
+    React.useEffect(() => {
+        const d = paymentDate || invoiceDate;
+        if (d) {
+            setDate(d);
+        }
+    }, [paymentDate, invoiceDate]);
+
     const { programs, rubrics: allRubrics, suppliers, paymentMethods } = auxData;
 
     // Memoized filters and properties
@@ -366,7 +373,12 @@ export const useEntryForm = ({
 
     // Save handling
     const handleSave = async () => {
-        if (!selectedSchoolId || !selectedProgramId || !date || !totalValue || !mainDescription) {
+        const finalDate = paymentDate || invoiceDate;
+        if (!finalDate) {
+            addToast('Preencha a Data da Nota ou a Data do Pagamento.', 'warning');
+            return;
+        }
+        if (!selectedSchoolId || !selectedProgramId || !totalValue || !mainDescription) {
             addToast('Preencha todos os campos obrigatórios.', 'warning');
             return;
         }
