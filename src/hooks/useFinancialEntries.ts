@@ -154,66 +154,73 @@ export function useFinancialEntries(user: User, filters: any = {}) {
 
     // Client-side advanced filtering based on search query
     const entries = useMemo(() => {
-        if (!filters.search) return allEntries;
+        let result = allEntries;
 
-        const searchLower = filters.search.toLowerCase().trim();
-        if (!searchLower) return allEntries;
+        if (filters.search) {
+            const searchLower = filters.search.toLowerCase().trim();
+            const searchDigits = searchLower.replace(/\D/g, '');
 
-        const searchDigits = searchLower.replace(/\D/g, '');
+            result = allEntries.filter((entry) => {
+                // Check description
+                if (entry.description?.toLowerCase().includes(searchLower)) return true;
 
-        return allEntries.filter((entry) => {
-            // Check description
-            if (entry.description?.toLowerCase().includes(searchLower)) return true;
+                // Check school
+                if (entry.school?.toLowerCase().includes(searchLower)) return true;
 
-            // Check school
-            if (entry.school?.toLowerCase().includes(searchLower)) return true;
+                // Check program
+                if (entry.program?.toLowerCase().includes(searchLower)) return true;
 
-            // Check program
-            if (entry.program?.toLowerCase().includes(searchLower)) return true;
+                // Check rubric
+                if (entry.rubric?.toLowerCase().includes(searchLower)) return true;
 
-            // Check rubric
-            if (entry.rubric?.toLowerCase().includes(searchLower)) return true;
+                // Check supplier
+                if (entry.supplier?.toLowerCase().includes(searchLower)) return true;
 
-            // Check supplier
-            if (entry.supplier?.toLowerCase().includes(searchLower)) return true;
+                // Check nature
+                if (entry.nature?.toLowerCase().includes(searchLower)) return true;
 
-            // Check nature
-            if (entry.nature?.toLowerCase().includes(searchLower)) return true;
+                // Check value
+                const rawValStr = String(entry.value).toLowerCase();
+                const absValStr = String(Math.abs(entry.value)).toLowerCase();
 
-            // Check value
-            const rawValStr = String(entry.value).toLowerCase();
-            const absValStr = String(Math.abs(entry.value)).toLowerCase();
-
-            // Format standard Brazilian Real style value (e.g. R$ 1.500,00)
-            const formattedBRL = entry.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).toLowerCase();
-            const formattedBRLNoSymbol = formattedBRL.replace('r$', '').trim(); // e.g. "1.500,00"
-
-            if (
-                rawValStr.includes(searchLower) ||
-                absValStr.includes(searchLower) ||
-                formattedBRL.includes(searchLower) ||
-                formattedBRLNoSymbol.includes(searchLower)
-            ) {
-                return true;
-            }
-
-            // Digit-only comparison for values if search has digits
-            if (searchDigits) {
-                const valueDigits = String(Math.abs(entry.value)).replace(/\D/g, '');
-                const valueInCents = Math.round(entry.value * 100);
-                const centsStr = String(Math.abs(valueInCents));
-                const valueNoDecimalsStr = String(Math.abs(Math.trunc(entry.value)));
+                // Format standard Brazilian Real style value (e.g. R$ 1.500,00)
+                const formattedBRL = entry.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).toLowerCase();
+                const formattedBRLNoSymbol = formattedBRL.replace('r$', '').trim(); // e.g. "1.500,00"
 
                 if (
-                    centsStr.includes(searchDigits) || 
-                    valueNoDecimalsStr.includes(searchDigits) || 
-                    valueDigits.includes(searchDigits)
+                    rawValStr.includes(searchLower) ||
+                    absValStr.includes(searchLower) ||
+                    formattedBRL.includes(searchLower) ||
+                    formattedBRLNoSymbol.includes(searchLower)
                 ) {
                     return true;
                 }
-            }
 
-            return false;
+                // Digit-only comparison for values if search has digits
+                if (searchDigits) {
+                    const valueDigits = String(Math.abs(entry.value)).replace(/\D/g, '');
+                    const valueInCents = Math.round(entry.value * 100);
+                    const centsStr = String(Math.abs(valueInCents));
+                    const valueNoDecimalsStr = String(Math.abs(Math.trunc(entry.value)));
+
+                    if (
+                        centsStr.includes(searchDigits) || 
+                        valueNoDecimalsStr.includes(searchDigits) || 
+                        valueDigits.includes(searchDigits)
+                    ) {
+                        return true;
+                    }
+                }
+
+                return false;
+            });
+        }
+
+        // Sort descending: most recent display date first (payment_date || invoice_date || date)
+        return [...result].sort((a, b) => {
+            const dateA = a.payment_date || a.invoice_date || a.date;
+            const dateB = b.payment_date || b.invoice_date || b.date;
+            return dateB.localeCompare(dateA);
         });
     }, [allEntries, filters.search]);
 
