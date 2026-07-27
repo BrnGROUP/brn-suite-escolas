@@ -71,8 +71,8 @@ export const useReports = (user: User, filters: ReportsFilters) => {
         enabled: !!user.id
     });
 
-    const { data: processes = [], isLoading: loadingProcesses, refetch: refreshProcesses } = useQuery({
-        queryKey: ['accountability_processes', user.id, filters],
+    const { data: allProcesses = [], isLoading: loadingProcesses, refetch: refreshProcesses } = useQuery({
+        queryKey: ['accountability_processes', user.id, { ...filters, search: undefined }],
         queryFn: async () => {
             let query = supabase
                 .from('accountability_processes')
@@ -88,7 +88,6 @@ export const useReports = (user: User, filters: ReportsFilters) => {
 
             if (filters.schoolId) query = query.eq('school_id', filters.schoolId);
             if (filters.status) query = query.eq('status', filters.status);
-            if (filters.search) query = query.or(`description.ilike.%${filters.search}%,financial_entries.description.ilike.%${filters.search}%`);
 
             if (user.role !== UserRole.ADMIN && user.role !== UserRole.OPERADOR) {
                 if (user.role === UserRole.DIRETOR || user.role === UserRole.CLIENTE) {
@@ -129,8 +128,8 @@ export const useReports = (user: User, filters: ReportsFilters) => {
         enabled: !!user.id
     });
 
-    const { data: contracts = [], isLoading: loadingContracts, refetch: refreshContracts } = useQuery({
-        queryKey: ['supplier_contracts', user.id, filters],
+    const { data: allContracts = [], isLoading: loadingContracts, refetch: refreshContracts } = useQuery({
+        queryKey: ['supplier_contracts', user.id, { ...filters, search: undefined }],
         queryFn: async () => {
             let query = supabase
                 .from('supplier_contracts')
@@ -147,7 +146,6 @@ export const useReports = (user: User, filters: ReportsFilters) => {
             if (filters.schoolId) query = query.eq('school_id', filters.schoolId);
             if (filters.programId) query = query.eq('program_id', filters.programId);
             if (filters.status) query = query.eq('status', filters.status);
-            if (filters.search) query = query.or(`description.ilike.%${filters.search}%,contract_number.ilike.%${filters.search}%`);
 
             if (user.role !== UserRole.ADMIN && user.role !== UserRole.OPERADOR) {
                 if (user.role === UserRole.DIRETOR || user.role === UserRole.CLIENTE) {
@@ -170,6 +168,129 @@ export const useReports = (user: User, filters: ReportsFilters) => {
         },
         enabled: !!user.id
     });
+
+    // Client-side advanced search for processes
+    const processes = useMemo(() => {
+        if (!filters.search) return allProcesses;
+
+        const searchLower = filters.search.toLowerCase().trim();
+        if (!searchLower) return allProcesses;
+
+        const searchDigits = searchLower.replace(/\D/g, '');
+
+        return allProcesses.filter((p: any) => {
+            // Check description (process or entry)
+            if (p.description?.toLowerCase().includes(searchLower)) return true;
+            if (p.financial_entries?.description?.toLowerCase().includes(searchLower)) return true;
+
+            // Check school
+            const schoolName = p.schools?.name || p.financial_entries?.schools?.name || '';
+            if (schoolName.toLowerCase().includes(searchLower)) return true;
+
+            // Check supplier
+            const supplierName = p.financial_entries?.suppliers?.name || p.supplier_contracts?.suppliers?.name || '';
+            if (supplierName.toLowerCase().includes(searchLower)) return true;
+
+            // Check program
+            const programName = p.financial_entries?.programs?.name || p.supplier_contracts?.programs?.name || '';
+            if (programName.toLowerCase().includes(searchLower)) return true;
+
+            // Check value
+            const val = p.financial_entries?.value || p.financial_entries?.value === 0 ? p.financial_entries.value : null;
+            if (val !== null) {
+                const rawValStr = String(val).toLowerCase();
+                const absValStr = String(Math.abs(val)).toLowerCase();
+                const formattedBRL = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).toLowerCase();
+                const formattedBRLNoSymbol = formattedBRL.replace('r$', '').trim();
+
+                if (
+                    rawValStr.includes(searchLower) ||
+                    absValStr.includes(searchLower) ||
+                    formattedBRL.includes(searchLower) ||
+                    formattedBRLNoSymbol.includes(searchLower)
+                ) {
+                    return true;
+                }
+
+                if (searchDigits) {
+                    const valueDigits = String(Math.abs(val)).replace(/\D/g, '');
+                    const valueInCents = Math.round(val * 100);
+                    const centsStr = String(Math.abs(valueInCents));
+                    const valueNoDecimalsStr = String(Math.abs(Math.trunc(val)));
+
+                    if (
+                        centsStr.includes(searchDigits) ||
+                        valueNoDecimalsStr.includes(searchDigits) ||
+                        valueDigits.includes(searchDigits)
+                    ) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        });
+    }, [allProcesses, filters.search]);
+
+    // Client-side advanced search for contracts
+    const contracts = useMemo(() => {
+        if (!filters.search) return allContracts;
+
+        const searchLower = filters.search.toLowerCase().trim();
+        if (!searchLower) return allContracts;
+
+        const searchDigits = searchLower.replace(/\D/g, '');
+
+        return allContracts.filter((c: any) => {
+            // Check description or number
+            if (c.description?.toLowerCase().includes(searchLower)) return true;
+            if (c.contract_number?.toLowerCase().includes(searchLower)) return true;
+
+            // Check school
+            if (c.schools?.name?.toLowerCase().includes(searchLower)) return true;
+
+            // Check supplier
+            if (c.suppliers?.name?.toLowerCase().includes(searchLower)) return true;
+
+            // Check program
+            if (c.programs?.name?.toLowerCase().includes(searchLower)) return true;
+
+            // Check value
+            const val = c.total_value;
+            if (val !== undefined && val !== null) {
+                const rawValStr = String(val).toLowerCase();
+                const absValStr = String(Math.abs(val)).toLowerCase();
+                const formattedBRL = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).toLowerCase();
+                const formattedBRLNoSymbol = formattedBRL.replace('r$', '').trim();
+
+                if (
+                    rawValStr.includes(searchLower) ||
+                    absValStr.includes(searchLower) ||
+                    formattedBRL.includes(searchLower) ||
+                    formattedBRLNoSymbol.includes(searchLower)
+                ) {
+                    return true;
+                }
+
+                if (searchDigits) {
+                    const valueDigits = String(Math.abs(val)).replace(/\D/g, '');
+                    const valueInCents = Math.round(val * 100);
+                    const centsStr = String(Math.abs(valueInCents));
+                    const valueNoDecimalsStr = String(Math.abs(Math.trunc(val)));
+
+                    if (
+                        centsStr.includes(searchDigits) ||
+                        valueNoDecimalsStr.includes(searchDigits) ||
+                        valueDigits.includes(searchDigits)
+                    ) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        });
+    }, [allContracts, filters.search]);
 
     const deleteProcessMut = useMutation({
         mutationFn: async (id: string) => {

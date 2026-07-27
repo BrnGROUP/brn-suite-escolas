@@ -433,7 +433,7 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
         <div className="flex flex-col gap-2">
             <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest ml-1">Busca Rápida</label>
             <input
-                placeholder="Filtrar por descrição..."
+                placeholder="Buscar por descrição, valor, escola, fornecedor..."
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 className="w-full h-11 bg-black/40 border border-white/10 rounded-xl px-4 text-xs text-white outline-none focus:border-primary transition-all"
