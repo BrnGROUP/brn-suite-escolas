@@ -12,7 +12,7 @@ export interface ReportOptions {
     filterProgram?: string;
     filterStartDate?: string;
     filterEndDate?: string;
-    reportMode?: 'gerencial' | 'livro_caixa';
+    reportMode?: 'gerencial' | 'livro_caixa' | 'livro_tombo';
 }
 
 /**
@@ -752,4 +752,255 @@ export const generateCSV = (entries: any[]) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+};
+
+export const generateLivroTomboCSV = (rows: any[]) => {
+    const headers = [
+        'Doc Tipo', 'Doc Número', 'Doc Data', 
+        'Especificação dos Bens', 'Quantidade', 
+        'Valor Unitário (R$)', 'Valor Total (R$)', 
+        'Pagamento Número', 'Pagamento Data'
+    ];
+    const csvRows = rows.map(r => [
+        `"${(r.docType || '').replace(/'/g, "''").replace(/"/g, '""')}"`,
+        `"${(r.docNumber || '').replace(/'/g, "''").replace(/"/g, '""')}"`,
+        r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString('pt-BR') : '',
+        `"${(r.description || '').replace(/'/g, "''").replace(/"/g, '""')}"`,
+        r.quantity.toString(),
+        r.unitPrice.toString().replace('.', ','),
+        r.totalPrice.toString().replace('.', ','),
+        `"${(r.paymentNumber || '').replace(/'/g, "''").replace(/"/g, '""')}"`,
+        r.paymentDate ? new Date(r.paymentDate + 'T12:00:00').toLocaleDateString('pt-BR') : ''
+    ]);
+
+    const csvContent = [headers.join(';'), ...csvRows.map(r => r.join(';'))].join('\n');
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `livro_tombo_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
+export const generateLivroTomboHTML = async (rows: any[], schoolName: string, yearText: string) => {
+    const now = new Date();
+    const reportDate = now.toLocaleDateString('pt-BR');
+    const reportTime = now.toLocaleTimeString('pt-BR');
+
+    // Calculate total value
+    const grandTotal = rows.reduce((sum, r) => sum + r.totalPrice, 0);
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Livro Tombo - BRN Suite</title>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <style>
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .print-container {
+            background-color: #ffffff;
+            max-width: 297mm;
+            margin: 2rem auto;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 30px -4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            min-height: 210mm;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        @media print {
+            body { background-color: white !important; margin: 0; padding: 0; }
+            .print-container { 
+                box-shadow: none !important; 
+                border: none !important; 
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+            @page { size: A4 landscape; margin: 1cm; }
+            .no-print { display: none !important; }
+        }
+
+        .livro-tombo-header {
+            text-align: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 900;
+            border: 2px solid #000000;
+            padding: 12px;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .livro-tombo-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            color: #0f172a;
+        }
+
+        .livro-tombo-table th, .livro-tombo-table td {
+            border: 1px solid #000000;
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+
+        .livro-tombo-table th {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+            font-weight: 800;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 9px;
+            letter-spacing: 0.02em;
+        }
+
+        .livro-tombo-table td {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .text-center { text-align: center !important; }
+        .text-right { text-align: right !important; }
+        .font-bold { font-weight: 700; }
+        
+        .no-print {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding-bottom: 3rem;
+        }
+
+        .btn {
+            background-color: #0f172a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .metadata-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <div class="print-container">
+        <div class="metadata-bar">
+            <span>BRN Suite v5.0</span>
+            <span>Gerado em ${reportDate} às ${reportTime}</span>
+        </div>
+
+        <div class="livro-tombo-header">
+            LIVRO TOMBO ${yearText} - ${schoolName}
+        </div>
+
+        <table class="livro-tombo-table">
+            <thead>
+                <tr>
+                    <th colspan="3">08 - Documento</th>
+                    <th rowspan="2">09 - Especificação dos Bens</th>
+                    <th rowspan="2" style="width: 50px;">10 - Qtd.</th>
+                    <th colspan="2">11 - Valor (R$)</th>
+                    <th colspan="2">12 - Pagamento</th>
+                </tr>
+                <tr>
+                    <th style="width: 50px;">Tipo</th>
+                    <th style="width: 80px;">Número</th>
+                    <th style="width: 80px;">Data</th>
+                    <th style="width: 90px;">Unitário</th>
+                    <th style="width: 90px;">Total</th>
+                    <th style="width: 90px;">Número</th>
+                    <th style="width: 80px;">Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows.map(r => `
+                    <tr>
+                        <td class="text-center">${r.docType}</td>
+                        <td class="text-center font-bold">${r.docNumber}</td>
+                        <td class="text-center">${r.date ? new Date(r.date + 'T12:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+                        <td>${r.description}</td>
+                        <td class="text-center font-bold">${r.quantity.toString().padStart(2, '0')}</td>
+                        <td class="text-right">${formatCurrency(r.unitPrice)}</td>
+                        <td class="text-right font-bold">${formatCurrency(r.totalPrice)}</td>
+                        <td class="text-center font-bold">${r.paymentNumber}</td>
+                        <td class="text-center">${r.paymentDate ? new Date(r.paymentDate + 'T12:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+                    </tr>
+                `).join('')}
+                <tr class="font-bold" style="background-color: #f8fafc;">
+                    <td colspan="5" class="text-right uppercase" style="font-size: 9px; padding: 10px;">Valor Total Geral:</td>
+                    <td colspan="2" class="text-right" style="font-size: 11px; padding: 10px; border-double: 3px double #000;">
+                        ${formatCurrency(grandTotal)}
+                    </td>
+                    <td colspan="2"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="no-print">
+        <button onclick="window.print()" class="btn">
+            <span class="material-symbols-outlined">print</span>
+            Imprimir Livro Tombo
+        </button>
+        <button onclick="window.close()" class="btn btn-danger">
+            <span class="material-symbols-outlined">close</span>
+            Fechar Visualização
+        </button>
+    </div>
+</body>
+</html>`;
 };

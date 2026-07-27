@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { generateRelatorioGerencialHTML } from '../lib/reportUtils';
+import { generateRelatorioGerencialHTML, generateLivroTomboHTML, generateLivroTomboCSV } from '../lib/reportUtils';
 import { TransactionStatus, User, UserRole } from '../types';
 import { usePermissions, useAccessibleSchools } from '../hooks/usePermissions';
 import StatsCards from '../components/financial/StatsCards';
@@ -188,6 +188,78 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
                     rubric: e.rubrics?.name,
                     supplier: e.suppliers?.name
                 }));
+            }
+
+            if (options.reportMode === 'livro_tombo') {
+                const capitalEntries = exportEntries.filter(e => e.nature === 'Capital' && e.type === 'Saída');
+                if (capitalEntries.length === 0) {
+                    addToast('Não há lançamentos de Capital (Saídas) no período para gerar o Livro Tombo.', 'warning');
+                    return;
+                }
+
+                const entryIds = capitalEntries.map(e => e.id);
+                const { data: processes, error: pError } = await supabase
+                    .from('accountability_processes')
+                    .select('*, accountability_items(*)')
+                    .in('financial_entry_id', entryIds);
+
+                if (pError) throw pError;
+
+                const rows: any[] = [];
+                const omittedInvoices: string[] = [];
+
+                capitalEntries.forEach(e => {
+                    const process = processes?.find(p => p.financial_entry_id === e.id);
+                    const items = process?.accountability_items || [];
+                    if (items.length === 0) {
+                        omittedInvoices.push(e.document_number || e.description || e.date);
+                    } else {
+                        items.forEach((item: any) => {
+                            rows.push({
+                                date: e.invoice_date || e.date,
+                                docType: e.document_number ? 'NFE' : 'S/N',
+                                docNumber: e.document_number || '-',
+                                description: item.description,
+                                quantity: Number(item.quantity || 1),
+                                unitPrice: Number(item.winner_unit_price || 0),
+                                totalPrice: Number(item.quantity || 1) * Number(item.winner_unit_price || 0),
+                                paymentNumber: e.auth_number || '-',
+                                paymentDate: e.payment_date || ''
+                            });
+                        });
+                    }
+                });
+
+                if (omittedInvoices.length > 0) {
+                    addToast(`Aviso: ${omittedInvoices.length} nota(s) omitida(s) por prestação de contas incompleta: ${omittedInvoices.join(', ')}`, 'warning');
+                }
+
+                if (rows.length === 0) {
+                    addToast('Nenhum lançamento possui prestação de contas concluída para gerar o Livro Tombo.', 'error');
+                    return;
+                }
+
+                if (options.format === 'csv') {
+                    generateLivroTomboCSV(rows);
+                    addToast('Livro Tombo Excel gerado com sucesso!', 'success');
+                    return;
+                }
+
+                const schoolName = options.filterSchool 
+                    ? (capitalEntries.find(e => e.school_id === options.filterSchool)?.school || 'Unidade Escolar')
+                    : 'Todas as Unidades';
+                    
+                const yearText = options.filterStartDate 
+                    ? new Date(options.filterStartDate + 'T12:00:00').getFullYear().toString()
+                    : new Date().getFullYear().toString();
+
+                const html = await generateLivroTomboHTML(rows, schoolName, yearText);
+                const win = window.open('', '_blank');
+                if (win) {
+                    win.document.write(html);
+                    win.document.close();
+                }
+                return;
             }
 
             // Always filter reprogrammed balances to match report scope

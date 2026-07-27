@@ -146,71 +146,75 @@ const ReportOptionsModal: React.FC<ReportOptionsModalProps> = ({ isOpen, onClose
                             )}
                         </div>
 
-                        <div className="flex flex-col gap-3">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Seções do Documento</label>
+                        {options.reportMode !== 'livro_tombo' && (
+                            <div className="flex flex-col gap-3">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Seções do Documento</label>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => setOptions({ ...options, showSummary: !options.showSummary })}
-                                    className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${options.showSummary ? 'bg-primary/10 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
-                                >
-                                    <span className="material-symbols-outlined text-2xl">summarize</span>
-                                    <span className="text-[10px] font-bold uppercase">Resumo Global</span>
-                                </button>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => setOptions({ ...options, showSummary: !options.showSummary })}
+                                        className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${options.showSummary ? 'bg-primary/10 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-2xl">summarize</span>
+                                        <span className="text-[10px] font-bold uppercase">Resumo Global</span>
+                                    </button>
 
-                                <button
-                                    onClick={() => setOptions({ ...options, showCharts: !options.showCharts })}
-                                    className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${options.showCharts ? 'bg-primary/10 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
-                                >
-                                    <span className="material-symbols-outlined text-2xl">pie_chart</span>
-                                    <span className="text-[10px] font-bold uppercase">Análise Visual</span>
-                                </button>
+                                    <button
+                                        onClick={() => setOptions({ ...options, showCharts: !options.showCharts })}
+                                        className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${options.showCharts ? 'bg-primary/10 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-2xl">pie_chart</span>
+                                        <span className="text-[10px] font-bold uppercase">Análise Visual</span>
+                                    </button>
 
-                                <button
-                                    onClick={() => setOptions({ ...options, showNatureSummary: !options.showNatureSummary })}
-                                    className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${options.showNatureSummary ? 'bg-primary/10 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
-                                >
-                                    <span className="material-symbols-outlined text-2xl">category</span>
-                                    <span className="text-[10px] font-bold uppercase">Resumo Natureza</span>
-                                </button>
+                                    <button
+                                        onClick={() => setOptions({ ...options, showNatureSummary: !options.showNatureSummary })}
+                                        className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${options.showNatureSummary ? 'bg-primary/10 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-2xl">category</span>
+                                        <span className="text-[10px] font-bold uppercase">Resumo Natureza</span>
+                                    </button>
 
-                                <button
-                                    onClick={() => setOptions({ ...options, showStatusBadges: !options.showStatusBadges })}
-                                    className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${options.showStatusBadges ? 'bg-primary/10 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
-                                >
-                                    <span className="material-symbols-outlined text-2xl">verified</span>
-                                    <span className="text-[10px] font-bold uppercase">Status Detalhado</span>
-                                </button>
+                                    <button
+                                        onClick={() => setOptions({ ...options, showStatusBadges: !options.showStatusBadges })}
+                                        className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 text-center ${options.showStatusBadges ? 'bg-primary/10 border-primary text-white' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
+                                    >
+                                        <span className="material-symbols-outlined text-2xl">verified</span>
+                                        <span className="text-[10px] font-bold uppercase">Status Detalhado</span>
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className="flex flex-col gap-2 pt-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Exibição de Dados</label>
-                            <div className="relative">
-                                <select
-                                    title="Critério de agrupamento de dados"
-                                    aria-label="Critério de agrupamento de dados"
-                                    value={options.groupReport}
-                                    onChange={(e) => setOptions({ ...options, groupReport: e.target.value as any })}
-                                    className="w-full bg-[#0f172a] text-white text-xs h-12 px-4 rounded-2xl border border-white/5 outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer appearance-none pr-10"
-                                >
-                                    <option value="school" className="bg-[#1c2936]">Agrupar por Unidade Escolar</option>
-                                    <option value="program" className="bg-[#1c2936]">Agrupar por Programa</option>
-                                    <option value="none" className="bg-[#1c2936]">Lista Contínua (Sem Agrupamento)</option>
-                                </select>
-                                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-xl">expand_more</span>
+                        {options.reportMode !== 'livro_tombo' && (
+                            <div className="flex flex-col gap-2 pt-2">
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Exibição de Dados</label>
+                                <div className="relative">
+                                    <select
+                                        title="Critério de agrupamento de dados"
+                                        aria-label="Critério de agrupamento de dados"
+                                        value={options.groupReport}
+                                        onChange={(e) => setOptions({ ...options, groupReport: e.target.value as any })}
+                                        className="w-full bg-[#0f172a] text-white text-xs h-12 px-4 rounded-2xl border border-white/5 outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer appearance-none pr-10"
+                                    >
+                                        <option value="school" className="bg-[#1c2936]">Agrupar por Unidade Escolar</option>
+                                        <option value="program" className="bg-[#1c2936]">Agrupar por Programa</option>
+                                        <option value="none" className="bg-[#1c2936]">Lista Contínua (Sem Agrupamento)</option>
+                                    </select>
+                                    <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-xl">expand_more</span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="flex flex-col gap-2 pt-2">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Modelo de Relatório</label>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-3 gap-2">
                                 <button
                                     onClick={() => setOptions({ ...options, reportMode: 'gerencial' })}
                                     className={`h-12 rounded-2xl font-black text-[9px] uppercase transition-all flex items-center justify-center gap-2 border ${options.reportMode === 'gerencial' || !options.reportMode ? 'bg-primary/10 border-primary text-primary' : 'bg-[#0f172a] text-slate-500 border-white/5 hover:bg-white/5'}`}
                                 >
                                     <span className="material-symbols-outlined text-lg">dashboard</span>
-                                    Modo Gerencial
+                                    Gerencial
                                 </button>
                                 <button
                                     onClick={() => setOptions({ ...options, reportMode: 'livro_caixa', groupReport: 'program' })}
@@ -219,10 +223,19 @@ const ReportOptionsModal: React.FC<ReportOptionsModalProps> = ({ isOpen, onClose
                                     <span className="material-symbols-outlined text-lg">menu_book</span>
                                     Livro Caixa
                                 </button>
+                                <button
+                                    onClick={() => setOptions({ ...options, reportMode: 'livro_tombo', groupReport: 'none' })}
+                                    className={`h-12 rounded-2xl font-black text-[9px] uppercase transition-all flex items-center justify-center gap-2 border ${options.reportMode === 'livro_tombo' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-[#0f172a] text-slate-500 border-white/5 hover:bg-white/5'}`}
+                                >
+                                    <span className="material-symbols-outlined text-lg">inventory_2</span>
+                                    Livro Tombo
+                                </button>
                             </div>
                             <p className="text-[8px] text-slate-500 italic pl-1 leading-tight">
                                 {options.reportMode === 'livro_caixa'
                                     ? 'O Modo Livro Caixa utiliza colunas de Entrada, Saída e Saldo Progressivo, ideal para prestação de contas formal.'
+                                    : options.reportMode === 'livro_tombo'
+                                    ? 'O Modo Livro Tombo é um relatório exclusivo para lançamentos de Capital com detalhamento dos bens adquiridos.'
                                     : 'O Modo Gerencial foca em análise de gastos, natureza de recurso e badges de status.'}
                             </p>
                         </div>
