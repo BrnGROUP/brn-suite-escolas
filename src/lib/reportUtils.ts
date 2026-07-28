@@ -612,10 +612,11 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                             </tr>
                                         ` : ''}
                                         ${sortedEntries.map(e => {
-                const val = Math.abs(Number(e.value));
+                const rawVal = Number(e.value);
+                const val = Math.abs(rawVal);
                 if (isLivroCaixa) {
-                    if (e.type === 'Entrada') currentRollingBalance += val;
-                    else currentRollingBalance -= val;
+                    if (e.type === 'Entrada') currentRollingBalance += rawVal;
+                    else currentRollingBalance -= rawVal;
                 }
 
                 return `
@@ -645,11 +646,11 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                                     </div>
                                                 </td>
                                                 ${isLivroCaixa ? `
-                                                    <td class="px-4 py-5 text-right font-black ${e.type === 'Entrada' ? 'text-emerald-600' : 'text-slate-300'} whitespace-nowrap">
-                                                        ${e.type === 'Entrada' ? formatCurrency(val) : '<span class="opacity-20">-</span>'}
+                                                    <td class="px-4 py-5 text-right font-black ${e.type === 'Entrada' ? (rawVal < 0 ? 'text-red-600' : 'text-emerald-600') : 'text-slate-300'} whitespace-nowrap">
+                                                        ${e.type === 'Entrada' ? formatCurrency(rawVal) : '<span class="opacity-20">-</span>'}
                                                     </td>
                                                     <td class="px-4 py-5 text-right font-black ${e.type === 'Saída' ? 'text-red-600' : 'text-slate-300'} whitespace-nowrap">
-                                                        ${e.type === 'Saída' ? formatCurrency(val) : '<span class="opacity-20">-</span>'}
+                                                        ${e.type === 'Saída' ? formatCurrency(rawVal) : '<span class="opacity-20">-</span>'}
                                                     </td>
                                                     <td class="px-6 py-5 text-right font-black text-slate-900 underline decoration-slate-200 decoration-2 underline-offset-4 whitespace-nowrap">
                                                         ${formatCurrency(currentRollingBalance)}
@@ -658,9 +659,9 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                                     <td class="px-4 py-5 font-bold uppercase text-[9px] tracking-widest">
                                                         <span class="${e.nature === 'Capital' ? 'text-orange-600' : 'text-blue-600'}">${e.nature}</span>
                                                     </td>
-                                                    <td class="px-6 py-5 text-right font-black ${e.type === 'Entrada' ? 'text-emerald-600' : 'text-red-600 bg-red-50/20'} whitespace-nowrap">
+                                                    <td class="px-6 py-5 text-right font-black ${(rawVal < 0 || e.type === 'Saída') ? 'text-red-600 bg-red-50/20' : 'text-emerald-600'} whitespace-nowrap">
                                                         <div class="flex items-center justify-end gap-1">
-                                                            <span class="text-[10px] opacity-70 mb-0.5">${e.type === 'Entrada' ? '+' : '-'}</span>
+                                                            <span class="text-[10px] opacity-70 mb-0.5">${(rawVal < 0 || e.type === 'Saída') ? '-' : '+'}</span>
                                                             <span>${formatCurrency(val)}</span>
                                                         </div>
                                                     </td>
