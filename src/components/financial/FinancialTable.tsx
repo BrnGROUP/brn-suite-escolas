@@ -120,7 +120,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                                             {entry.school.substring(0, 15)}...
                                         </div>
                                     </div>
-                                    {entry.type === 'Saída' && (
+                                    {entry.type === 'Saída' && entry.category !== 'Tarifa Bancária' && (
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className={`text-[8px] font-bold uppercase flex items-center gap-1 ${hasPaymentData ? 'text-emerald-500/80' : 'text-slate-500'}`} title={hasPaymentData ? 'Dados de pagamento completos' : 'Faltam dados de pagamento (data e número)'}>
                                                 <span className="material-symbols-outlined text-[10px]">{hasPaymentData ? 'task_alt' : 'hourglass_empty'}</span>
@@ -240,7 +240,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                                                         <span className="material-symbols-outlined text-[12px]">school</span>
                                                         {entry.school}
                                                     </span>
-                                                    {entry.type === 'Saída' && (
+                                                    {entry.type === 'Saída' && entry.category !== 'Tarifa Bancária' && (
                                                         <>
                                                             <span className="text-slate-700 text-[10px]">•</span>
                                                             <span className={`text-[8px] font-bold uppercase flex items-center gap-1 ${hasPaymentData ? 'text-emerald-500/80' : 'text-slate-500'}`} title={hasPaymentData ? 'Dados de pagamento completos' : 'Faltam dados de pagamento (data e número)'}>
