@@ -373,9 +373,9 @@ export const useEntryForm = ({
 
     // Save handling
     const handleSave = async () => {
-        const finalDate = paymentDate || invoiceDate;
+        const finalDate = isSimplified ? date : (paymentDate || invoiceDate);
         if (!finalDate) {
-            addToast('Preencha a Data da Nota ou a Data do Pagamento.', 'warning');
+            addToast(isSimplified ? 'Preencha a Data do lançamento.' : 'Preencha a Data da Nota ou a Data do Pagamento.', 'warning');
             return;
         }
         if (!selectedSchoolId || !selectedProgramId || !totalValue || !mainDescription) {

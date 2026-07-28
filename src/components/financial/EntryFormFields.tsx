@@ -159,7 +159,7 @@ export const EntryFormFields: React.FC<EntryFormFieldsProps> = ({
                 </button>
             </div>
             
-            <div className="grid grid-cols-1 gap-4">
+            <div className={`grid ${isSimplified ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'} gap-4`}>
                 <div className="flex flex-col gap-2">
                     <label htmlFor="totalValue" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Valor R$</label>
                     <input 
@@ -170,6 +170,18 @@ export const EntryFormFields: React.FC<EntryFormFieldsProps> = ({
                         className="bg-[#1e293b] rounded-xl h-12 px-4 text-white text-lg font-mono outline-none border border-white/5 focus:border-cyan-500" 
                     />
                 </div>
+                {isSimplified && (
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="entry_date" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Data</label>
+                        <input 
+                            id="entry_date" 
+                            type="date" 
+                            value={date} 
+                            onChange={e => setDate(e.target.value)} 
+                            className="bg-[#1e293b] rounded-xl h-12 px-4 text-white outline-none border border-white/5 focus:border-cyan-500" 
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
