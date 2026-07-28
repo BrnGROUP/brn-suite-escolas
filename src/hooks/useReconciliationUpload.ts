@@ -372,7 +372,7 @@ export const useReconciliationUpload = ({
       // 2. Automate Net Income Entry
       const netIncome = (capaForm.revenue || 0) - (capaForm.taxes || 0);
 
-      if (netIncome > 0) {
+      if (netIncome !== 0) {
         // Determine the last day of the month for the entry
         const lastDay = new Date(year, month, 0).getDate();
         const entryDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(

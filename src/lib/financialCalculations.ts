@@ -52,7 +52,7 @@ export const calculateFinancialStats = (
 
       const catUpper = (e.category || '').toUpperCase().trim();
       if (catUpper === 'RENDIMENTO DE APLICAÇÃO') {
-        rendimentos += absVal;
+        rendimentos += val;
       } else if (catUpper === 'REPASSE / CRÉDITO' || catUpper === 'OUTROS') {
         repasses += absVal;
       } else if (catUpper === 'REEMBOLSO / ESTORNO') {

@@ -97,7 +97,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                                         </h4>
                                     </div>
                                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                        <div className={`text-base font-black tracking-tight ${entry.type === 'Entrada' ? 'text-green-400' : 'text-red-400'}`}>
+                                        <div className={`text-base font-black tracking-tight ${entry.value < 0 ? 'text-red-400' : (entry.type === 'Entrada' ? 'text-green-400' : 'text-red-400')}`}>
                                             {entry.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -270,7 +270,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                                             </div>
                                         </td>
                                         <td className="p-5 text-right font-mono">
-                                            <div className={`text-sm font-black ${entry.type === 'Entrada' ? 'text-green-400' : 'text-red-400'}`}>
+                                            <div className={`text-sm font-black ${entry.value < 0 ? 'text-red-400' : (entry.type === 'Entrada' ? 'text-green-400' : 'text-red-400')}`}>
                                                 {entry.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                             </div>
                                             <div className="text-[9px] text-slate-500 mt-0.5 font-bold uppercase tracking-tighter">
