@@ -32,6 +32,8 @@ const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
 
     const filteredEntries = mappedEntries
         .filter(e => {
+            if (e.is_reconciled) return false;
+
             // Option to strictly match standard accounting types (C = Entrada, D = Saída)
             if (filterByType) {
                 const typeMatches = bt.type === 'C' ? e.type === 'Entrada' : e.type === 'Saída';
