@@ -115,6 +115,12 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     Prestação de Contas
                 </button>
                 <button
+                    onClick={() => setQuickFilter('missing_info')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'missing_info' ? 'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/20' : 'bg-orange-500/5 text-orange-400 border-orange-500/20 hover:bg-orange-500/10'}`}
+                >
+                    Sem Dados/Comprovante
+                </button>
+                <button
                     onClick={() => setQuickFilter('repasses')}
                     className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'repasses' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-emerald-500/5 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10'}`}
                 >

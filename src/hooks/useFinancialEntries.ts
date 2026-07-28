@@ -114,7 +114,7 @@ export function useFinancialEntries(user: User, filters: any = {}) {
             if (filters.quick === 'rendimentos') q = q.eq('category', 'Rendimento de Aplicação');
             if (filters.quick === 'entradas') q = q.eq('type', 'Entrada');
             if (filters.quick === 'saidas') q = q.eq('type', 'Saída');
-            if (filters.quick === 'prestacao_contas') {
+            if (filters.quick === 'prestacao_contas' || filters.quick === 'missing_info') {
                 q = q.eq('type', 'Saída')
                     .neq('category', 'Tarifa Bancária')
                     .neq('category', 'Aplicação Financeira')
@@ -148,6 +148,19 @@ export function useFinancialEntries(user: User, filters: any = {}) {
     // Client-side advanced filtering based on search query
     const entries = useMemo(() => {
         let result = allEntries;
+
+        if (filters.quick === 'missing_info') {
+            result = result.filter((entry) => {
+                const hasPaymentData = entry.payment_date && entry.auth_number;
+                const hasPaymentVoucher = entry.attachments?.some(a => 
+                    a.category === 'Comprovante' || 
+                    a.category === 'Comprovante de Pagamento' || 
+                    a.name?.toLowerCase().includes('comprovante')
+                ) || false;
+
+                return !hasPaymentData || !hasPaymentVoucher;
+            });
+        }
 
         if (filters.search) {
             const searchLower = filters.search.toLowerCase().trim();
@@ -215,7 +228,7 @@ export function useFinancialEntries(user: User, filters: any = {}) {
             const dateB = b.payment_date || b.invoice_date || b.date;
             return dateB.localeCompare(dateA);
         });
-    }, [allEntries, filters.search]);
+    }, [allEntries, filters.search, filters.quick]);
 
     // Compute stats derived from entries
     const stats = useMemo(() => {
