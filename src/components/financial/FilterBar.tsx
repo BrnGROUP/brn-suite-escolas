@@ -103,22 +103,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     Saídas
                 </button>
                 <button
-                    onClick={() => setQuickFilter('pending_today')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'pending_today' ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-yellow-500/5 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/10'}`}
+                    onClick={() => setQuickFilter('pending')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'pending' ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-yellow-500/5 text-yellow-500 border-yellow-500/20 hover:bg-yellow-500/10'}`}
                 >
-                    Pendentes de Hoje
+                    Pendentes
                 </button>
                 <button
-                    onClick={() => setQuickFilter('this_month')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'this_month' ? 'bg-blue-500 text-white border-blue-500' : 'bg-blue-500/5 text-blue-400 border-blue-500/20 hover:bg-blue-500/10'}`}
+                    onClick={() => setQuickFilter('prestacao_contas')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'prestacao_contas' ? 'bg-cyan-500 text-white border-cyan-500 shadow-lg shadow-cyan-500/20' : 'bg-cyan-500/5 text-cyan-400 border-cyan-500/20 hover:bg-cyan-500/10'}`}
                 >
-                    Este Mês
-                </button>
-                <button
-                    onClick={() => setQuickFilter('high_value')}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${quickFilter === 'high_value' ? 'bg-red-500 text-white border-red-500' : 'bg-red-500/5 text-red-500 border-red-500/20 hover:bg-red-500/10'}`}
-                >
-                    Alto Valor (± R$ 1k)
+                    Prestação de Contas
                 </button>
                 <button
                     onClick={() => setQuickFilter('repasses')}
