@@ -496,6 +496,7 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
         auxData={{ schools, programs, suppliers }}
         onSave={refresh}
         editingId={editingContractId}
+        defaultSchoolId={filters.schoolId}
       />
 
       {selectedContractForDocs && (

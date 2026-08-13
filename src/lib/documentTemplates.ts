@@ -1450,10 +1450,10 @@ ${getDocumentBaseCSS(customStyles)}
                         <p class="text-[8px]">RG: <strong>${directorRg}</strong></p>
                     </div>
                     <div class="border-t border-black pt-2">
-                        <p class="text-[11px]">${supplier?.name?.toUpperCase()}</p>
+                        <p class="font-bold text-[11px]">${(contract?.representative_name || supplier?.rep_name || 'REPRESENTANTE LEGAL').toUpperCase()}</p>
                         <p class="text-[9px]">CONTRATADA</p>
-                        <p class="text-[7px]">CPF: <strong>${(process as any).contract?.representative_cpf || supplier?.rep_cpf || '___.___.___---'}</strong></p>
-                        <p class="text-[7px]">RG: <strong>${(process as any).contract?.representative_rg || supplier?.rep_rg || '___________'}</strong></p>
+                        <p class="text-[8px]">CPF: <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___.___.___-__'}</strong></p>
+                        <p class="text-[8px]">RG: <strong>${contract?.representative_rg || supplier?.rep_rg || '___________'}</strong></p>
                     </div>
                 </div>
 

@@ -25,6 +25,7 @@ interface SupplierContractModalProps {
     };
     onSave: () => void;
     editingId?: string | null;
+    defaultSchoolId?: string;
 }
 
 const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
@@ -33,13 +34,14 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     user,
     auxData,
     onSave,
-    editingId
+    editingId,
+    defaultSchoolId
 }) => {
     const [loading, setLoading] = useState(false);
     const { addToast } = useToast();
 
     // Form State
-    const [schoolId, setSchoolId] = useState(user.schoolId || '');
+    const [schoolId, setSchoolId] = useState(user.schoolId || defaultSchoolId || '');
     const [supplierId, setSupplierId] = useState('');
     const [programId, setProgramId] = useState('');
     const [rubricId, setRubricId] = useState('');
@@ -87,30 +89,40 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             } else {
                 resetForm();
                 fetchExistingContracts();
-                if (user.schoolId) setSchoolId(user.schoolId);
+                if (user.schoolId) {
+                    setSchoolId(user.schoolId);
+                } else if (defaultSchoolId) {
+                    setSchoolId(defaultSchoolId);
+                }
             }
         }
-    }, [isOpen, editingId, user.schoolId]);
+    }, [isOpen, editingId, user.schoolId, defaultSchoolId]);
 
     const fetchExistingContracts = async () => {
-        if (!schoolId) return;
-        const { data } = await supabase
+        let query = supabase
             .from('supplier_contracts')
-            .select('*, suppliers(name)')
-            .eq('school_id', schoolId)
-            .eq('status', 'Ativo')
-            .order('created_at', { ascending: false });
+            .select('*, suppliers(name), schools(name)')
+            .in('status', ['Ativo', 'Encerrado']);
+
+        if (user.schoolId) {
+            query = query.eq('school_id', user.schoolId);
+        } else if (schoolId) {
+            query = query.eq('school_id', schoolId);
+        }
+
+        const { data } = await query.order('created_at', { ascending: false });
         setExistingContracts(data || []);
     };
 
     useEffect(() => {
-        if (schoolId) fetchExistingContracts();
+        fetchExistingContracts();
     }, [schoolId]);
 
     const handleSelectParent = (id: string) => {
         const parent = existingContracts.find(c => c.id === id);
         if (parent) {
             setParentContractId(id);
+            setSchoolId(parent.school_id);
             setSupplierId(parent.supplier_id);
             setProgramId(parent.program_id);
             setRubricId(parent.rubric_id || '');
@@ -189,7 +201,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     };
 
     useEffect(() => {
-        if (startDate && durationMonths && creationMode === 'NEW') {
+        if (startDate && durationMonths) {
             const start = new Date(startDate + 'T12:00:00');
             const end = new Date(start);
             end.setMonth(start.getMonth() + parseInt(durationMonths));
@@ -205,7 +217,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                 setTotalValue((parseFloat(monthlyValue) * parseInt(durationMonths)).toString());
             }
         }
-    }, [startDate, durationMonths, monthlyValue, creationMode, category]);
+    }, [startDate, durationMonths, monthlyValue, category]);
 
     useEffect(() => {
         if (!editingId && creationMode === 'NEW') {
@@ -456,7 +468,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     };
 
     const resetForm = () => {
-        if (!user.schoolId) setSchoolId('');
+        if (!user.schoolId) setSchoolId(defaultSchoolId || '');
         setSupplierId('');
         setProgramId('');
         setRubricId('');
@@ -564,10 +576,10 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                                             aria-label="Selecionar Contrato Original"
                                             className="w-full bg-black/40 border border-amber-500/20 rounded-xl h-12 px-4 text-white outline-none focus:border-amber-500 transition-all appearance-none text-xs"
                                         >
-                                            <option value="">Escolher contrato ativo...</option>
+                                            <option value="">Escolher contrato original...</option>
                                             {existingContracts.map(c => (
                                                 <option key={c.id} value={c.id}>
-                                                    {c.contract_number} - {c.suppliers?.name} ({c.description.substring(0, 30)}...)
+                                                    {c.contract_number} - {c.suppliers?.name} {!user.schoolId && c.schools?.name && `| ${c.schools.name}`} ({c.description.substring(0, 30)}...) ({c.status})
                                                 </option>
                                             ))}
                                         </select>
