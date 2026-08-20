@@ -63,11 +63,13 @@ export const extractDocumentData = (rawProcess: DocumentProcess) => {
     const winner = winnerQuote;
     const supplier = winnerQuote?.suppliers || winnerQuote?.supplier || entry?.suppliers || entry?.supplier;
 
-    const invoiceDate = entry?.date 
-        ? new Date(entry.date + 'T12:00:00') 
-        : (process.contract?.start_date 
-            ? new Date(process.contract.start_date + 'T12:00:00') 
-            : new Date());
+    const invoiceDate = entry?.invoice_date
+        ? new Date(entry.invoice_date + 'T12:00:00')
+        : (entry?.date 
+            ? new Date(entry.date + 'T12:00:00') 
+            : (process.contract?.start_date 
+                ? new Date(process.contract.start_date + 'T12:00:00') 
+                : new Date()));
     const paymentDate = entry?.payment_date ? new Date(entry.payment_date + 'T12:00:00') : null;
 
     return {
@@ -352,10 +354,10 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
 
         <!-- Signatures Section -->
         <div class="grid grid-cols-2 gap-x-20 mb-8 items-end">
-            <div class="text-left">
+            <div class="text-center">
                 <p class="text-[14px] font-bold underline underline-offset-8 decoration-transparent">Primeiro Secretário:</p>
             </div>
-            <div class="text-left">
+            <div class="text-center">
                 <p class="text-[14px] font-bold underline underline-offset-8 decoration-transparent">Presidente:</p>
             </div>
         </div>
@@ -401,24 +403,24 @@ export const generateConsolidacaoHTML = (process: DocumentProcess) => {
     };
 
     const customStyles = `
-        body { padding: 10px; font-size: 8px; }
+        body { padding: 5px; font-size: 7.5px; }
         @media print { body { padding: 0; } }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 5px; }
-        th, td { border: 1.5px solid black; padding: 2px 4px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 3px; }
+        th, td { border: 1.5px solid black; padding: 1.5px 3px; }
         .bg-gray { background-color: #f3f3f3; }
         .font-bold { font-weight: bold; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .uppercase { text-transform: uppercase; }
-        .bloco-title { background: #eee; font-weight: bold; padding: 4px; border: 1.5px solid black; border-bottom: none; }
+        .bloco-title { background: #eee; font-weight: bold; padding: 3px; border: 1.5px solid black; border-bottom: none; }
     `;
 
     return `<!DOCTYPE html>
 <html lang="pt-BR">
-${getDocumentBaseCSS(customStyles, true, '1.2cm 1cm 1cm 1cm')}
+${getDocumentBaseCSS(customStyles, true, '0.5cm')}
 <body>
     <div class="w-full">
-        <div class="flex justify-between items-end mb-4">
+        <div class="flex justify-between items-end mb-2">
             <div class="font-bold text-lg">${(program?.name || 'PNAE/FNDE').toUpperCase()}${rubricName ? ` - ${rubricName.toUpperCase()}` : ''}</div>
             <div class="font-bold text-lg">CONSOLIDAÇÃO DE PESQUISAS DE PREÇOS</div>
         </div>
@@ -505,29 +507,31 @@ ${getDocumentBaseCSS(customStyles, true, '1.2cm 1cm 1cm 1cm')}
             </tbody>
         </table>
 
-        <div class="bloco-title uppercase">BLOCO IV - APURAÇÃO DAS PROPOSTAS</div>
-        <table>
-            <tr class="font-bold bg-gray">
-                <td>VALOR TOTAL DAS PROPOSTAS</td>
-                <td class="text-right">${formatCurrency(allQuotes[0]?.total_value || 0)}</td>
-                <td class="text-right">${formatCurrency(allQuotes[1]?.total_value || 0)}</td>
-                <td class="text-right">${formatCurrency(allQuotes[2]?.total_value || 0)}</td>
-            </tr>
-            <tr class="font-bold">
-                <td>VALOR TOTAL COM DESCONTO</td>
-                <td class="text-right text-blue-700">${formatCurrency(allQuotes[0]?.total_value - (process.discount || 0))}</td>
-                <td class="text-right">${allQuotes[1] ? formatCurrency(allQuotes[1]?.total_value) : ''}</td>
-                <td class="text-right">${allQuotes[2] ? formatCurrency(allQuotes[2]?.total_value) : ''}</td>
-            </tr>
-        </table>
+        <div style="break-inside: avoid; page-break-inside: avoid;">
+            <div class="bloco-title uppercase">BLOCO IV - APURAÇÃO DAS PROPOSTAS</div>
+            <table>
+                <tr class="font-bold bg-gray">
+                    <td>VALOR TOTAL DAS PROPOSTAS</td>
+                    <td class="text-right">${formatCurrency(allQuotes[0]?.total_value || 0)}</td>
+                    <td class="text-right">${formatCurrency(allQuotes[1]?.total_value || 0)}</td>
+                    <td class="text-right">${formatCurrency(allQuotes[2]?.total_value || 0)}</td>
+                </tr>
+                <tr class="font-bold">
+                    <td>VALOR TOTAL COM DESCONTO</td>
+                    <td class="text-right text-blue-700">${formatCurrency(allQuotes[0]?.total_value - (process.discount || 0))}</td>
+                    <td class="text-right">${allQuotes[1] ? formatCurrency(allQuotes[1]?.total_value) : ''}</td>
+                    <td class="text-right">${allQuotes[2] ? formatCurrency(allQuotes[2]?.total_value) : ''}</td>
+                </tr>
+            </table>
 
-        <div class="grid grid-cols-2 gap-8 mt-4">
-            <div class="text-center font-bold">
-                <p>LOCAL E DATA: ${school?.city?.toUpperCase() || 'ALAGOAS'}, ${docDate.toLocaleDateString('pt-BR')}</p>
-            </div>
-            <div class="text-center font-bold">
-                <div class="border-t border-black mb-1 mx-8 pt-1">${school?.director?.toUpperCase() || 'PRESIDENTE'}</div>
-                <p>NOME DO PRESIDENTE DA Uex</p>
+            <div class="grid grid-cols-2 gap-8 mt-8">
+                <div class="text-center font-bold">
+                    <p>LOCAL E DATA: ${school?.city?.toUpperCase() || 'ALAGOAS'}, ${docDate.toLocaleDateString('pt-BR')}</p>
+                </div>
+                <div class="text-center font-bold">
+                    <div class="border-t border-black mb-1 mx-8 pt-1">${school?.director?.toUpperCase() || 'PRESIDENTE'}</div>
+                    <p>NOME DO PRESIDENTE DA Uex</p>
+                </div>
             </div>
         </div>
     </div>
@@ -539,7 +543,14 @@ export const generateOrdemHTML = (process: DocumentProcess) => {
     const { school, winner, invoiceDate, program, entry } = extractDocumentData(process);
     const contract = process.contract;
     const rubricName = (entry as any)?.rubrics?.name || contract?.rubrics?.name || (entry as any)?.rubric;
-    const isService = contract?.category !== 'GÁS';
+    
+    const category = (process.category || contract?.category || entry?.category || '').toUpperCase().trim();
+    const isService = !(
+        category.includes('COMPRA') ||
+        category.includes('PRODUTO') ||
+        category.includes('GÁS') ||
+        category.includes('GAS')
+    );
     const orderTitle = isService ? 'ORDEM DE SERVIÇO' : 'ORDEM DE COMPRA';
     const items = (process.items || process.accountability_items || []).slice(0, 27);
     const docDate = getSchoolDayBefore(invoiceDate, 2);
@@ -650,31 +661,39 @@ ${getDocumentBaseCSS(customStyles, false, '1.5cm 1cm 1.5cm 1cm')}
 };
 
 export const generateReciboHTML = (process: DocumentProcess) => {
-    const { entry, school, program, winner, supplier, paymentDate } = extractDocumentData(process);
-
-    // Dates
-    const invoiceDate = entry?.date ? new Date(entry.date) : null;
+    const { entry, school, program, winner, supplier, invoiceDate, paymentDate } = extractDocumentData(process);
 
     const dispInvoiceDate = invoiceDate ? invoiceDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '___/___/_____';
     const dispPaymentDate = paymentDate ? paymentDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '___/___/_____';
 
-    // Bottom date uses payment date
-    const dateLong = (paymentDate || new Date()).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    // Bottom date uses payment date, or empty lines for manual pen filling if not paid yet
+    const dateLong = paymentDate 
+        ? paymentDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) 
+        : '_____ de _______________________ de 20___';
 
     const totalValue = (winner?.total_value || 0) - (process.discount || 0);
 
     // Payment method label
-    const paymentMethod = entry?.payment_method?.toLowerCase() || '';
+    const paymentMethod = (entry?.payment_methods?.name || entry?.payment_method || '').toLowerCase();
     let paymentLabel = 'AUTORIZAÇÃO';
     if (paymentMethod.includes('pix')) {
         paymentLabel = 'OPERAÇÃO';
-    } else if (paymentMethod.includes('cartão') || paymentMethod.includes('cartao')) {
+    } else if (
+        paymentMethod.includes('cartão') || 
+        paymentMethod.includes('cartao') || 
+        paymentMethod.includes('débito') || 
+        paymentMethod.includes('debito') || 
+        paymentMethod.includes('crédito') || 
+        paymentMethod.includes('credito')
+    ) {
         paymentLabel = 'AUTORIZAÇÃO';
     } else if (paymentMethod.includes('cheque')) {
         paymentLabel = 'CHEQUE';
     } else if (paymentMethod.includes('transferência') || paymentMethod.includes('transferencia')) {
         paymentLabel = 'TRANSFERÊNCIA';
     }
+
+    const authNumber = entry?.auth_number || '________________________';
 
     const customStyles = `
         * { box-sizing: border-box; }
@@ -692,12 +711,12 @@ export const generateReciboHTML = (process: DocumentProcess) => {
 ${getDocumentBaseCSS(customStyles, false, '0')}
 <body class="flex flex-col items-center">
     <div class="print-container">
-        <div class="text-center border-b pb-8 mb-12">
-            <h1 class="text-xl font-black uppercase mb-2">${supplier?.name || winner?.supplier_name || 'FORNECEDOR'}</h1>
-            <div class="text-[11px] text-gray-500 font-medium space-y-0.5">
-                <p>CNPJ: ${formatCNPJ(supplier?.cnpj || winner?.supplier_cnpj)}</p>
-                <p>${supplier?.address || 'ENDEREÇO'}</p>
-                <p>CEP: ${supplier?.cep || '00.000-000'} - ${supplier?.city || 'LOCAL'}/AL</p>
+        <div class="text-center border-b pb-4 mb-8">
+            <h1 class="text-xl font-bold uppercase" style="margin: 0 0 4px 0;">${supplier?.name || winner?.supplier_name || 'FORNECEDOR'}</h1>
+            <div class="text-[12px] text-gray-600 font-medium" style="line-height: 1.3;">
+                <p style="margin: 0 0 2px 0;">CNPJ: ${formatCNPJ(supplier?.cnpj || winner?.supplier_cnpj)}</p>
+                <p style="margin: 0 0 2px 0;">${supplier?.address || 'ENDEREÇO'}</p>
+                <p style="margin: 0;">CEP: ${supplier?.cep || '00.000-000'} - ${supplier?.city || 'LOCAL'}/${supplier?.uf || 'AL'}</p>
             </div>
         </div>
 
@@ -717,23 +736,23 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
             DATADA DE <strong>${dispInvoiceDate}</strong>.
             <br/><br/>
             PAGO COM RECURSO <strong>${program?.name?.toUpperCase() || 'PNAE/FNDE'}</strong>, 
-            ${paymentLabel} Nº <strong>${entry?.auth_number || '_______'}</strong>, 
+            ${paymentLabel} Nº <strong>${authNumber}</strong>, 
             DATADA DE <strong>${dispPaymentDate}</strong>.
         </div>
 
-        <div class="text-right italic text-[13px] mt-20 mb-32">
+        <div class="text-right italic text-[13px] mt-20" style="margin-bottom: 70px;">
             ${school?.city || 'ALAGOAS'}, ${dateLong}
         </div>
 
         <div class="flex flex-col items-center relative">
+            <div class="w-2/3 border-t border-black" style="margin-bottom: 4px;"></div>
+            <p class="text-[11px] font-black uppercase text-gray-900" style="margin: 0 0 2px 0;">ASSINATURA DO FORNECEDOR</p>
+            <p class="text-[10px] text-gray-500 font-medium uppercase" style="margin: 0 0 10px 0;">${supplier?.name || winner?.supplier_name}</p>
             ${supplier?.stamp_url ? `
-                <div class="absolute -top-24 opacity-80 mix-blend-multiply pointer-events-none" style="z-index: 10;">
-                    <img src="${supplier.stamp_url}" class="rotate-[-5deg]" style="width: 200px; height: auto; display: block;" />
+                <div class="opacity-80 mix-blend-multiply pointer-events-none" style="z-index: 10;">
+                    <img src="${supplier.stamp_url}" class="rotate-[-3deg]" style="width: 220px; height: auto; display: block;" />
                 </div>
             ` : ''}
-            <div class="w-2/3 border-t border-black mb-2"></div>
-            <p class="text-[11px] font-black uppercase text-gray-900">ASSINATURA DO FORNECEDOR</p>
-            <p class="text-[10px] text-gray-400 font-medium uppercase">${supplier?.name || winner?.supplier_name}</p>
         </div>
     </div>
 </body>
@@ -1444,16 +1463,16 @@ ${getDocumentBaseCSS(customStyles)}
 
                 <div class="mt-14 grid grid-cols-2 gap-12 text-center">
                     <div class="border-t border-black pt-2">
-                        <p class="text-[11px]">${directorName}</p>
+                        <p class="font-bold text-[11px]">${directorName}</p>
                         <p class="text-[9px]">CONTRATANTE</p>
-                        <p class="text-[8px]">CPF: <strong>${directorCpf}</strong></p>
-                        <p class="text-[8px]">RG: <strong>${directorRg}</strong></p>
+                        <p class="text-[8px]">CPF: ${directorCpf}</p>
+                        <p class="text-[8px]">RG: ${directorRg}</p>
                     </div>
                     <div class="border-t border-black pt-2">
                         <p class="font-bold text-[11px]">${(contract?.representative_name || supplier?.rep_name || 'REPRESENTANTE LEGAL').toUpperCase()}</p>
                         <p class="text-[9px]">CONTRATADA</p>
-                        <p class="text-[8px]">CPF: <strong>${contract?.representative_cpf || supplier?.rep_cpf || '___.___.___-__'}</strong></p>
-                        <p class="text-[8px]">RG: <strong>${contract?.representative_rg || supplier?.rep_rg || '___________'}</strong></p>
+                        <p class="text-[8px]">CPF: ${contract?.representative_cpf || supplier?.rep_cpf || '___.___.___-__'}</p>
+                        <p class="text-[8px]">RG: ${contract?.representative_rg || supplier?.rep_rg || '___________'}</p>
                     </div>
                 </div>
 
@@ -1461,17 +1480,17 @@ ${getDocumentBaseCSS(customStyles)}
                     <div>
                         <div class="border-t border-black pt-2">
                             <p class="font-bold text-[9px]">${(process as any).contract?.terms_json?.witness_1_name ? (process as any).contract.terms_json.witness_1_name.toUpperCase() : 'TESTEMUNHA 01'}</p>
-                            ${(process as any).contract?.terms_json?.witness_1_name ? `<p class="text-[9px]">TESTEMUNHA 01</p>` : ''}
-                            <p class="text-[8px]">CPF: ${(process as any).contract?.terms_json?.witness_1_cpf || '___.___.___-__'}</p>
-                            <p class="text-[8px]">RG: ${(process as any).contract?.terms_json?.witness_1_rg || '___________'}</p>
+                            ${(process as any).contract?.terms_json?.witness_1_name ? `<p class="text-[8px] uppercase">TESTEMUNHA 01</p>` : ''}
+                            <p class="text-[7px]">CPF: ${(process as any).contract?.terms_json?.witness_1_cpf || '___.___.___-__'}</p>
+                            <p class="text-[7px]">RG: ${(process as any).contract?.terms_json?.witness_1_rg || '___________'}</p>
                         </div>
                     </div>
                     <div>
                         <div class="border-t border-black pt-2">
                             <p class="font-bold text-[9px]">${(process as any).contract?.terms_json?.witness_2_name ? (process as any).contract.terms_json.witness_2_name.toUpperCase() : 'TESTEMUNHA 02'}</p>
-                            ${(process as any).contract?.terms_json?.witness_2_name ? `<p class="text-[9px]">TESTEMUNHA 02</p>` : ''}
-                            <p class="text-[8px]">CPF: ${(process as any).contract?.terms_json?.witness_2_cpf || '___.___.___-__'}</p>
-                            <p class="text-[8px]">RG: ${(process as any).contract?.terms_json?.witness_2_rg || '___________'}</p>
+                            ${(process as any).contract?.terms_json?.witness_2_name ? `<p class="text-[8px] uppercase">TESTEMUNHA 02</p>` : ''}
+                            <p class="text-[7px]">CPF: ${(process as any).contract?.terms_json?.witness_2_cpf || '___.___.___-__'}</p>
+                            <p class="text-[7px]">RG: ${(process as any).contract?.terms_json?.witness_2_rg || '___________'}</p>
                         </div>
                     </div>
                 </div>
