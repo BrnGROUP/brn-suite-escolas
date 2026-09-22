@@ -182,7 +182,7 @@ const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
                                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-slate-400 font-bold uppercase tracking-wider">
                                                     <span className="flex items-center gap-1 text-slate-400 shrink-0">
                                                         <span className="material-symbols-outlined text-[12px]">calendar_today</span>
-                                                        {new Date(entry.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                                                        {new Date(entry.payment_date || entry.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
                                                     </span>
                                                     {entry.document_number && (
                                                         <>
@@ -237,7 +237,7 @@ const ManualMatchModal: React.FC<ManualMatchModalProps> = ({
                                                 <p className="text-[10px] text-white font-black uppercase truncate">{e.description}</p>
                                                 <p className="text-[9px] text-indigo-300 font-bold truncate mt-0.5">{e.supplierName}</p>
                                                 <div className="flex items-center gap-1 text-[8px] text-slate-500 font-medium mt-0.5">
-                                                    <span>{new Date(e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
+                                                    <span>{new Date(e.payment_date || e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
                                                     {e.document_number && <span>• Nº {e.document_number}</span>}
                                                 </div>
                                             </div>

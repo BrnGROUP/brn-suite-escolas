@@ -1,5 +1,6 @@
 
 import React from 'react';
+import CurrencyInput from '../common/CurrencyInput';
 
 interface CapaModalProps {
     capaForm: { revenue: number, taxes: number, balance: number };
@@ -70,13 +71,12 @@ const CapaModal: React.FC<CapaModalProps> = ({
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Rendimento Bruto no Mês (+)</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500 font-bold text-xs">R$</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={capaForm.revenue || ''}
-                                    onChange={e => setCapaForm({ ...capaForm, revenue: parseFloat(e.target.value) })}
+                                <CurrencyInput
+                                    value={capaForm.revenue}
+                                    onChange={v => setCapaForm({ ...capaForm, revenue: v })}
                                     className="w-full bg-card-dark border border-white/10 rounded-2xl py-3 pl-10 pr-4 text-white font-bold outline-none focus:border-emerald-500 transition-all"
                                     placeholder="0,00"
+                                    autoFocus
                                 />
                             </div>
                         </div>
@@ -85,11 +85,9 @@ const CapaModal: React.FC<CapaModalProps> = ({
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Impostos (IRRF + IOF) (-)</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-500 font-bold text-xs">R$</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={capaForm.taxes || ''}
-                                    onChange={e => setCapaForm({ ...capaForm, taxes: parseFloat(e.target.value) })}
+                                <CurrencyInput
+                                    value={capaForm.taxes}
+                                    onChange={v => setCapaForm({ ...capaForm, taxes: v })}
                                     className="w-full bg-card-dark border border-white/10 rounded-2xl py-3 pl-10 pr-4 text-white font-bold outline-none focus:border-rose-500 transition-all"
                                     placeholder="0,00"
                                 />
@@ -100,11 +98,9 @@ const CapaModal: React.FC<CapaModalProps> = ({
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Saldo Bruto Atual (=)</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 font-bold text-xs">R$</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={capaForm.balance || ''}
-                                    onChange={e => setCapaForm({ ...capaForm, balance: parseFloat(e.target.value) })}
+                                <CurrencyInput
+                                    value={capaForm.balance}
+                                    onChange={v => setCapaForm({ ...capaForm, balance: v })}
                                     className="w-full bg-card-dark border border-white/10 rounded-2xl py-3 pl-10 pr-4 text-white font-bold outline-none focus:border-indigo-500 transition-all font-mono"
                                     placeholder="0,00"
                                 />
@@ -133,3 +129,4 @@ const CapaModal: React.FC<CapaModalProps> = ({
 };
 
 export default CapaModal;
+

@@ -51,24 +51,29 @@ export const calculateFinancialStats = (
       receita += val;
 
       const catUpper = (e.category || '').toUpperCase().trim();
-      if (catUpper === 'RENDIMENTO DE APLICAÇÃO') {
+      if (catUpper.includes('RENDIMENTO')) {
         rendimentos += val;
-      } else if (catUpper === 'REPASSE / CRÉDITO' || catUpper === 'OUTROS') {
+      } else if (catUpper.includes('REPASSE') || catUpper === 'OUTROS') {
         repasses += absVal;
-      } else if (catUpper === 'REEMBOLSO / ESTORNO') {
+      } else if (catUpper.includes('REEMBOLSO') || catUpper.includes('ESTORNO')) {
         reembolsos += absVal;
       }
     } else {
       despesa += absVal;
-      const catUpper = (e.category || '').trim();
-      if (catUpper === 'Tarifa Bancária') {
+      const catUpper = (e.category || '').toUpperCase().trim();
+      if (catUpper.includes('TARIFA')) {
         tarifas += absVal;
       }
       if (
-        catUpper === 'Impostos / Tributos' ||
-        catUpper === 'Devolução de Recurso (FNDE/Estado)'
+        catUpper.includes('IMPOSTOS') ||
+        catUpper.includes('TRIBUTOS') ||
+        catUpper.includes('DEVOLUÇÃO') ||
+        catUpper.includes('DEVOLUCAO')
       ) {
         impostosDevolucoes += absVal;
+      }
+      if (catUpper.includes('RENDIMENTO')) {
+        rendimentos -= absVal;
       }
     }
   });

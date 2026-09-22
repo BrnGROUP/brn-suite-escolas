@@ -80,6 +80,8 @@ export const useReconciliationMutations = ({
             is_reconciled: true,
             reconciled_at: new Date().toISOString(),
             payment_date: bt.date,
+            date: bt.date,
+            invoice_date: original.invoice_date || original.date,
             bank_transaction_ref: bt.fitid,
             bank_account_id: selectedBankAccountId,
             status: TransactionStatus.CONCILIADO,
@@ -95,6 +97,7 @@ export const useReconciliationMutations = ({
             is_reconciled: true,
             reconciled_at: new Date().toISOString(),
             payment_date: bt.date,
+            date: bt.date,
             bank_transaction_ref: bt.fitid,
             bank_account_id: selectedBankAccountId,
             status: TransactionStatus.CONCILIADO,
@@ -122,6 +125,7 @@ export const useReconciliationMutations = ({
             is_reconciled: true,
             reconciled_at: new Date().toISOString(),
             payment_date: bt.date, // Store the bank date as payment date
+            date: bt.date, // Synchronize entry date with actual bank payment date
             bank_transaction_ref: bt.fitid,
             bank_account_id: selectedBankAccountId, // Ensure account is linked
             status: TransactionStatus.CONCILIADO,

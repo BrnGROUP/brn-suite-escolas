@@ -154,11 +154,11 @@ export const useSemesterClosure = ({ user, schoolId, year, semesterNumber }: Use
             // Aggregate entries
             (entries || []).forEach(e => {
                 const line = getOrCreate(e.program_id, e.rubric_id || null, e.bank_account_id || null, e.nature);
-                const val = Math.abs(Number(e.value));
+                const val = Number(e.value) || 0;
                 if (e.type === 'Entrada') {
                     line.total_income += val;
                 } else {
-                    line.total_expense += val;
+                    line.total_expense += Math.abs(val);
                 }
             });
 

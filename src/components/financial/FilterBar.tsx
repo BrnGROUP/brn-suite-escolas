@@ -172,7 +172,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             className="w-full bg-[#1c2936] text-white text-xs h-10 px-3 rounded-xl border border-white/10 outline-none focus:border-primary"
                         >
                             <option value="">Todas as Escolas</option>
-                            {filteredSchools.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                            {filteredSchools.map((s: any, i: number) => <option key={s.id || `school-${i}`} value={s.id}>{s.name}</option>)}
                         </select>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -183,7 +183,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             className="w-full bg-[#1c2936] text-white text-xs h-10 px-3 rounded-xl border border-white/10 outline-none focus:border-primary"
                         >
                             <option value="">Todos</option>
-                            {auxData.programs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            {auxData.programs.map((p, i) => <option key={p.id || `prog-${i}`} value={p.id}>{p.name}</option>)}
                         </select>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -198,7 +198,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             {auxData.rubrics
                                 .filter(r => !filters.program || r.program_id === filters.program)
                                 .filter(r => !filters.school || !r.school_id || r.school_id === filters.school)
-                                .map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                                .map((r, i) => <option key={r.id || `rubric-${i}`} value={r.id}>{r.name}</option>)}
                         </select>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -219,7 +219,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             className="bg-[#1c2936] text-white text-xs h-10 px-3 rounded-xl border border-white/10 outline-none focus:border-primary"
                         >
                             <option value="">Personalizado...</option>
-                            {auxData.periods.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                            {auxData.periods.map((p, i) => <option key={p.id || `period-${i}`} value={p.name}>{p.name}</option>)}
                         </select>
                     </div>
                     <div className="flex flex-col gap-2">
@@ -254,7 +254,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         </div>
                         <select title="Filtrar por Fornecedor" aria-label="Filtrar por Fornecedor" value={filters.supplier} onChange={e => setFilters({ ...filters, supplier: e.target.value })} className="w-full bg-[#1c2936] text-white text-xs h-10 px-3 rounded-xl border border-white/10 outline-none focus:border-primary">
                             <option value="">Todos</option>
-                            {filteredSuppliers.map((s: any) => <option key={s.id} value={s.id}>{s.name}{s.cnpj ? ` (${s.cnpj})` : ''}</option>)}
+                            {filteredSuppliers.map((s: any, i: number) => <option key={s.id || `supplier-${i}`} value={s.id}>{s.name}{s.cnpj ? ` (${s.cnpj})` : ''}</option>)}
                         </select>
                     </div>
                     <div className="md:col-span-3 lg:col-span-4 flex flex-col gap-2">

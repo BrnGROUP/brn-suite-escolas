@@ -278,9 +278,9 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
             };
 
             exportEntries.forEach(e => {
-                const val = Math.abs(e.value);
+                const val = Number(e.value) || 0;
                 if (e.type === 'Entrada') exportStats.income += val;
-                else exportStats.expense += val;
+                else exportStats.expense += Math.abs(val);
             });
             exportStats.balance = exportStats.income - exportStats.expense;
 

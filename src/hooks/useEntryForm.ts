@@ -74,13 +74,6 @@ export const useEntryForm = ({
     const [singleRubricId, setSingleRubricId] = React.useState('');
     const [singleNature, setSingleNature] = React.useState<TransactionNature>(TransactionNature.CUSTEIO);
 
-    React.useEffect(() => {
-        const d = paymentDate || invoiceDate;
-        if (d) {
-            setDate(d);
-        }
-    }, [paymentDate, invoiceDate]);
-
     const { programs, rubrics: allRubrics, suppliers, paymentMethods } = auxData;
 
     // Memoized filters and properties
@@ -108,6 +101,13 @@ export const useEntryForm = ({
         ];
         return simplifiedCats.some(cat => category?.trim().toUpperCase() === cat.trim().toUpperCase());
     }, [category]);
+
+    React.useEffect(() => {
+        const d = isSimplified ? date : (paymentDate || invoiceDate);
+        if (d) {
+            setDate(d);
+        }
+    }, [paymentDate, invoiceDate, isSimplified]);
 
     const isBankOp = React.useMemo(() => {
         const bankCats = ['Tarifa Bancária', 'Rendimento de Aplicação', 'Aplicação Financeira', 'Resgate de Aplicação', 'Repasse / Crédito'];
@@ -438,7 +438,7 @@ export const useEntryForm = ({
                     return {
                         school_id: selectedSchoolId,
                         program_id: selectedProgramId,
-                        date,
+                        date: finalDate,
                         description: item.description ? `${mainDescription} - ${item.description.toUpperCase()}` : mainDescription,
                         value: item.value * (type === 'Saída' ? -1 : 1),
                         type,
@@ -489,7 +489,7 @@ export const useEntryForm = ({
                 const payload = {
                     school_id: selectedSchoolId,
                     program_id: selectedProgramId,
-                    date,
+                    date: finalDate,
                     description: mainDescription,
                     value: valNum * (type === 'Saída' ? -1 : 1),
                     type,

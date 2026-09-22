@@ -60,4 +60,29 @@ describe('calculateFinancialStats', () => {
     const stats = calculateFinancialStats(entries);
     expect(stats.reembolsos).toBe(2200);
   });
+
+  it('should subtract negative rendimento correctly', () => {
+    const entries: EntryLike[] = [
+      { value: 24.35, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Rendimento de Aplicação' },
+      { value: -2.41, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Rendimento de Aplicação' },
+      { value: 23.65, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Rendimento de Aplicação' },
+      { value: 26.14, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Rendimento de Aplicação' },
+      { value: 21.36, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Rendimento de Aplicação' },
+      { value: 24.65, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Rendimento de Aplicação' },
+    ];
+
+    const stats = calculateFinancialStats(entries);
+    expect(stats.rendimentos).toBe(117.74);
+    expect(stats.receita).toBe(117.74);
+  });
+
+  it('should subtract rendimento when logged as Saída', () => {
+    const entries: EntryLike[] = [
+      { value: 100, type: 'Entrada', status: TransactionStatus.RECEBIDO, category: 'Rendimento de Aplicação' },
+      { value: 20, type: 'Saída', status: TransactionStatus.PAGO, category: 'Rendimento de Aplicação' },
+    ];
+
+    const stats = calculateFinancialStats(entries);
+    expect(stats.rendimentos).toBe(80);
+  });
 });

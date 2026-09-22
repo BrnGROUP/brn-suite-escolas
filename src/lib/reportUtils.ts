@@ -106,21 +106,22 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
             dataBySchool[schoolName]!.debits += Math.abs(val);
         }
 
-        // Calular natureza para todas as entradas exibidas (conforme filtro ativo)
+        // Calcular natureza para todas as entradas exibidas (conforme filtro ativo)
+        const natureDelta = type === 'Entrada' ? val : Math.abs(val);
         if (e.nature === 'Custeio') {
-            dataBySchool[schoolName]!.custeio += Math.abs(val);
+            dataBySchool[schoolName]!.custeio = Number((dataBySchool[schoolName]!.custeio + natureDelta).toFixed(2));
         } else if (e.nature === 'Capital') {
-            dataBySchool[schoolName]!.capital += Math.abs(val);
+            dataBySchool[schoolName]!.capital = Number((dataBySchool[schoolName]!.capital + natureDelta).toFixed(2));
         }
 
         progNode.entries.push(e);
     });
 
-    const totalPrev = Object.values(dataBySchool).reduce((acc, s) => acc + s.previousBalance, 0);
-    const totalCred = Object.values(dataBySchool).reduce((acc, s) => acc + s.credits, 0);
-    const totalDeb = Object.values(dataBySchool).reduce((acc, s) => acc + s.debits, 0);
-    const totalCusteio = Object.values(dataBySchool).reduce((acc, s) => acc + s.custeio, 0);
-    const totalCapital = Object.values(dataBySchool).reduce((acc, s) => acc + s.capital, 0);
+    const totalPrev = Number(Object.values(dataBySchool).reduce((acc, s) => acc + s.previousBalance, 0).toFixed(2));
+    const totalCred = Number(Object.values(dataBySchool).reduce((acc, s) => acc + s.credits, 0).toFixed(2));
+    const totalDeb = Number(Object.values(dataBySchool).reduce((acc, s) => acc + s.debits, 0).toFixed(2));
+    const totalCusteio = Number(Object.values(dataBySchool).reduce((acc, s) => acc + s.custeio, 0).toFixed(2));
+    const totalCapital = Number(Object.values(dataBySchool).reduce((acc, s) => acc + s.capital, 0).toFixed(2));
 
     let totalRepasses = 0;
     let totalTarifas = 0;
@@ -128,20 +129,30 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
 
     entries.forEach(e => {
         const catUpper = (e.category || '').toUpperCase().trim();
-        const val = Math.abs(Number(e.value));
+        const rawVal = Number(e.value) || 0;
+        const absVal = Math.abs(rawVal);
         
         if (catUpper.includes('REPASSE')) {
-            totalRepasses += val;
+            totalRepasses += absVal;
         } else if (catUpper.includes('TARIFA')) {
-            totalTarifas += val;
+            totalTarifas += absVal;
         } else if (catUpper.includes('RENDIMENTO')) {
-            totalRendimentos += val;
+            // Se o rendimento for negativo (valor negativo ou tipo Saída), deduz do total
+            if (e.type === 'Saída') {
+                totalRendimentos -= absVal;
+            } else {
+                totalRendimentos += rawVal;
+            }
         }
     });
 
-    const totalNat = totalCusteio + totalCapital || 1;
-    const custeioPerc = (totalCusteio / totalNat) * 100;
-    const capitalPerc = (totalCapital / totalNat) * 100;
+    totalRepasses = Number(totalRepasses.toFixed(2));
+    totalTarifas = Number(totalTarifas.toFixed(2));
+    totalRendimentos = Number(totalRendimentos.toFixed(2));
+
+    const totalNat = (totalCusteio + totalCapital) > 0 ? (totalCusteio + totalCapital) : 1;
+    const custeioPerc = Math.max(0, Math.min(100, (totalCusteio / totalNat) * 100));
+    const capitalPerc = Math.max(0, Math.min(100, (totalCapital / totalNat) * 100));
 
     const docHash = await generateDocHash(reportDate + totalCred + totalDeb + entries.length + 'brn-suite-v5');
 
@@ -482,7 +493,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                             </div>
                             <div class="flex justify-between text-[11px]">
                                 <span class="text-slate-500 font-medium">Rendimentos:</span>
-                                <span class="font-bold text-slate-700">${formatCurrency(totalRendimentos)}</span>
+                                <span class="font-bold ${totalRendimentos < 0 ? 'text-red-600' : 'text-slate-700'}">${formatCurrency(totalRendimentos)}</span>
                             </div>
                             <div class="flex justify-between text-[11px]">
                                 <span class="text-slate-500 font-medium">Tarifas Bancárias:</span>
@@ -572,7 +583,11 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                     ${Object.entries(school.programs).map(([progName, progData]) => {
             const progBal = progData.previousBalance + progData.credits - progData.debits;
             let currentRollingBalance = progData.previousBalance;
-            const sortedEntries = [...progData.entries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            const sortedEntries = [...progData.entries].sort((a, b) => {
+                const dateA = a.payment_date || a.date;
+                const dateB = b.payment_date || b.date;
+                return new Date(dateA).getTime() - new Date(dateB).getTime();
+            });
 
             return `
                         <div class="no-break group">
@@ -614,6 +629,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                         ${sortedEntries.map(e => {
                 const rawVal = Number(e.value);
                 const val = Math.abs(rawVal);
+                const displayDate = e.payment_date || e.date;
                 if (isLivroCaixa) {
                     if (e.type === 'Entrada') currentRollingBalance += rawVal;
                     else currentRollingBalance -= rawVal;
@@ -621,7 +637,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
 
                 return `
                                             <tr class="hover:bg-slate-50/30 transition-colors">
-                                                <td class="px-6 py-5 font-bold text-slate-400 whitespace-nowrap">${new Date(e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
+                                                <td class="px-6 py-5 font-bold text-slate-400 whitespace-nowrap">${new Date(displayDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</td>
                                                 <td class="px-4 py-5">
                                                     <div class="flex items-center gap-2">
                                                         ${options.showStatusBadges ? `
@@ -636,6 +652,10 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                                         ${e.document_number ? `
                                                             <span class="text-[10px] text-slate-300">|</span>
                                                             <span class="text-[9px] font-black text-primary uppercase">Doc: ${e.document_number}</span>
+                                                        ` : ''}
+                                                        ${e.invoice_date && displayDate && e.invoice_date.split('T')[0] !== displayDate.split('T')[0] ? `
+                                                            <span class="text-[10px] text-slate-300">|</span>
+                                                            <span class="text-[9px] text-slate-400 font-medium">NF: ${new Date(e.invoice_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
                                                         ` : ''}
                                                         <span class="text-[10px] text-slate-300">|</span>
                                                         <span class="text-[9px] text-slate-400 font-medium">${e.rubric || 'Recurso Direto'}</span>
@@ -729,7 +749,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
 export const generateCSV = (entries: any[]) => {
     const headers = ['Data', 'Descrição', 'Doc/NF', 'Escola', 'Programa', 'Rubrica', 'Fornecedor', 'Natureza', 'Tipo', 'Status', 'Valor (R$)'];
     const rows = entries.map(e => [
-        new Date(e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' }),
+        new Date(e.payment_date || e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' }),
         `"${e.description.replace(/"/g, '""')}"`,
         `"${e.document_number || ''}"`,
         `"${e.school}"`,

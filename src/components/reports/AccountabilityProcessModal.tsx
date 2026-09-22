@@ -580,7 +580,7 @@ const AccountabilityProcessModal: React.FC<AccountabilityProcessModalProps> = ({
                     </div>
                     <div className="text-right shrink-0">
                       <span className="text-sm font-black text-white">{formatCurrency(Math.abs(e.value))}</span>
-                      <span className="text-[10px] text-slate-500 block">{new Date(e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
+                      <span className="text-[10px] text-slate-500 block">{new Date(e.payment_date || e.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
                     </div>
                   </button>
                 ))}
