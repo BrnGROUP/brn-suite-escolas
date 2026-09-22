@@ -281,12 +281,6 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({
                                 if (contract) {
                                     setSelectedProgramId(contract.program_id);
                                     setSingleRubricId(contract.rubric_id || '');
-                                    setTotalValue(Math.abs(contract.monthly_value).toString());
-
-                                    const identifier = contract.contract_number
-                                        ? `${contract.contract_number} - ${contract.description}`
-                                        : contract.description;
-                                    setMainDescription(identifier.toUpperCase());
                                 }
                             }}
                             className="w-full bg-black/40 border border-white/10 rounded-2xl h-14 px-5 pr-12 text-white text-sm focus:border-cyan-500 outline-none transition-all appearance-none font-bold"
