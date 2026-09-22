@@ -84,8 +84,12 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
                                     <p className="text-sm font-black text-white text-center">{formatCurrency(total)}</p>
                                 </div>
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center">Valor Mensal</p>
-                                    <p className="text-sm font-black text-primary text-center">{formatCurrency(contract.monthly_value)}</p>
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center">
+                                        {contract.category === 'GÁS' ? 'Valor da Unidade' : 'Valor Mensal'}
+                                    </p>
+                                    <p className="text-sm font-black text-primary text-center">
+                                        {formatCurrency(contract.category === 'GÁS' && (contract.terms_json as any)?.gas_unit_price ? (contract.terms_json as any).gas_unit_price : contract.monthly_value)}
+                                    </p>
                                 </div>
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 text-center">Executado</p>
