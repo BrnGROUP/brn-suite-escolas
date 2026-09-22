@@ -385,7 +385,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                 rubric_id: rubricId || null,
                 contract_number: contractNumber,
                 description: description.toUpperCase(),
-                monthly_value: parseFloat(monthlyValue),
+                monthly_value: parseFloat(monthlyValue) || 0,
                 total_value: parseFloat(totalValue) || 0,
                 start_date: startDate,
                 end_date: endDate,
@@ -431,7 +431,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                     if (!pError) {
                         const isGas = category === 'GÁS';
                         const gasQty = isGas && gasQuantity ? parseFloat(gasQuantity) : (parseInt(durationMonths) || 1);
-                        const gasPrice = isGas && gasUnitPrice ? parseFloat(gasUnitPrice) : parseFloat(monthlyValue);
+                        const gasPrice = isGas && gasUnitPrice ? parseFloat(gasUnitPrice) : (parseFloat(monthlyValue) || 0);
 
                         // Add the main contract item to the process
                         await supabase.from('accountability_items').insert({
