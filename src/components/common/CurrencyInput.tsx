@@ -6,6 +6,8 @@ interface CurrencyInputProps {
     className?: string;
     placeholder?: string;
     autoFocus?: boolean;
+    id?: string;
+    disabled?: boolean;
 }
 
 /**
@@ -22,6 +24,8 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
     className = '',
     placeholder = '0,00',
     autoFocus = false,
+    id,
+    disabled = false,
 }) => {
     const [displayValue, setDisplayValue] = React.useState('');
     const [isFocused, setIsFocused] = React.useState(false);
@@ -91,9 +95,10 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
             s = parts[0] + ',' + parts.slice(1).join('');
         }
 
+        const newParts = s.split(',');
         // Limit decimal places to 2
-        if (parts.length === 2 && parts[1].length > 2) {
-            s = parts[0] + ',' + parts[1].slice(0, 2);
+        if (newParts.length >= 2 && newParts[1] !== undefined && newParts[1].length > 2) {
+            s = newParts[0] + ',' + newParts[1].slice(0, 2);
         }
 
         return s;
@@ -171,6 +176,8 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
             onKeyDown={handleKeyDown}
             className={className}
             placeholder={placeholder}
+            id={id}
+            disabled={disabled}
         />
     );
 };
