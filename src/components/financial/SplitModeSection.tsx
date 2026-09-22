@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { TransactionNature } from '../../types';
 import { SplitItem } from '../../hooks/useEntryForm';
+import CurrencyInput from '../common/CurrencyInput';
 
 interface SplitModeSectionProps {
     isSplitMode: boolean;
@@ -131,15 +132,12 @@ export const SplitModeSection: React.FC<SplitModeSectionProps> = ({
                                 </div>
                                 <div className="w-full md:w-32">
                                     <label htmlFor={`value_${idx}`} className="text-[9px] text-slate-500 font-bold uppercase mb-1 block">Valor R$</label>
-                                    <input 
-                                        id={`value_${idx}`} 
-                                        type="number" 
-                                        step="0.01" 
-                                        value={item.value || ''} 
-                                        onChange={e => { 
+                                    <CurrencyInput 
+                                        value={item.value || 0} 
+                                        onChange={v => { 
                                             const ns = [...splitItems]; 
                                             if (ns[idx]) {
-                                                ns[idx].value = parseFloat(e.target.value) || 0; 
+                                                ns[idx].value = v; 
                                                 setSplitItems(ns);
                                             }
                                         }} 

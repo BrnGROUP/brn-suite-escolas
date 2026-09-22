@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { TransactionNature } from '../../types';
+import Skeleton from '../common/Skeleton';
+import CurrencyInput from '../common/CurrencyInput';
 import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
 
@@ -229,7 +231,7 @@ const ReprogrammedBalancesModal: React.FC<ReprogrammedBalancesModalProps> = ({
                             </div>
                         </div>
                         <label htmlFor="reprog_value" className="text-slate-400 uppercase font-black">Valor R$</label>
-                        <input id="reprog_value" type="number" step="0.01" value={newReprogrammed.value} onChange={e => setNewReprogrammed({ ...newReprogrammed, value: e.target.value })} className="bg-[#1e293b] rounded-lg h-10 px-3 text-white border-none outline-none focus:ring-1 focus:ring-blue-500 font-mono text-lg" placeholder="0,00" />
+                        <CurrencyInput id="reprog_value" value={parseFloat(newReprogrammed.value) || 0} onChange={v => setNewReprogrammed({ ...newReprogrammed, value: v.toString() })} className="bg-[#1e293b] rounded-lg h-10 px-3 text-white border-none outline-none focus:ring-1 focus:ring-blue-500 font-mono text-lg" placeholder="0,00" />
                         <button onClick={handleSaveReprogrammed} disabled={isSavingReprogrammed} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold min-h-[48px] py-3 rounded-xl transition-all shadow-lg shadow-blue-900/20 active:scale-95 flex items-center justify-center gap-2 shrink-0">
                             {isSavingReprogrammed ? <span className="material-symbols-outlined animate-spin text-sm">sync</span> : 'Salvar Saldo'}
                         </button>

@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { TransactionStatus, User, UserRole } from '../../types';
 import { ENTRY_CATEGORIES, EXIT_CATEGORIES } from '../../lib/constants';
+import CurrencyInput from '../common/CurrencyInput';
 
 interface EntryFormFieldsProps {
     user: User;
@@ -162,12 +163,10 @@ export const EntryFormFields: React.FC<EntryFormFieldsProps> = ({
             <div className={`grid ${isSimplified ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'} gap-4`}>
                 <div className="flex flex-col gap-2">
                     <label htmlFor="totalValue" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Valor R$</label>
-                    <input 
-                        id="totalValue" 
-                        type="number" 
-                        value={totalValue} 
-                        onChange={e => setTotalValue(e.target.value)} 
-                        className="bg-[#1e293b] rounded-xl h-12 px-4 text-white text-lg font-mono outline-none border border-white/5 focus:border-cyan-500" 
+                    <CurrencyInput 
+                        value={parseFloat(totalValue) || 0} 
+                        onChange={v => setTotalValue(v.toString())} 
+                        className="bg-[#1e293b] rounded-xl h-12 px-4 text-white text-lg font-mono outline-none border border-white/5 focus:border-cyan-500 w-full" 
                     />
                 </div>
                 {isSimplified && (
