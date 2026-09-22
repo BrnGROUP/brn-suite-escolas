@@ -363,7 +363,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
     };
 
     const handleSave = async () => {
-        if (!schoolId || !supplierId || !programId || !description || !monthlyValue || !startDate || !endDate) {
+        if (!schoolId || !supplierId || !programId || !description || (!monthlyValue && category !== 'GÁS') || !startDate || !endDate) {
             addToast('Por favor, preencha todos os campos obrigatórios.', 'warning');
             return;
         }
