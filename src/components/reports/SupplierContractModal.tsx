@@ -197,6 +197,9 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setCustomDirectorAddress(terms.custom_director_address || '');
             setGasUnitPrice(terms.gas_unit_price ? terms.gas_unit_price.toString() : '');
             setGasQuantity(terms.gas_quantity ? terms.gas_quantity.toString() : '');
+            
+            // Fix: Set creationMode based on whether the loaded contract is an aditivo
+            setCreationMode(terms.is_aditivo ? 'ADITIVO' : 'NEW');
         }
     };
 
@@ -469,6 +472,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
 
     const resetForm = () => {
         if (!user.schoolId) setSchoolId(defaultSchoolId || '');
+        setCreationMode('NEW');
         setSupplierId('');
         setProgramId('');
         setRubricId('');
@@ -513,24 +517,22 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            {!editingId && (
-                                <div className="hidden lg:flex bg-black/40 p-1 rounded-xl border border-white/5 mr-4">
-                                    <button
-                                        onClick={() => { setCreationMode('NEW'); resetForm(); }}
-                                        className={`px-6 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all gap-2 flex items-center ${creationMode === 'NEW' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                                    >
-                                        <span className="material-symbols-outlined text-sm">add_circle</span>
-                                        Novo
-                                    </button>
-                                    <button
-                                        onClick={() => setCreationMode('ADITIVO')}
-                                        className={`px-6 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all gap-2 flex items-center ${creationMode === 'ADITIVO' ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                                    >
-                                        <span className="material-symbols-outlined text-sm">history_edu</span>
-                                        Aditivo
-                                    </button>
-                                </div>
-                            )}
+                            <div className="hidden lg:flex bg-black/40 p-1 rounded-xl border border-white/5 mr-4">
+                                <button
+                                    onClick={() => { setCreationMode('NEW'); }}
+                                    className={`px-6 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all gap-2 flex items-center ${creationMode === 'NEW' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                >
+                                    <span className="material-symbols-outlined text-sm">add_circle</span>
+                                    Novo
+                                </button>
+                                <button
+                                    onClick={() => setCreationMode('ADITIVO')}
+                                    className={`px-6 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all gap-2 flex items-center ${creationMode === 'ADITIVO' ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                                >
+                                    <span className="material-symbols-outlined text-sm">history_edu</span>
+                                    Aditivo
+                                </button>
+                            </div>
                             <button onClick={onClose} className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white/5 hover:text-white transition-all shrink-0">
                                 <span className="material-symbols-outlined">close</span>
                             </button>
@@ -538,22 +540,20 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                     </div>
 
                     {/* Mobile Tabs */}
-                    {!editingId && (
-                        <div className="lg:hidden flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
-                            <button
-                                onClick={() => { setCreationMode('NEW'); resetForm(); }}
-                                className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all gap-2 flex items-center justify-center ${creationMode === 'NEW' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                            >
-                                <span className="material-symbols-outlined text-sm">add_circle</span> Novo
-                            </button>
-                            <button
-                                onClick={() => setCreationMode('ADITIVO')}
-                                className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all gap-2 flex items-center justify-center ${creationMode === 'ADITIVO' ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
-                            >
-                                <span className="material-symbols-outlined text-sm">history_edu</span> Aditivo
-                            </button>
-                        </div>
-                    )}
+                    <div className="lg:hidden flex bg-black/40 p-1 rounded-xl border border-white/5 w-full">
+                        <button
+                            onClick={() => { setCreationMode('NEW'); }}
+                            className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all gap-2 flex items-center justify-center ${creationMode === 'NEW' ? 'bg-primary text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                        >
+                            <span className="material-symbols-outlined text-sm">add_circle</span> Novo
+                        </button>
+                        <button
+                            onClick={() => setCreationMode('ADITIVO')}
+                            className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all gap-2 flex items-center justify-center ${creationMode === 'ADITIVO' ? 'bg-amber-500 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                        >
+                            <span className="material-symbols-outlined text-sm">history_edu</span> Aditivo
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">

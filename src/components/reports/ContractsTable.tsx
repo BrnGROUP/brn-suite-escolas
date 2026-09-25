@@ -74,7 +74,7 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
                                     <h4 className="font-black text-white uppercase tracking-tight line-clamp-1" title={contract.suppliers?.name}>{contract.suppliers?.name}</h4>
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1.5">
                                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                                            {contract.contract_number ? `Nº ${contract.contract_number}` : 'Sem Número'}
+                                            {contract.contract_number ? `${(contract.terms_json as any)?.is_aditivo ? 'ADITIVO Nº' : 'Nº'} ${contract.contract_number}` : 'Sem Número'}
                                         </p>
                                         {(contract.schools?.name || contract.programs?.name) && (
                                             <div className="flex flex-wrap items-center gap-2">
