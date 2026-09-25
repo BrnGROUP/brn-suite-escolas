@@ -70,9 +70,27 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
                                         {contract.category === 'INTERNET' ? 'wifi' : contract.category === 'GÁS' ? 'propane_tank' : 'description'}
                                     </span>
                                 </div>
-                                <div className="min-w-0">
-                                    <h4 className="font-black text-white uppercase tracking-tight line-clamp-1">{contract.suppliers?.name}</h4>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{contract.contract_number || 'Sem Número'}</p>
+                                <div className="min-w-0 flex-1">
+                                    <h4 className="font-black text-white uppercase tracking-tight line-clamp-1" title={contract.suppliers?.name}>{contract.suppliers?.name}</h4>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1.5">
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                                            {contract.contract_number ? `Nº ${contract.contract_number}` : 'Sem Número'}
+                                        </p>
+                                        {(contract.schools?.name || contract.programs?.name) && (
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {contract.schools?.name && (
+                                                    <span className="text-[9px] px-2 py-0.5 rounded-md bg-white/5 text-slate-400 font-bold uppercase tracking-widest border border-white/10 truncate max-w-[200px]" title={contract.schools.name}>
+                                                        {contract.schools.name}
+                                                    </span>
+                                                )}
+                                                {contract.programs?.name && (
+                                                    <span className="text-[9px] px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold uppercase tracking-widest border border-primary/20 truncate max-w-[150px]" title={contract.programs.name}>
+                                                        {contract.programs.name}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shrink-0 ${
