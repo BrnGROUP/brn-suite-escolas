@@ -13,6 +13,19 @@ interface ContractTableProps {
 const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onEdit, onPrint, onManageDocuments }) => {
     const [expandedContractId, setExpandedContractId] = useState<string | null>(null);
 
+    const formatDateSafe = (dateString: string) => {
+        if (!dateString) return '';
+        try {
+            const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+                return `${match[3]}/${match[2]}/${match[1]}`;
+            }
+            return new Date(dateString).toLocaleDateString('pt-BR');
+        } catch {
+            return dateString;
+        }
+    };
+
     if (contracts.length === 0) {
         return (
             <div className="bg-surface-dark border border-surface-border rounded-3xl p-20 flex flex-col items-center justify-center text-center">
@@ -131,7 +144,7 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
                                                 <div key={index} className="flex justify-between items-center p-3 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
                                                     <div className="flex flex-col gap-0.5 min-w-0">
                                                         <span className="text-[10px] font-black text-white truncate">{entry.description || 'Lançamento sem descrição'}</span>
-                                                        <span className="text-[9px] text-slate-500 font-bold uppercase">{new Date(entry.date).toLocaleDateString('pt-BR')}</span>
+                                                        <span className="text-[9px] text-slate-500 font-bold uppercase">{formatDateSafe(entry.date)}</span>
                                                     </div>
                                                     <span className="text-xs font-black text-white shrink-0 ml-4">{formatCurrency(entry.value)}</span>
                                                 </div>
@@ -145,7 +158,7 @@ const ContractsTable: React.FC<ContractTableProps> = ({ contracts, onDelete, onE
                                 <div className="flex items-center gap-2 shrink-0">
                                     <span className="material-symbols-outlined text-slate-500 text-sm">calendar_month</span>
                                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight whitespace-nowrap">
-                                        {new Date(contract.start_date).toLocaleDateString()} — {new Date(contract.end_date).toLocaleDateString()}
+                                        {formatDateSafe(contract.start_date)} — {formatDateSafe(contract.end_date)}
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
