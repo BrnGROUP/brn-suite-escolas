@@ -632,7 +632,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                 const displayDate = e.payment_date || e.date;
                 if (isLivroCaixa) {
                     if (e.type === 'Entrada') currentRollingBalance += rawVal;
-                    else currentRollingBalance -= rawVal;
+                    else currentRollingBalance -= val;
                 }
 
                 return `
@@ -670,7 +670,7 @@ export const generateRelatorioGerencialHTML = async (entries: any[], stats: any,
                                                         ${e.type === 'Entrada' ? formatCurrency(rawVal) : '<span class="opacity-20">-</span>'}
                                                     </td>
                                                     <td class="px-4 py-5 text-right font-black ${e.type === 'Saída' ? 'text-red-600' : 'text-slate-300'} whitespace-nowrap">
-                                                        ${e.type === 'Saída' ? formatCurrency(rawVal) : '<span class="opacity-20">-</span>'}
+                                                        ${e.type === 'Saída' ? formatCurrency(val) : '<span class="opacity-20">-</span>'}
                                                     </td>
                                                     <td class="px-6 py-5 text-right font-black text-slate-900 underline decoration-slate-200 decoration-2 underline-offset-4 whitespace-nowrap">
                                                         ${formatCurrency(currentRollingBalance)}
