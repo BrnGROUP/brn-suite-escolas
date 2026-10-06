@@ -1516,3 +1516,42 @@ ${getDocumentBaseCSS(customStyles)}
 </body>
 </html>`;
 };
+
+export const generateAllDocumentsHTML = (process: DocumentProcess) => {
+    const extractBody = (html: string) => {
+        const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        return bodyMatch ? bodyMatch[1] : html;
+    };
+
+    const ata = extractBody(generateAtaHTML(process));
+    const ordem = extractBody(generateOrdemHTML(process));
+    const consolidacao = extractBody(generateConsolidacaoHTML(process));
+    const recibo = extractBody(generateReciboHTML(process));
+    const cotacao1 = extractBody(generateCotacaoHTML(process, 0));
+    const cotacao2 = extractBody(generateCotacaoHTML(process, 1));
+    const cotacao3 = extractBody(generateCotacaoHTML(process, 2));
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(`
+    @media print {
+        .page-break { page-break-before: always !important; display: block; height: 0; }
+    }
+`)}
+<body class="bg-white text-black text-xs">
+    ${ata}
+    <div class="page-break" style="page-break-before: always;"></div>
+    ${ordem}
+    <div class="page-break" style="page-break-before: always;"></div>
+    ${consolidacao}
+    <div class="page-break" style="page-break-before: always;"></div>
+    ${recibo}
+    <div class="page-break" style="page-break-before: always;"></div>
+    ${cotacao1}
+    <div class="page-break" style="page-break-before: always;"></div>
+    ${cotacao2}
+    <div class="page-break" style="page-break-before: always;"></div>
+    ${cotacao3}
+</body>
+</html>`;
+};

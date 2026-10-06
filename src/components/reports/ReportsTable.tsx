@@ -145,6 +145,12 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ processes, onEdit, onDelete
                                                 <span className="text-[7px] font-black">3</span>
                                             </button>
                                         </div>
+
+                                        <div className="hidden lg:block w-px h-4 bg-white/5 mx-1 shrink-0"></div>
+
+                                        <button onClick={() => onPrint(process, 'todos')} className="p-2.5 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-xl transition-all flex items-center justify-center col-span-4 sm:col-auto mt-1 sm:mt-0" title="Imprimir Todos os Documentos">
+                                            <span className="material-symbols-outlined text-[20px]">print</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

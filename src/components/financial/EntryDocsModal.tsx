@@ -11,7 +11,8 @@ import {
     generateCotacaoHTML,
     generateContratoServicoHTML,
     generateAditivoHTML,
-    generateContratoGasHTML
+    generateContratoGasHTML,
+    generateAllDocumentsHTML
 } from '../../lib/documentTemplates';
 
 interface EntryDocsModalProps {
@@ -75,6 +76,9 @@ const EntryDocsModal: React.FC<EntryDocsModalProps> = ({ isOpen, onClose, entry 
                     break;
                 case 'contrato':
                     html = generateContratoServicoHTML(printProcess);
+                    break;
+                case 'todos':
+                    html = generateAllDocumentsHTML(printProcess);
                     break;
                 default:
                     return;
@@ -162,6 +166,13 @@ const EntryDocsModal: React.FC<EntryDocsModalProps> = ({ isOpen, onClose, entry 
                                     <span className="text-[9px] font-black uppercase tracking-widest">Cotação 3</span>
                                 </button>
                             </div>
+
+                            <div className="w-full h-px bg-white/5 my-2"></div>
+                            
+                            <button onClick={() => handlePrint(process, 'todos')} className="w-full p-4 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 rounded-2xl transition-all flex items-center justify-center gap-3 group">
+                                <span className="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform">print</span>
+                                <span className="text-[11px] font-black uppercase tracking-widest">Imprimir Todos de uma vez</span>
+                            </button>
 
                         </div>
                     ) : (

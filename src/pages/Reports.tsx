@@ -10,7 +10,8 @@ import {
   generateCotacaoHTML, 
   generateContratoServicoHTML,
   generateContratoGasHTML,
-  generateAditivoHTML
+  generateAditivoHTML,
+  generateAllDocumentsHTML
 } from '../lib/documentTemplates';
 import { supabase } from '../lib/supabaseClient';
 import { usePermissions, useAccessibleSchools } from '../hooks/usePermissions';
@@ -101,6 +102,9 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
           break;
         case 'contrato':
           html = generateContratoServicoHTML(process);
+          break;
+        case 'todos':
+          html = generateAllDocumentsHTML(process);
           break;
         default:
           return;
