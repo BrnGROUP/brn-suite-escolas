@@ -673,6 +673,10 @@ export const generateReciboHTML = (process: DocumentProcess) => {
 
     const totalValue = (winner?.total_value || 0) - (process.discount || 0);
 
+    const rubricName = (entry as any)?.rubrics?.name || process.contract?.rubrics?.name || (entry as any)?.rubric;
+    const programName = program?.name?.toUpperCase() || 'PNAE/FNDE';
+    const programDisplay = rubricName ? `${programName} - ${rubricName.toUpperCase()}` : programName;
+
     // Payment method label
     const paymentMethod = (entry?.payment_methods?.name || entry?.payment_method || '').toLowerCase();
     
@@ -748,7 +752,7 @@ ${getDocumentBaseCSS(customStyles, false, '0')}
             REFERENTE A COMPRA DE PRODUTOS CONFORME NOTA FISCAL DE Nº <strong>${entry?.document_number || entry?.invoice_number || '_______'}</strong>, 
             DATADA DE <strong>${dispInvoiceDate}</strong>.
             <br/><br/>
-            PAGO COM RECURSO <strong>${program?.name?.toUpperCase() || 'PNAE/FNDE'}</strong>, 
+            PAGO COM RECURSO <strong>${programDisplay}</strong>, 
             ${paymentLabel} Nº <strong>${authNumber}</strong>, 
             DATADA DE <strong>${dispPaymentDate}</strong>.
         </div>
