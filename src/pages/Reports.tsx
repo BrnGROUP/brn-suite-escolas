@@ -25,6 +25,8 @@ import AccountabilityProcessModal from '../components/reports/AccountabilityProc
 import SupplierContractModal from '../components/reports/SupplierContractModal';
 import ContractsTable from '../components/reports/ContractsTable';
 import { ContractDocsModal } from '../components/reports/ContractDocsModal';
+import EntryFormModal from '../components/financial/EntryFormModal';
+import { useAuxData } from '../hooks/useAuxData';
 
 const Reports: React.FC<{ user: User }> = ({ user }) => {
   // UI State
@@ -36,6 +38,8 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
   const [showContractDocsModal, setShowContractDocsModal] = useState(false);
   const [selectedContractForDocs, setSelectedContractForDocs] = useState<any | null>(null);
   const [selectedProcessIdForDocs, setSelectedProcessIdForDocs] = useState<string | null>(null);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [showEntryForm, setShowEntryForm] = useState(false);
   const { addToast } = useToast();
   const { confirm } = useConfirm();
 
@@ -62,6 +66,8 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
     stats,
     refresh
   } = useReports(user, filters);
+
+  const { data: auxData = { schools: [], programs: [], rubrics: [], suppliers: [], bankAccounts: [], paymentMethods: [], periods: [] } } = useAuxData();
 
   // Permissions
   const reportPerm = usePermissions(user, 'reports');
@@ -193,6 +199,11 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
       setEditingProcessId(p.id);
       setShowNewProcessModal(true);
     }
+  };
+
+  const handleEditEntry = (entry: any) => {
+    setEditingEntryId(entry.id);
+    setShowEntryForm(true);
   };
 
   const handleManageDocuments = async (contract: any) => {
@@ -462,6 +473,7 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
           onEdit={handleEditProcess}
           onDelete={handleDelete}
           onPrint={handlePrint}
+          onEditEntry={handleEditEntry}
         />
       ) : (
         <ContractsTable
@@ -474,6 +486,16 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
       )}
 
       {/* Modals */}
+      <EntryFormModal
+        isOpen={showEntryForm}
+        onClose={() => setShowEntryForm(false)}
+        user={user}
+        editingId={editingEntryId}
+        editingBatchId={null}
+        auxData={auxData}
+        accessibleSchools={accessibleSchools}
+        onSave={() => refresh()}
+      />
       <AccountabilityProcessModal
         isOpen={showNewProcessModal}
         onClose={() => setShowNewProcessModal(false)}

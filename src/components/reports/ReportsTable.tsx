@@ -8,9 +8,10 @@ interface ReportsTableProps {
     onEdit: (process: AccountabilityProcess) => void;
     onDelete: (id: string) => void;
     onPrint: (process: AccountabilityProcess, template: string) => void;
+    onEditEntry?: (entry: any) => void;
 }
 
-const ReportsTable: React.FC<ReportsTableProps> = ({ processes, onEdit, onDelete, onPrint }) => {
+const ReportsTable: React.FC<ReportsTableProps> = ({ processes, onEdit, onDelete, onPrint, onEditEntry }) => {
     return (
         <div className="grid grid-cols-1 gap-4">
             {processes.length === 0 ? (
@@ -86,6 +87,17 @@ const ReportsTable: React.FC<ReportsTableProps> = ({ processes, onEdit, onDelete
                                         <span className="material-symbols-outlined text-[20px]">edit_document</span>
                                         <span className="lg:hidden text-[10px] font-black uppercase tracking-widest">Editar</span>
                                     </button>
+
+                                    {onEditEntry && entry && !isAwardProcess && (
+                                        <button
+                                            onClick={() => onEditEntry(entry)}
+                                            className="flex-1 lg:flex-none p-3 lg:p-2.5 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-white rounded-xl transition-all flex items-center justify-center gap-2"
+                                            title="Editar Lançamento"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px]">edit_square</span>
+                                            <span className="lg:hidden text-[10px] font-black uppercase tracking-widest">Lançamento</span>
+                                        </button>
+                                    )}
 
                                     <button
                                         onClick={() => onDelete(process.id)}
