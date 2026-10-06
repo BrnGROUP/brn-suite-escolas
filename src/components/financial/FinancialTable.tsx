@@ -14,6 +14,7 @@ interface FinancialTableProps {
     onToggleSelectAll: () => void;
     onEdit: (entry: FinancialEntryExtended) => void;
     onDelete: (entry: FinancialEntryExtended) => void;
+    onManageDocs: (entry: FinancialEntryExtended) => void;
     onConciliate: (id: string, currentStatus: string) => void;
 }
 
@@ -27,6 +28,7 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
     onToggleSelectAll,
     onEdit,
     onDelete,
+    onManageDocs,
     onConciliate
 }) => {
 
@@ -151,6 +153,9 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                                     </div>
                                     {canEdit && (
                                         <div className="flex items-center gap-2">
+                                            <button onClick={() => onManageDocs(entry)} className="w-11 h-11 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center transition-all active:scale-95 shadow-sm border border-blue-500/20" title="Documentos (Recibo, Ata, etc)">
+                                                <span className="material-symbols-outlined text-[20px]">description</span>
+                                            </button>
                                             <button onClick={() => onEdit(entry)} className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center transition-all active:scale-95 shadow-sm border border-primary/20">
                                                 <span className="material-symbols-outlined text-[20px]">edit</span>
                                             </button>
@@ -298,7 +303,10 @@ const FinancialTable: React.FC<FinancialTableProps> = ({
                                         {canEdit && (
                                             <td className="p-5">
                                                 <div className="flex items-center justify-center gap-2">
-                                                    <button onClick={() => onEdit(entry)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-primary/20 text-slate-400 hover:text-primary transition-all flex items-center justify-center">
+                                                    <button onClick={() => onManageDocs(entry)} className="w-8 h-8 rounded-lg bg-blue-500/10 hover:bg-blue-500 hover:text-white text-blue-400 flex items-center justify-center transition-all" title="Documentos (Recibo, Ata, etc)">
+                                                        <span className="material-symbols-outlined text-[18px]">description</span>
+                                                    </button>
+                                                    <button onClick={() => onEdit(entry)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-primary/20 text-slate-400 hover:text-primary transition-all flex items-center justify-center" title="Editar">
                                                         <span className="material-symbols-outlined text-[18px]">edit</span>
                                                     </button>
                                                     <button onClick={() => onDelete(entry)} className={`w-8 h-8 rounded-lg bg-white/5 transition-all flex items-center justify-center ${!isAdmin && entry.status === TransactionStatus.ESTORNADO ? 'hover:bg-blue-500/20 text-slate-400 hover:text-blue-500' : 'hover:bg-red-500/20 text-slate-400 hover:text-red-500'}`} title={isAdmin ? 'Excluir permanentemente' : (entry.status === TransactionStatus.ESTORNADO ? 'Reativar Lançamento' : 'Desativar/Estornar')}>

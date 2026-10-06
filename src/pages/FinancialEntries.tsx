@@ -10,6 +10,7 @@ import FinancialTable from '../components/financial/FinancialTable';
 import { useFinancialEntries, FinancialEntryExtended } from '../hooks/useFinancialEntries';
 import ReprogrammedBalancesModal from '../components/financial/ReprogrammedBalancesModal';
 import EntryFormModal from '../components/financial/EntryFormModal';
+import EntryDocsModal from '../components/financial/EntryDocsModal';
 import ReportOptionsModal from '../components/reports/ReportOptionsModal';
 import { generateCSV, ReportOptions } from '../lib/reportUtils';
 import { useToast } from '../context/ToastContext';
@@ -52,6 +53,10 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
 
+    // Docs state
+    const [showDocsModal, setShowDocsModal] = useState(false);
+    const [selectedEntryForDocs, setSelectedEntryForDocs] = useState<FinancialEntryExtended | null>(null);
+
     // Destructure auxData
     const { schools, programs, rubrics, periods } = auxData;
 
@@ -69,6 +74,11 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
         setEditingId(entry.id);
         setEditingBatchId(entry.batch_id || null);
         setShowForm(true);
+    };
+
+    const handleManageDocs = (entry: FinancialEntryExtended) => {
+        setSelectedEntryForDocs(entry);
+        setShowDocsModal(true);
     };
 
     const handleDelete = async (entry: FinancialEntryExtended) => {
@@ -378,6 +388,7 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
                         onToggleSelectAll={onToggleSelectAll}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        onManageDocs={handleManageDocs}
                         onConciliate={(id) => reconcileEntries([id])}
                     />
                 </div>
@@ -433,6 +444,11 @@ const FinancialEntries: React.FC<{ user: User }> = ({ user }) => {
                     periods: auxData.periods
                 }}
                 currentFilters={filters}
+            />
+            <EntryDocsModal
+                isOpen={showDocsModal}
+                onClose={() => setShowDocsModal(false)}
+                entry={selectedEntryForDocs}
             />
         </div>
     );
