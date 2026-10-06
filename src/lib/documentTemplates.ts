@@ -1534,7 +1534,8 @@ export const generateAllDocumentsHTML = (process: DocumentProcess) => {
     const globalCSS = `
     @media print {
         .page-break { page-break-before: always !important; display: block; height: 0; }
-        @page { margin: 0; }
+        @page { size: A4 portrait; margin: 0; }
+        @page landscape_page { size: A4 landscape; margin: 0; }
         body { padding: 0 !important; margin: 0 !important; }
     }
     
@@ -1547,20 +1548,27 @@ export const generateAllDocumentsHTML = (process: DocumentProcess) => {
     .uppercase { text-transform: uppercase; }
     .font-bold { font-weight: bold; }
     
-    .doc-ata { padding: 1.5cm 2cm; font-size: 14px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+    /* Ata */
+    .doc-ata { padding: 1.5cm 2cm; font-size: 14px; width: 100%; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
     .doc-ata .text-justified { text-align: justify; text-justify: inter-word; line-height: 1.8; }
     
-    .doc-ordem { padding: 1.5cm 1cm; font-size: 10px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+    /* Ordem - inner div is 190mm */
+    .doc-ordem { padding: 1.5cm 0; font-size: 10px; width: 100%; box-sizing: border-box; }
     .doc-ordem th, .doc-ordem td { height: 18px; }
     
-    .doc-consolidacao { padding: 1.5cm 1cm; font-size: 8px; max-width: 297mm; margin: 0 auto; box-sizing: border-box; }
-    .doc-consolidacao th, .doc-consolidacao td { padding: 2px 4px; }
-    .doc-consolidacao .bloco-title { background: #eee; font-weight: bold; padding: 4px; border: 1.5px solid black; border-bottom: none; }
+    /* Consolidacao - landscape */
+    .doc-consolidacao { page: landscape_page; padding: 1cm; font-size: 7.5px; width: 100%; max-width: 297mm; margin: 0 auto; box-sizing: border-box; }
+    .doc-consolidacao th, .doc-consolidacao td { padding: 1.5px 3px; }
+    .doc-consolidacao .bloco-title { background: #eee; font-weight: bold; padding: 3px; border: 1.5px solid black; border-bottom: none; }
     
-    .doc-recibo { padding: 2cm; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+    /* Recibo - missing print-container styles */
+    .doc-recibo { padding: 0; width: 100%; box-sizing: border-box; }
+    .doc-recibo .print-container { padding: 1.5cm 2cm; width: 100%; max-width: 190mm; margin: 0 auto; box-sizing: border-box; border: none; }
+    .doc-recibo .text-justified { text-align: justify; text-justify: inter-word; line-height: 1.8; }
     
-    .doc-cotacao { padding: 1.5cm; font-size: 9px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
-    .doc-cotacao th, .doc-cotacao td { padding: 4px; }
+    /* Cotacao - inner div is 190mm */
+    .doc-cotacao { padding: 1.5cm 0; font-size: 9px; width: 100%; box-sizing: border-box; }
+    .doc-cotacao th, .doc-cotacao td { padding: 3px 6px; }
     `;
 
     return `<!DOCTYPE html>
