@@ -74,6 +74,8 @@ const EntryFormModal: React.FC<EntryFormModalProps> = (props) => {
         setDocumentNumber,
         authNumber,
         setAuthNumber,
+        customPaymentLabel,
+        setCustomPaymentLabel,
         attachments,
         entryLogs,
         linkedStatements,
@@ -188,6 +190,8 @@ const EntryFormModal: React.FC<EntryFormModalProps> = (props) => {
                             setInvoiceDate={setInvoiceDate}
                             paymentDate={paymentDate}
                             setPaymentDate={setPaymentDate}
+                            customPaymentLabel={customPaymentLabel}
+                            setCustomPaymentLabel={setCustomPaymentLabel}
                             auxData={props.auxData}
                         />
 

@@ -60,6 +60,7 @@ export const useEntryForm = ({
     const [selectedPaymentMethodId, setSelectedPaymentMethodId] = React.useState('');
     const [documentNumber, setDocumentNumber] = React.useState('');
     const [authNumber, setAuthNumber] = React.useState('');
+    const [customPaymentLabel, setCustomPaymentLabel] = React.useState('');
     const [attachments, setAttachments] = React.useState<any[]>([]);
     const [technicalProcess, setTechnicalProcess] = React.useState<any>(null);
     const [entryLogs, setEntryLogs] = React.useState<any[]>([]);
@@ -134,6 +135,7 @@ export const useEntryForm = ({
         setSelectedPaymentMethodId('');
         setDocumentNumber('');
         setAuthNumber('');
+        setCustomPaymentLabel('');
         setPaymentDate('');
         setAttachments([]);
         setTechnicalProcess(null);
@@ -247,7 +249,17 @@ export const useEntryForm = ({
                     setSelectedBankAccountId(first.bank_account_id || '');
                     setSelectedPaymentMethodId(first.payment_method_id || '');
                     setDocumentNumber(first.document_number || '');
-                    setAuthNumber(first.auth_number || '');
+                    
+                    let loadedAuthNum = first.auth_number || '';
+                    let loadedLabel = '';
+                    if (loadedAuthNum.includes('|||')) {
+                        const parts = loadedAuthNum.split('|||');
+                        loadedLabel = parts[0];
+                        loadedAuthNum = parts[1];
+                    }
+                    setAuthNumber(loadedAuthNum);
+                    setCustomPaymentLabel(loadedLabel);
+
                     setPaymentDate(first.payment_date || '');
                     setAttachments(first.attachments || []);
                     setSelectedContractId(first.contract_id || '');
@@ -308,7 +320,17 @@ export const useEntryForm = ({
                     setSelectedBankAccountId(data.bank_account_id || '');
                     setSelectedPaymentMethodId(data.payment_method_id || '');
                     setDocumentNumber(data.document_number || '');
-                    setAuthNumber(data.auth_number || '');
+                    
+                    let loadedAuthNum = data.auth_number || '';
+                    let loadedLabel = '';
+                    if (loadedAuthNum.includes('|||')) {
+                        const parts = loadedAuthNum.split('|||');
+                        loadedLabel = parts[0];
+                        loadedAuthNum = parts[1];
+                    }
+                    setAuthNumber(loadedAuthNum);
+                    setCustomPaymentLabel(loadedLabel);
+
                     setPaymentDate(data.payment_date || '');
                     setAttachments(data.attachments || []);
                     setSingleRubricId(data.rubric_id || '');
@@ -451,7 +473,7 @@ export const useEntryForm = ({
                         payment_method_id: selectedPaymentMethodId || null,
                         invoice_date: invoiceDate || null,
                         document_number: documentNumber || null,
-                        auth_number: authNumber || null,
+                        auth_number: customPaymentLabel ? `${customPaymentLabel}|||${authNumber}` : (authNumber || null),
                         payment_date: paymentDate || null,
                         attachments,
                         batch_id: batchId,
@@ -502,7 +524,7 @@ export const useEntryForm = ({
                     payment_method_id: selectedPaymentMethodId || null,
                     invoice_date: invoiceDate || null,
                     document_number: documentNumber || null,
-                    auth_number: authNumber || null,
+                    auth_number: customPaymentLabel ? `${customPaymentLabel}|||${authNumber}` : (authNumber || null),
                     payment_date: paymentDate || null,
                     attachments,
                     batch_id: null,
@@ -743,6 +765,8 @@ export const useEntryForm = ({
         setDocumentNumber,
         authNumber,
         setAuthNumber,
+        customPaymentLabel,
+        setCustomPaymentLabel,
         attachments,
         technicalProcess,
         entryLogs,

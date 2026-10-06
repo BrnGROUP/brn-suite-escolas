@@ -96,6 +96,7 @@ export interface FinancialEntry {
     document_number?: string; // Número da Nota
     payment_date?: string;
     auth_number?: string; // Número do Pagamento/Doc
+    custom_payment_label?: string; // Ex: AUTENTICAÇÃO, OPERAÇÃO
     attachment_url?: string;
     attachments?: Attachment[];
     bank_account_id?: string;

@@ -42,6 +42,8 @@ interface EntryFormFieldsProps {
     setDocumentNumber: (val: string) => void;
     authNumber: string;
     setAuthNumber: (val: string) => void;
+    customPaymentLabel: string;
+    setCustomPaymentLabel: (val: string) => void;
     invoiceDate: string;
     setInvoiceDate: (val: string) => void;
     paymentDate: string;
@@ -91,6 +93,8 @@ export const EntryFormFields: React.FC<EntryFormFieldsProps> = ({
     setDocumentNumber,
     authNumber,
     setAuthNumber,
+    customPaymentLabel,
+    setCustomPaymentLabel,
     invoiceDate,
     setInvoiceDate,
     paymentDate,
@@ -349,7 +353,7 @@ export const EntryFormFields: React.FC<EntryFormFieldsProps> = ({
 
             {!isSimplified && (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="flex flex-col gap-2">
                             <label htmlFor="document_number" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Nº Documento</label>
                             <input 
@@ -361,7 +365,18 @@ export const EntryFormFields: React.FC<EntryFormFieldsProps> = ({
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label htmlFor="auth_number" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Nº Autenticação</label>
+                            <label htmlFor="custom_payment_label" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Rótulo do Nº (Opcional)</label>
+                            <input 
+                                id="custom_payment_label" 
+                                type="text" 
+                                placeholder="EX: AUTENTICAÇÃO, OPERAÇÃO"
+                                value={customPaymentLabel} 
+                                onChange={e => setCustomPaymentLabel(e.target.value.toUpperCase())} 
+                                className="bg-[#1e293b] rounded-xl h-12 px-4 text-white outline-none border border-white/5 focus:border-cyan-500" 
+                            />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <label htmlFor="auth_number" className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Nº Pagamento</label>
                             <input 
                                 id="auth_number" 
                                 type="text" 

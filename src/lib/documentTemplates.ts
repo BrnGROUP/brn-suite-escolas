@@ -675,25 +675,38 @@ export const generateReciboHTML = (process: DocumentProcess) => {
 
     // Payment method label
     const paymentMethod = (entry?.payment_methods?.name || entry?.payment_method || '').toLowerCase();
-    let paymentLabel = 'AUTORIZAÇÃO';
-    if (paymentMethod.includes('pix')) {
-        paymentLabel = 'OPERAÇÃO';
-    } else if (
-        paymentMethod.includes('cartão') || 
-        paymentMethod.includes('cartao') || 
-        paymentMethod.includes('débito') || 
-        paymentMethod.includes('debito') || 
-        paymentMethod.includes('crédito') || 
-        paymentMethod.includes('credito')
-    ) {
-        paymentLabel = 'AUTORIZAÇÃO';
-    } else if (paymentMethod.includes('cheque')) {
-        paymentLabel = 'CHEQUE';
-    } else if (paymentMethod.includes('transferência') || paymentMethod.includes('transferencia')) {
-        paymentLabel = 'TRANSFERÊNCIA';
+    
+    let rawAuthNum = entry?.auth_number || '________________________';
+    let customLabel = '';
+    
+    if (rawAuthNum.includes('|||')) {
+        const parts = rawAuthNum.split('|||');
+        customLabel = parts[0];
+        rawAuthNum = parts[1] || '________________________';
     }
 
-    const authNumber = entry?.auth_number || '________________________';
+    let paymentLabel = customLabel || 'AUTORIZAÇÃO';
+    
+    if (!customLabel) {
+        if (paymentMethod.includes('pix')) {
+            paymentLabel = 'OPERAÇÃO';
+        } else if (
+            paymentMethod.includes('cartão') || 
+            paymentMethod.includes('cartao') || 
+            paymentMethod.includes('débito') || 
+            paymentMethod.includes('debito') || 
+            paymentMethod.includes('crédito') || 
+            paymentMethod.includes('credito')
+        ) {
+            paymentLabel = 'AUTORIZAÇÃO';
+        } else if (paymentMethod.includes('cheque')) {
+            paymentLabel = 'CHEQUE';
+        } else if (paymentMethod.includes('transferência') || paymentMethod.includes('transferencia')) {
+            paymentLabel = 'TRANSFERÊNCIA';
+        }
+    }
+
+    const authNumber = rawAuthNum;
 
     const customStyles = `
         * { box-sizing: border-box; }
