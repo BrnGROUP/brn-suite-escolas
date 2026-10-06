@@ -1531,27 +1531,55 @@ export const generateAllDocumentsHTML = (process: DocumentProcess) => {
     const cotacao2 = extractBody(generateCotacaoHTML(process, 1));
     const cotacao3 = extractBody(generateCotacaoHTML(process, 2));
 
-    return `<!DOCTYPE html>
-<html lang="pt-BR">
-${getDocumentBaseCSS(`
+    const globalCSS = `
     @media print {
         .page-break { page-break-before: always !important; display: block; height: 0; }
+        @page { margin: 0; }
+        body { padding: 0 !important; margin: 0 !important; }
     }
-`)}
-<body class="bg-white text-black text-xs">
-    ${ata}
+    
+    * { box-sizing: border-box; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: -1px; table-layout: fixed; }
+    th, td { border: 1.5px solid black; padding: 4px 8px; word-wrap: break-word; overflow: hidden; }
+    .bg-gray { background-color: #f3f3f3; }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .uppercase { text-transform: uppercase; }
+    .font-bold { font-weight: bold; }
+    
+    .doc-ata { padding: 2cm 2.5cm; font-size: 14px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+    .doc-ata .text-justified { text-align: justify; text-justify: inter-word; line-height: 1.8; }
+    
+    .doc-ordem { padding: 1.5cm 1cm; font-size: 10px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+    .doc-ordem th, .doc-ordem td { height: 18px; }
+    
+    .doc-consolidacao { padding: 1.5cm 1cm; font-size: 8px; max-width: 297mm; margin: 0 auto; box-sizing: border-box; }
+    .doc-consolidacao th, .doc-consolidacao td { padding: 2px 4px; }
+    .doc-consolidacao .bloco-title { background: #eee; font-weight: bold; padding: 4px; border: 1.5px solid black; border-bottom: none; }
+    
+    .doc-recibo { padding: 2cm; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+    
+    .doc-cotacao { padding: 1.5cm; font-size: 9px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+    .doc-cotacao th, .doc-cotacao td { padding: 4px; }
+    `;
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+${getDocumentBaseCSS(globalCSS, false, '0')}
+<body class="bg-white text-black">
+    <div class="doc-ata">${ata}</div>
     <div class="page-break" style="page-break-before: always;"></div>
-    ${ordem}
+    <div class="doc-ordem">${ordem}</div>
     <div class="page-break" style="page-break-before: always;"></div>
-    ${consolidacao}
+    <div class="doc-consolidacao">${consolidacao}</div>
     <div class="page-break" style="page-break-before: always;"></div>
-    ${recibo}
+    <div class="doc-recibo">${recibo}</div>
     <div class="page-break" style="page-break-before: always;"></div>
-    ${cotacao1}
+    <div class="doc-cotacao">${cotacao1}</div>
     <div class="page-break" style="page-break-before: always;"></div>
-    ${cotacao2}
+    <div class="doc-cotacao">${cotacao2}</div>
     <div class="page-break" style="page-break-before: always;"></div>
-    ${cotacao3}
+    <div class="doc-cotacao">${cotacao3}</div>
 </body>
 </html>`;
 };
