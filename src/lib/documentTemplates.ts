@@ -1547,7 +1547,7 @@ export const generateAllDocumentsHTML = (process: DocumentProcess) => {
     .uppercase { text-transform: uppercase; }
     .font-bold { font-weight: bold; }
     
-    .doc-ata { padding: 2cm 2.5cm; font-size: 14px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
+    .doc-ata { padding: 1.5cm 2cm; font-size: 14px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
     .doc-ata .text-justified { text-align: justify; text-justify: inter-word; line-height: 1.8; }
     
     .doc-ordem { padding: 1.5cm 1cm; font-size: 10px; max-width: 210mm; margin: 0 auto; box-sizing: border-box; }
