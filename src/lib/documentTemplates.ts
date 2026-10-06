@@ -1556,8 +1556,9 @@ export const generateAllDocumentsHTML = (process: DocumentProcess) => {
     .doc-ordem { padding: 1.5cm 0; font-size: 10px; width: 100%; box-sizing: border-box; }
     .doc-ordem th, .doc-ordem td { height: 18px; }
     
-    /* Consolidacao - landscape */
-    .doc-consolidacao { page: landscape_page; padding: 1cm; font-size: 7.5px; width: 100%; max-width: 297mm; margin: 0 auto; box-sizing: border-box; }
+    /* Consolidacao - rotated to landscape inside a portrait container */
+    .doc-consolidacao-container { width: 210mm; height: 297mm; position: relative; overflow: hidden; margin: 0 auto; }
+    .doc-consolidacao { position: absolute; top: 297mm; left: 0; width: 297mm; height: 210mm; transform: rotate(-90deg); transform-origin: top left; padding: 1cm; font-size: 7.5px; box-sizing: border-box; }
     .doc-consolidacao th, .doc-consolidacao td { padding: 1.5px 3px; }
     .doc-consolidacao .bloco-title { background: #eee; font-weight: bold; padding: 3px; border: 1.5px solid black; border-bottom: none; }
     
@@ -1579,7 +1580,9 @@ ${getDocumentBaseCSS(globalCSS, false, '0')}
     <div class="page-break" style="page-break-before: always;"></div>
     <div class="doc-ordem">${ordem}</div>
     <div class="page-break" style="page-break-before: always;"></div>
-    <div class="doc-consolidacao">${consolidacao}</div>
+    <div class="doc-consolidacao-container">
+        <div class="doc-consolidacao">${consolidacao}</div>
+    </div>
     <div class="page-break" style="page-break-before: always;"></div>
     <div class="doc-recibo">${recibo}</div>
     <div class="page-break" style="page-break-before: always;"></div>
