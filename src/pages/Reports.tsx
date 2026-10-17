@@ -118,10 +118,16 @@ const Reports: React.FC<{ user: User }> = ({ user }) => {
 
   const handlePrintContract = (contract: any) => {
     try {
+      let parentContract = null;
+      if (contract.terms_json?.parent_contract_id) {
+        parentContract = contracts.find((c: any) => c.id === contract.terms_json.parent_contract_id);
+      }
+
       // Wrap contract in a structure similar to process for the template
       const pseudoProcess = {
         id: contract.id,
         contract: contract,
+        parent_contract: parentContract,
         financial_entries: [{
           schools: contract.schools,
           suppliers: contract.suppliers,

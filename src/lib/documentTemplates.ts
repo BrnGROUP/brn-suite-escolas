@@ -1414,6 +1414,28 @@ export const generateAditivoHTML = (process: DocumentProcess) => {
     const endDate = (process as any).contract?.end_date ? new Date((process as any).contract.end_date + 'T12:00:00').toLocaleDateString('pt-BR') : '___/___/_____';
     const monthlyValue = (process as any).monthly_value || (process as any).contract?.monthly_value || 0;
 
+    const parentContract = (process as any).parent_contract || (process as any).contract?.parent_contract;
+    const originalContractNumber = terms.parent_contract_number 
+        || parentContract?.contract_number 
+        || contractNumber.replace(/\/ADITIVO.*$/i, '');
+    const originalStartDate = terms.parent_start_date 
+        ? new Date(terms.parent_start_date + 'T12:00:00').toLocaleDateString('pt-BR')
+        : parentContract?.start_date
+            ? new Date(parentContract.start_date + 'T12:00:00').toLocaleDateString('pt-BR')
+            : startDate;
+
+    let durationMonths = terms.duration_months;
+    if (!durationMonths && contract?.start_date && contract?.end_date) {
+        const s = new Date(contract.start_date + 'T12:00:00');
+        const e = new Date(contract.end_date + 'T12:00:00');
+        const yearsDiff = e.getFullYear() - s.getFullYear();
+        const monthsDiff = e.getMonth() - s.getMonth();
+        const daysDiff = (e.getDate() - s.getDate()) / 30;
+        durationMonths = Math.max(1, Math.round(yearsDiff * 12 + monthsDiff + daysDiff));
+    }
+    durationMonths = durationMonths || 12;
+    const durationDisplay = `${durationMonths} (${numberToWordsPure(durationMonths)}) ${durationMonths === 1 ? 'mês' : 'meses'}`;
+
     const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((process as any).contract?.total_value || 0);
     const customStyles = `
         body { 
@@ -1453,7 +1475,7 @@ ${getDocumentBaseCSS(customStyles)}
 
             <p class="mt-4">E de outro lado, a empresa <strong>${supplier?.name?.toUpperCase() || 'RAZÃO SOCIAL DO FORNECEDOR'}</strong>, inscrita no CNPJ sob o nº <strong>${supplier?.cnpj || '___.___.___/____-__'}</strong>, com sede na ${supplier?.address || 'ENDEREÇO DO FORNECEDOR'}${supplier?.city ? `, no município de ${supplier.city}` : ''}${supplier?.uf ? ` - ${supplier.uf}` : ''}${supplier?.cep ? `, CEP: ${supplier.cep}` : ''}, doravante denominada <strong>CONTRATADA</strong>, neste ato representada por <strong>${(process as any).contract?.representative_name || supplier?.rep_name || '____________________'}</strong>, portador(a) do RG nº <strong>${(process as any).contract?.representative_rg || supplier?.rep_rg || '___________'}</strong> e CPF nº <strong>${(process as any).contract?.representative_cpf || supplier?.rep_cpf || '___________'}</strong>, residente e domiciliado(a) na ${(process as any).contract?.representative_address || supplier?.rep_address?.toUpperCase() || '____________________'}.</p>
 
-            <p class="mt-6">As partes acima qualificadas resolvem, de mútuo acordo, aditar o <strong>Contrato nº ${contractNumber}</strong>, originalmente firmado em <strong>${startDate}</strong>, mediante as seguintes cláusulas e condições:</p>
+            <p class="mt-6">As partes acima qualificadas resolvem, de mútuo acordo, aditar o <strong>Contrato nº ${originalContractNumber}</strong>, originalmente firmado em <strong>${originalStartDate}</strong>, mediante as seguintes cláusulas e condições:</p>
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA PRIMEIRA – DO OBJETO</div>
@@ -1462,7 +1484,7 @@ ${getDocumentBaseCSS(customStyles)}
 
             <div class="clause-block">
                 <div class="clause">CLÁUSULA SEGUNDA – DA PRORROGAÇÃO</div>
-                <p>Fica prorrogado o prazo de vigência do contrato original por mais <strong>12 (doze) meses</strong>, iniciando-se em <strong>${endDate}</strong> e finalizando em <strong>${new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toLocaleDateString('pt-BR')}</strong>, ou até que ocorra nova pactuação ou rescisão.</p>
+                <p>Fica prorrogado o prazo de vigência do contrato original por mais <strong>${durationDisplay}</strong>, iniciando-se em <strong>${startDate}</strong> e finalizando em <strong>${endDate}</strong>, ou até que ocorra nova pactuação ou rescisão.</p>
             </div>
 
             <div class="clause-block">

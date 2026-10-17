@@ -191,10 +191,33 @@ describe('documentTemplates', () => {
         expect(html).toContain('GÁS LIQUEFEITO DE PETRÓLEO');
     });
 
-    it('deve gerar Termo Aditivo HTML corretamente', () => {
-        const html = generateAditivoHTML(mockProcess);
+    it('deve gerar Termo Aditivo HTML corretamente com datas e vigência do formulário', () => {
+        const aditivoProcess = {
+            ...mockProcess,
+            contract: {
+                contract_number: '01/2025/ADITIVO',
+                start_date: '2026-07-13',
+                end_date: '2026-10-13',
+                monthly_value: 200,
+                total_value: 600,
+                category: 'INTERNET',
+                terms_json: {
+                    is_aditivo: true,
+                    duration_months: 3,
+                    parent_contract_number: '01/2025',
+                    parent_start_date: '2025-07-13'
+                }
+            }
+        };
+
+        const html = generateAditivoHTML(aditivoProcess);
         expect(html).toContain('TERMO ADITIVO DE PRORROGAÇÃO E REAJUSTE');
-        expect(html).toContain('CONTRATO');
+        expect(html).toContain('Contrato nº 01/2025');
+        expect(html).toContain('originalmente firmado em <strong>13/07/2025</strong>');
+        expect(html).toContain('CLÁUSULA SEGUNDA – DA PRORROGAÇÃO');
+        expect(html).toContain('por mais <strong>3 (três) meses</strong>');
+        expect(html).toContain('iniciando-se em <strong>13/07/2026</strong>');
+        expect(html).toContain('finalizando em <strong>13/10/2026</strong>');
     });
 
     it('deve lançar erro se o programa de recursos financeiros não estiver cadastrado', () => {

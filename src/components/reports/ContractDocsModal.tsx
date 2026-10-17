@@ -383,9 +383,20 @@ export const ContractDocsModal: React.FC<ContractDocsModalProps> = ({
         })
       ].filter(q => q.supplier_name);
 
+      let parentContract = null;
+      if (contract.terms_json?.parent_contract_id) {
+        const { data: pContract } = await supabase
+          .from('supplier_contracts')
+          .select('*')
+          .eq('id', contract.terms_json.parent_contract_id)
+          .maybeSingle();
+        parentContract = pContract;
+      }
+
       const pseudoProcess = {
         id: processId || '',
         contract: contract,
+        parent_contract: parentContract,
         schools: contract.schools,
         programs: contract.programs,
         accountability_items: items,

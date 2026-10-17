@@ -130,6 +130,13 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             setContractNumber(`${parent.contract_number}/ADITIVO`);
             setDescription(`TERMO ADITIVO AO CONTRATO Nº ${parent.contract_number} - ${parent.description}`);
 
+            if (parent.monthly_value && !monthlyValue) {
+                setMonthlyValue(parent.monthly_value.toString());
+            }
+            if (parent.end_date && !startDate) {
+                setStartDate(parent.end_date);
+            }
+
             const terms = parent.terms_json || {};
             setW1Name(terms.witness_1_name || '');
             setW1Cpf(terms.witness_1_cpf || '');
@@ -200,6 +207,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
             
             // Fix: Set creationMode based on whether the loaded contract is an aditivo
             setCreationMode(terms.is_aditivo ? 'ADITIVO' : 'NEW');
+            setParentContractId(terms.parent_contract_id || '');
         }
     };
 
@@ -381,6 +389,7 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
 
         setLoading(true);
         try {
+            const selectedParent = parentContractId ? existingContracts.find(c => c.id === parentContractId) : null;
             const payload = {
                 school_id: schoolId,
                 supplier_id: supplierId,
@@ -397,6 +406,10 @@ const SupplierContractModal: React.FC<SupplierContractModalProps> = ({
                 terms_json: {
                     is_aditivo: creationMode === 'ADITIVO',
                     parent_contract_id: parentContractId || null,
+                    parent_contract_number: selectedParent?.contract_number || null,
+                    parent_start_date: selectedParent?.start_date || null,
+                    parent_end_date: selectedParent?.end_date || null,
+                    duration_months: parseInt(durationMonths) || null,
                     internet_speed: category === 'INTERNET' ? internetSpeed : null,
                     gas_unit_price: category === 'GÁS' && gasUnitPrice ? parseFloat(gasUnitPrice) : null,
                     gas_quantity: category === 'GÁS' && gasQuantity ? parseFloat(gasQuantity) : null,
